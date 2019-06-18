@@ -590,6 +590,12 @@ erpnext.taxes_and_totals = erpnext.payments.extend({
 						- this.frm.doc.total_advance - this.frm.doc.base_write_off_amount),
 					precision("base_grand_total")
 				);
+				var original_total_amount_to_pay = flt(
+					grand_total
+						- flt(this.frm.doc.total_advance/this.frm.doc.conversion_rate,precision("grand_total")) 
+						- flt(this.frm.doc.base_write_off_amount/this.frm.doc.conversion_rate,precision("grand_total")),
+					precision("grand_total")
+				);
 			}
 
 			frappe.model.round_floats_in(this.frm.doc, ["paid_amount"]);
@@ -611,8 +617,18 @@ erpnext.taxes_and_totals = erpnext.payments.extend({
 
 			var paid_amount = (this.frm.doc.party_account_currency == this.frm.doc.currency) ?
 				this.frm.doc.paid_amount : this.frm.doc.base_paid_amount;
+<<<<<<< HEAD
+=======
+
+			if(this.frm.doc.party_account_currency != this.frm.doc.currency){
+				var original_paid_amount = this.frm.doc.paid_amount;
+				this.frm.doc.original_outstanding_amount =  flt(original_total_amount_to_pay - original_paid_amount +
+					this.frm.doc.change_amount, precision("outstanding_amount"));
+			}			
+
+>>>>>>> proyectos_peru
 			this.frm.doc.outstanding_amount =  flt(total_amount_to_pay - flt(paid_amount) +
-				flt(this.frm.doc.change_amount * this.frm.doc.conversion_rate), precision("outstanding_amount"));
+				flt(this.frm.doc.change_amount * this.frm.doc.conversion_rate), precision("outstanding_amount"));			
 		}
 	},
 

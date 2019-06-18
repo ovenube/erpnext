@@ -23,7 +23,12 @@ def execute(filters=None):
 		item_detail = item_details[sle.item_code]
 
 		sle.update(item_detail)
-		data.append(sle)
+		data.append([sle.date, sle.item_code, item_detail.item_name, item_detail.item_group, item_detail.grandparent_group,
+			item_detail.brand, item_detail.description, sle.warehouse,
+			item_detail.stock_uom, sle.actual_qty, sle.qty_after_transaction,
+			(sle.incoming_rate if sle.actual_qty > 0 else 0.0),
+			sle.valuation_rate, sle.stock_value, sle.voucher_type, sle.voucher_no,
+			sle.batch_no, sle.serial_no, sle.project, sle.cost_center, sle.company])
 
 		if include_uom:
 			conversion_factors.append(item_detail.conversion_factor)
@@ -33,6 +38,7 @@ def execute(filters=None):
 
 def get_columns():
 	columns = [
+<<<<<<< HEAD
 		{"label": _("Date"), "fieldname": "date", "fieldtype": "Datetime", "width": 95},
 		{"label": _("Item"), "fieldname": "item_code", "fieldtype": "Link", "options": "Item", "width": 130},
 		{"label": _("Item Name"), "fieldname": "item_name", "width": 100},
@@ -55,17 +61,40 @@ def get_columns():
 		{"label": _("Serial #"), "fieldname": "serial_no", "fieldtype": "Link", "options": "Serial No", "width": 100},
 		{"label": _("Project"), "fieldname": "project", "fieldtype": "Link", "options": "Project", "width": 100},
 		{"label": _("Company"), "fieldname": "company", "fieldtype": "Link", "options": "Company", "width": 110}
+=======
+		_("Date") + ":Datetime:95", _("Item") + ":Link/Item:130",
+		_("Item Name") + "::100", _("Item Group") + ":Link/Item Group:100",
+		_("Root Item Group") + ":Link/Item Group:100",
+		_("Brand") + ":Link/Brand:100", _("Description") + "::200",
+		_("Warehouse") + ":Link/Warehouse:100", _("Stock UOM") + ":Link/UOM:100",
+		_("Qty") + ":Float:50", _("Balance Qty") + ":Float:100",
+		{"label": _("Incoming Rate"), "fieldtype": "Currency", "width": 110,
+			"options": "Company:company:default_currency"},
+		{"label": _("Valuation Rate"), "fieldtype": "Currency", "width": 110,
+			"options": "Company:company:default_currency"},
+		{"label": _("Balance Value"), "fieldtype": "Currency", "width": 110,
+			"options": "Company:company:default_currency"},
+		_("Voucher Type") + "::110",
+		_("Voucher #") + ":Dynamic Link/" + _("Voucher Type") + ":100",
+		_("Batch") + ":Link/Batch:100",
+		_("Serial #") + ":Link/Serial No:100",
+		_("Project") + ":Link/Project:100",
+		_("Cost Center") + ":Link/Cost Center:100",
+		{"label": _("Company"), "fieldtype": "Link", "width": 110,
+			"options": "company", "fieldname": "company"}
+>>>>>>> proyectos_peru
 	]
 
 	return columns
 
 def get_stock_ledger_entries(filters, items):
+	sl_entries = []
 	item_conditions_sql = ''
 	if items:
 		item_conditions_sql = 'and sle.item_code in ({})'\
 			.format(', '.join(['"' + frappe.db.escape(i) + '"' for i in items]))
 
-	return frappe.db.sql("""select concat_ws(" ", posting_date, posting_time) as date,
+	for sl_entry in frappe.db.sql("""select concat_ws(" ", posting_date, posting_time) as date,
 			item_code, warehouse, actual_qty, qty_after_transaction, incoming_rate, valuation_rate,
 			stock_value, voucher_type, voucher_no, batch_no, serial_no, company, project
 		from `tabStock Ledger Entry` sle
@@ -77,7 +106,18 @@ def get_stock_ledger_entries(filters, items):
 		.format(
 			sle_conditions=get_sle_conditions(filters),
 			item_conditions_sql = item_conditions_sql
-		), filters, as_dict=1)
+		), filters, as_dict=1):
+		voucher_type = sl_entry["voucher_type"]
+		if voucher_type != "Stock Reconciliation":
+			doctype = voucher_type + (" Item" if voucher_type != "Stock Entry" else " Detail")
+			cost_center = frappe.get_all(doctype, filters={
+				'parent': sl_entry["voucher_no"],
+				'parenttype': voucher_type,
+				'item_code': sl_entry["item_code"]
+			}, fields=['cost_center'])[0]
+			sl_entry.setdefault("cost_center", cost_center["cost_center"])
+		sl_entries.append(sl_entry)
+	return sl_entries
 
 def get_items(filters):
 	conditions = []
@@ -95,7 +135,14 @@ def get_items(filters):
 			.format(" and ".join(conditions)), filters)
 	return items
 
+<<<<<<< HEAD
 def get_item_details(items, sl_entries, include_uom):
+=======
+def get_parent_group(item_group):
+	return frappe.get_value("Item Group", item_group, "parent_item_group")
+
+def get_item_details(items, sl_entries):
+>>>>>>> proyectos_peru
 	item_details = {}
 	if not items:
 		items = list(set([d.item_code for d in sl_entries]))
@@ -103,6 +150,7 @@ def get_item_details(items, sl_entries, include_uom):
 	if not items:
 		return item_details
 
+<<<<<<< HEAD
 	cf_field = cf_join = ""
 	if include_uom:
 		cf_field = ", ucd.conversion_factor"
@@ -122,6 +170,17 @@ def get_item_details(items, sl_entries, include_uom):
 
 	for item in res:
 		item_details.setdefault(item.name, item)
+=======
+	for item in frappe.db.sql("""
+		select name, item_name, description, item_group, brand, stock_uom
+		from `tabItem`
+		where name in ({0})
+		""".format(', '.join(['"' + frappe.db.escape(i,percent=False) + '"' for i in items])), as_dict=1):
+			item_details.setdefault(item.name, item)
+			parent_group = get_parent_group(item.item_group)
+			grandparent_group = get_parent_group(parent_group)
+			item_details[item.name].setdefault("grandparent_group", grandparent_group)
+>>>>>>> proyectos_peru
 
 	return item_details
 
