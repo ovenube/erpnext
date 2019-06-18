@@ -617,8 +617,6 @@ erpnext.taxes_and_totals = erpnext.payments.extend({
 
 			var paid_amount = (this.frm.doc.party_account_currency == this.frm.doc.currency) ?
 				this.frm.doc.paid_amount : this.frm.doc.base_paid_amount;
-<<<<<<< HEAD
-=======
 
 			if(this.frm.doc.party_account_currency != this.frm.doc.currency){
 				var original_paid_amount = this.frm.doc.paid_amount;
@@ -626,7 +624,6 @@ erpnext.taxes_and_totals = erpnext.payments.extend({
 					this.frm.doc.change_amount, precision("outstanding_amount"));
 			}			
 
->>>>>>> proyectos_peru
 			this.frm.doc.outstanding_amount =  flt(total_amount_to_pay - flt(paid_amount) +
 				flt(this.frm.doc.change_amount * this.frm.doc.conversion_rate), precision("outstanding_amount"));			
 		}
