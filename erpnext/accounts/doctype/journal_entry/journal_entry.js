@@ -442,6 +442,20 @@ frappe.ui.form.on("Journal Entry Account", {
 	account: function(frm, dt, dn) {
 		erpnext.journal_entry.set_account_balance(frm, dt, dn);
 	},
+
+	original_amount_debit: function(frm, cdt, cdn) {
+		var row = locals[cdt][cdn];
+		if(row.conversion_rate){
+			frappe.model.set_value(cdt, cdn, "debit_in_account_currency", row.original_amount_debit * row.conversion_rate);
+		}
+	},
+
+	original_amount_credit: function(frm, cdt, cdn) {
+		var row = locals[cdt][cdn];
+		if(row.conversion_rate){
+			frappe.model.set_value(cdt, cdn, "credit_in_account_currency", row.original_amount_credit * row.conversion_rate);
+		}
+	},
 	
 	debit_in_account_currency: function(frm, cdt, cdn) {
 		erpnext.journal_entry.set_exchange_rate(frm, cdt, cdn);

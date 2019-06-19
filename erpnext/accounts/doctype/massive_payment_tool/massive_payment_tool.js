@@ -85,7 +85,7 @@ frappe.ui.form.on('Massive Payment Tool', {
 		});
 
 		frm.set_query("detail_name", "details", function(doc, cdt, cdn) {
-			row = locals[cdt][cdn];
+			var row = locals[cdt][cdn];
 			if (frm.doc.payment_type=="Down Payment"){
 				if (row.detail_doctype=="Purchase Invoice"){
 					return{
@@ -296,7 +296,7 @@ frappe.ui.form.on('Massive Payment Tool', {
 				callback: function(r, rt){
 					if(r.message) {
 						var c = frm.add_child("detractions");
-						d = r.message;
+						var d = r.message;
 						c.detraction_type = d.detraction_type;
 						c.detraction_name = d.detraction_name;
 						c.detraction_description = d.detraction_description;
@@ -325,7 +325,7 @@ frappe.ui.form.on('Massive Payment Tool', {
 
 		if(frm.doc.total_unallocated_amount && frm.doc.purpose && frm.doc.advance_account){
 			if(frm.doc.payment_type=="Down Payment"){
-				args = {
+				var args = {
 					"doctype": "Employee Advance",
 					"employee": frm.doc.party,
 					"purpose": frm.doc.purpose,
@@ -380,7 +380,7 @@ frappe.ui.form.on('Massive Payment Tool', {
 				callback: function(r){
 					if(r.message){
 						var c = frm.add_child("reconciliations");
-						d = r.message;
+						var d = r.message;
 						c.reconciliation_doctype = d.reconciliation_doctype;
 						c.reconciliation_name = d.reconciliation_name;
 						c.party_type = d.party_type;
@@ -480,7 +480,8 @@ frappe.ui.form.on("Massive Payment Tool Detail", {
 				method: "erpnext.accounts.doctype.massive_payment_tool.massive_payment_tool.get_document_details",
 				args: {
 					detail_doctype: row.detail_doctype,
-					detail_name: row.detail_name
+					detail_name: row.detail_name,
+					conversion_rate: frm.doc.conversion_rate
 				},
 				callback: function(r, rt) {
 					if(r.message) {

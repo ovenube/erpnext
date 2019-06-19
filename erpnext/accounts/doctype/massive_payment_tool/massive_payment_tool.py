@@ -12,6 +12,7 @@ from frappe import _, throw
 class MassivePaymentTool(Document):
 	def before_submit(self):
 		try:
+			self.make_journal_entry()
 			self.process_employee_advance()
 			self.make_payment_entries()
 			self.submit_journal_entry()
@@ -21,12 +22,75 @@ class MassivePaymentTool(Document):
 
 	def before_cancel(self):
 		try:
+			self.make_journal_entry(cancel=1)
 			self.process_employee_advance(cancel=1)
 			self.make_payment_entries(cancel=1)
 			self.submit_journal_entry(cancel=1)
 			self.process_detraction(cancel=1)
 		except:
 			throw(_("Error while canceling Massive Payment Tool"))
+
+	def make_journal_entry(self, cancel=0):
+		if self.payment_type == "Petty Cash" or self.payment_type == "Down Payment":
+			document = {
+				"doctype": "Journal Entry",
+				"voucher_type": "Journal Entry",
+				"posting_date": self.posting_date,
+				"cheque_no": self.cheque_no,
+				"cheque_date": self.cheque_date,
+				"total_debit": self.total_allocated_amount,
+				"total_credit": self.total_allocated_amount,
+			}
+			document['accounts'] = []
+			for detail in self.get('details'):
+				if detail.detail_doctype == "Purchase Invoice":
+					document['accounts'].append({
+						"account": detail.account,
+						"party_type": detail.party_type,
+						"party": detail.party,
+						"debit_in_account_currency": detail.total_amount if detail.currency != "USD" else 0.0,
+						"original_amount_debit": detail.grand_total if detail.currency == "USD" else 0.0,
+						"conversion_rate": self.conversion_rate if detail.currency == "USD" else 0.0,
+						"reference_type": detail.detail_doctype,
+						"reference_name": detail.detail_name
+					})
+					if detail.currency == "USD":
+						for account in accounts_settings.exchange_difference_accounts:
+							if account.account_type == "Gain" and account.currency == "USD":
+								gain_account = account.account
+							elif account.account_type == "Loss" and account.currency == "USD":
+								loss_account = account.account
+						document['accounts'].append({
+							"account": loss_account if detail.exchange_difference > 0 else gain_account,
+							"debit_in_account_currency": detail.exchange_difference if detail.exchange_difference > 0 else 0.0,
+							"credit_in_account_currency": detail.exchange_difference if detail.exchange_difference > 0 else 0.0,
+							"cost_center": accounts_setting.exchange_difference_cost_center,
+						})
+			if self.get('references'):
+				for reference in self.get('references'):
+					employee_advance = frappe.get_doc(reference.reference_doctype, reference.reference_name)
+					document['accounts'].append({
+						"account": reference.account,
+						"party_type": "Employee",
+						"party": employee_advance.employee,
+						"credit_in_account_currency": reference.allocated_amount,
+						"reference_type": reference.reference_doctype,
+						"reference_name": reference.reference_name
+					})
+			journal_entry = frappe.get_doc(document)
+			if cancel == 0:
+				try:					
+					journal_entry.insert()
+				except:
+					throw(_("Error while validating Journal Account"))
+				else:
+					journal_entry.submit()
+			else:
+				for journal_entry_name in find_journal_entries:
+					journal_entry = frappe.get_doc("Journal Entry", journal_entry_name)
+					journal_entry.flags.ignore_links = True
+					journal_entry.cancel()
+
 
 	def make_payment_entries(self, cancel=0):
 		payment_entry_names = []
@@ -65,13 +129,13 @@ class MassivePaymentTool(Document):
 					if reference.exchange_difference and reference.currency == "USD":
 						document['deductions'] = {
 							"account": gain_account if reference.exchange_difference < 0 else loss_account,
-							"cost_center": self.cost_center,
+							"cost_center": accounts_settings.exchange_difference_cost_center,
 							"amount": reference.exchange_difference
 						}
 					documents.append(document)
 		if self.details:
 			for detail in self.get('details'):
-				if detail.detail_doctype == "Purchase Invoice" or "Expense Claim":
+				if detail.detail_doctype == "Expense Claim":
 					document = {
 						"party_type": detail.party_type,
 						"party": detail.party,
@@ -129,6 +193,16 @@ class MassivePaymentTool(Document):
 			'reference_date': self.reference_date
 		}, fields=['name'])
 		return payment_entries_names
+
+	def find_journal_entries(self):
+		journal_entries_names = frappe.get_all('Journal Entry', filters={
+			'voucher_type': 'Journal Entry',
+			'docstatus': 1,
+			'posting_date': self.posting_date,
+			'reference_no': self.reference_no,
+			'reference_date': self.reference_date
+		}, fields=['name'])
+		return journal_entries_names
 
 	def make_payment_entry(self, document):
 		if self.payment_type == "Detraction" or self.payment_type == "Purchase Invoice" or self.payment_type == "Factoring":
@@ -254,7 +328,7 @@ class MassivePaymentTool(Document):
 						else:
 							reconciliation_doc.cancel()
 
-	def submit_journal_entry(self, cancel=0):
+	def submit_journal_entry(self, cancel=0, journal_entry_name=""):
 		if self.reconciliations:
 			for reconciliation in self.get("reconciliations"):
 				if reconciliation.reconciliation_doctype == "Journal Entry":
@@ -339,12 +413,11 @@ def invoice_filter(doctype, txt, searchfield, start, page_len, filters):
 	return frappe.db.sql(invoice_items_sql)
 
 @frappe.whitelist()
-def get_document_details(detail_doctype, detail_name):
+def get_document_details(detail_doctype, detail_name, conversion_rate):
 	bill_no = account = currency = ""
-	grand_total = 0
+	grand_total = exchange_rate = conversion_rate = exchange_amount = exchange_difference = 0.0
 	det_doc = frappe.get_doc(detail_doctype, detail_name)
 	if detail_doctype == "Purchase Invoice":
-		total_amount = det_doc.base_grand_total
 		grand_total = det_doc.grand_total
 		due_date = det_doc.get("bill_date")
 		bill_no = (det_doc.get("bill_series") + "-" if det_doc.get("bill_series") else "")  + det_doc.get("bill_no")
@@ -352,6 +425,11 @@ def get_document_details(detail_doctype, detail_name):
 		party = det_doc.supplier
 		account = det_doc.credit_to
 		currency = det_doc.currency
+		exchange_rate = det_doc.conversion_rate if currency == "USD" else 0.0
+		conversion_rate = conversion_rate if currency == "USD" else 0.0
+		exchange_amount = (exchange_rate * grand_total) if currency == "USD" else 0.0
+		total_amount = (conversion_rate * grand_total) if currency == "USD" else det_doc.base_grand_total
+		exchange_difference = total_amount - exchange_amount if currency == "USD" else 0.0
 	elif detail_doctype == "Expense Claim":
 		due_date = det_doc.get("posting_date")
 		party_type = "Employee"
@@ -367,7 +445,11 @@ def get_document_details(detail_doctype, detail_name):
 		"total_amount": total_amount,
 		"grand_total": grand_total,
 		"account": account,
-		"currency": currency
+		"currency": currency,
+		"exchange_rate": exchange_rate,
+		"conversion_rate": conversion_rate,
+		"exchange_amount": exchange_amount,
+		"exchange_difference": exchange_difference
 	})
 
 @frappe.whitelist()

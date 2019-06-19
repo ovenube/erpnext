@@ -32,7 +32,17 @@ def get_data():
 					"type": "doctype",
 					"name": "Payment Term",
 					"description": _("Payment Terms based on conditions")
-				}
+				},
+				{
+					"type": "doctype",
+					"name": "Massive Payment Tool",
+					"description": _("Bank/Cash transactions against party or for internal transfer")
+				},
+				{
+					"type": "doctype",
+					"name": "Exchange Gain Loss Reconciliation",
+					"description": _("Bank/Cash transactions against party or for internal transfer")
+				},
 			]
 
 		},
@@ -458,7 +468,19 @@ def get_data():
 					"is_query_report": True,
 					"name": "Address And Contacts",
 					"doctype": "Address"
-				}
+				},
+				{
+					"type": "report",
+					"name": "Accounts Receivable SFP",
+					"doctype": "Sales Invoice",
+					"is_query_report": True
+				},
+				{
+					"type": "report",
+					"name": "Accounts Payable SFP",
+					"doctype": "Purchase Invoice",
+					"is_query_report": True
+				},
 			]
 		},
 		{
