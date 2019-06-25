@@ -3,11 +3,11 @@
 
 from __future__ import unicode_literals
 import frappe
-from erpnext.accounts.report.accounts_receivable_sfp.accounts_receivable_sfp import ReceivablePayableReport
+from erpnext.accounts.report.accounts_receivable_sfp.accounts_receivable_sfp import ReceivablePayableReportSFP
 
 def execute(filters=None):
 	args = {
 		"party_type": "Supplier",
 		"naming_by": ["Buying Settings", "supp_master_name"],
 	}
-	return ReceivablePayableReport(filters).run(args)
+	return ReceivablePayableReportSFP(filters).run(args)
