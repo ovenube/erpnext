@@ -4,7 +4,7 @@
 from __future__ import unicode_literals
 import frappe, erpnext
 from frappe import _, scrub
-from frappe.utils import getdate, nowdate, flt, cint, formatdate, cstr
+from frappe.utils import getdate, nowdate, flt, cint, formatdate, cstr, get_last_day
 
 class ReceivablePayableReportSFP(object):
 	def __init__(self, filters=None):
@@ -32,6 +32,9 @@ class ReceivablePayableReportSFP(object):
 
 		columns += [_(args.get("party_type")) + ":Link/" + args.get("party_type") + ":200"]
 
+		if party_naming_by == "Naming Series":
+			columns += [args.get("party_type") + " Name::110"]
+
 		if args.get("party_type") == 'Customer':
 			columns.append({
 				"label": _("Customer Contact"),
@@ -40,9 +43,6 @@ class ReceivablePayableReportSFP(object):
 				"options":"Contact",
 				"width": 100
 			})
-
-		if party_naming_by == "Naming Series":
-			columns += [args.get("party_type") + " Name::110"]
 
 		columns.append({
 			"label": _("Voucher Type"),
@@ -89,6 +89,30 @@ class ReceivablePayableReportSFP(object):
 				"options": "currency",
 				"width": 120
 			})
+
+		if get_last_day(self.filters.get("report_date")) == self.filters.get("report_date"):
+			columns += [
+			{
+				"fieldname": "conversion_rate",
+				"label": _("Conversion Rate"),
+				"fieldtype": "Currency",
+				"options": "currency",
+				"width": 120
+			},
+			{
+				"fieldname": "original_outstandiong_amount",
+				"label": _("Original Outstanding Amount"),
+				"fieldtype": "Currency",
+				"options": "original_currency",
+				"width": 120
+			},
+			{
+				"fieldname": "original_currency",
+				"label": _("Original Currency"),
+				"fieldtype": "Link",
+				"options": "Currency",
+				"width": 100
+			}]
 
 		columns += [_("Age (Days)") + ":Int:80"]
 
@@ -329,6 +353,13 @@ class ReceivablePayableReportSFP(object):
 			entry_date = bill_date
 		else:
 			entry_date = gle.posting_date
+		
+		if get_last_day(self.filters.get("report_date")) == self.filters.get("report_date"):
+			row += [
+					self.voucher_details.get(gle.voucher_no, {}).get("conversion_rate", ""),
+					self.voucher_details.get(gle.voucher_no, {}).get("original_outstanding_amount", ""),
+					self.voucher_details.get(gle.voucher_no, {}).get("original_currency", "")
+				]
 
 		row += get_ageing_data(cint(self.filters.range1), cint(self.filters.range2),
 			cint(self.filters.range3), cint(self.filters.range4), self.age_as_on, entry_date, outstanding_amount)
@@ -713,7 +744,7 @@ def get_voucher_details(party_type, voucher_nos, dn_details):
 
 	if party_type == "Customer":
 		for si in frappe.db.sql("""
-			select inv.name, inv.due_date, inv.po_no, GROUP_CONCAT(steam.sales_person SEPARATOR ', ') as sales_person
+			select inv.name, inv.due_date, inv.po_no, GROUP_CONCAT(steam.sales_person SEPARATOR ', ') as sales_person, ifnull(exchange_rate_monthly_closing, conversion_rate) as conversion_rate, outstanding_amount / ifnull(exchange_rate_monthly_closing, conversion_rate) as original_outstanding_amount, currency as original_currency 
 			from `tabSales Invoice` inv
 			left join `tabSales Team` steam on steam.parent = inv.name and steam.parenttype = 'Sales Invoice'
 			where inv.docstatus=1 and inv.name in (%s)
@@ -723,7 +754,7 @@ def get_voucher_details(party_type, voucher_nos, dn_details):
 				voucher_details.setdefault(si.name, si)
 
 	if party_type == "Supplier":
-		for pi in frappe.db.sql("""select name, due_date, bill_no, bill_date
+		for pi in frappe.db.sql("""select name, due_date, bill_no, bill_date, ifnull(exchange_rate_monthly_closing, conversion_rate) as conversion_rate, outstanding_amount / ifnull(exchange_rate_monthly_closing, conversion_rate) as original_outstanding_amount, currency as original_currency
 			from `tabPurchase Invoice` where docstatus = 1 and name in (%s)
 			""" %(','.join(['%s'] *len(voucher_nos))), (tuple(voucher_nos)), as_dict=1):
 			voucher_details.setdefault(pi.name, pi)
