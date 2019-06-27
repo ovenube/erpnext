@@ -298,6 +298,77 @@ class PurchaseOrder(BuyingController):
 			total_qty += item.qty
 		self.db_set("per_received", flt(received_qty/total_qty) * 100, update_modified=False)
 
+	def find_journal_entries(self):
+		journal_entry_names = frappe.get_all('Journal Entry', filters={
+			'voucher_type': "Journal Entry",
+			'posting_date': self.transaction_date,
+			'cheque_no': self.name,
+			'total_credit': self.base_total if self.currency == "USD" else self.total,
+			'total_debit': self.base_total if self.currency == "USD" else self.total,
+		}, fields=['name'])
+		return journal_entry_names
+
+	def generate_provission_entries(self, cancel=0):
+		payment_entry_names = []
+		if not self.get("items"): return
+		if cancel == 0:
+			if frappe.db.get_single_value("Buying Settings", "allow_purchase_order_provision") == 1:
+				inventory_account = provision_account = ""
+				buying_settings = frappe.get_doc("Buying Settings", "Buying Settings")
+				for account in buying_settings.provision_accounts:
+					if account.account_type == "Provision Account":
+						if account.currency == self.currency:
+							provision_account = account.account
+					else:
+						inventory_account = account.account
+				args = {
+					"doctype": "Journal Entry",
+					"posting_date": self.transaction_date,
+					"cheque_no": self.name,
+					"cheque_date": self.transaction_date,
+					"total_credit": self.base_total if self.currency == "USD" else self.total,
+					"total_debit": self.base_total if self.currency == "USD" else self.total,
+				}
+				args["accounts"] = []
+				for item in self.get("items"):
+					item_doctype = frappe.get_doc("Item", item.item_code)
+					if item_doctype.is_stock_item == 1:
+						args["accounts"].append({
+							"account": inventory_account,
+							"debit_in_account_currency": item.base_amount if self.currency == "USD" else item.amount,
+							"original_amount_debit": item.amount if self.currency == "USD" else "",
+							"conversion_rate": self.conversion_rate if self.currency == "USD" else "",
+							"cost_center": item.cost_center,
+							"party_type": "Supplier",
+							"party": self.supplier
+						})
+					else:
+						args["accounts"].append({
+							"account": item_doctype.expense_account,
+							"debit_in_account_currency": item.base_amount if self.currency == "USD" else item.amount,
+							"original_amount_debit": item.amount if self.currency == "USD" else "",
+							"conversion_rate": self.conversion_rate if self.currency == "USD" else "",
+							"cost_center": item.cost_center,
+							"party_type": "Supplier",
+							"party": self.supplier						
+						})
+				args["accounts"].append({
+					"account": provision_account,
+					"credit_in_account_currency": self.base_total if self.currency == "USD" else self.total,
+					"original_amount_credit": item.amount if self.currency == "USD" else "",
+					"conversion_rate": self.conversion_rate if self.currency == "USD" else "",
+					"party_type": "Supplier",
+					"party": self.supplier
+				})
+				if args:
+					journal_entry = frappe.get_doc(args)
+					journal_entry.insert()
+					journal_entry.submit()
+		else:
+			for journal_entry_name in self.find_journal_entries():
+				journal_entry = frappe.get_doc('Journal Entry', journal_entry_name)
+				journal_entry.cancel()
+
 def item_last_purchase_rate(name, conversion_rate, item_code, conversion_factor= 1.0):
 	"""get last purchase rate for an item"""
 
@@ -394,6 +465,18 @@ def make_purchase_invoice(source_name, target_doc=None):
 			or frappe.db.get_value("Project", obj.project, "cost_center")
 			or item.get("buying_cost_center")
 			or item_group.get("buying_cost_center"))
+	
+	def update_item_account(doc):
+		if frappe.db.get_single_value("Buying Settings", "allow_purchase_order_provision") == 1:
+			provision_account = ""
+			buying_settings = frappe.get_doc("Buying Settings", "Buying Settings")
+			for account in buying_settings.provision_accounts:
+				if account.account_type == "Provision Account":
+					if account.currency == doc.currency:
+						provision_account = account.account
+			for item in doc.items:
+				item.expense_account = provision_account
+		return doc
 
 	fields = {
 		"Purchase Order": {
@@ -428,6 +511,8 @@ def make_purchase_invoice(source_name, target_doc=None):
 		}
 
 	doc = get_mapped_doc("Purchase Order", source_name,	fields, target_doc, postprocess)
+
+	doc = update_item_account(doc)
 
 	return doc
 

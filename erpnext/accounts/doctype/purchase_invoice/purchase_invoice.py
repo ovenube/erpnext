@@ -331,6 +331,7 @@ class PurchaseInvoice(BuyingController):
 		self.check_prev_docstatus()
 		self.update_status_updater_args()
 		self.update_prevdoc_status()
+		self.generate_provission_entries()
 
 		frappe.get_doc('Authorization Control').validate_approving_authority(self.doctype,
 			self.company, self.base_grand_total)
@@ -850,6 +851,70 @@ class PurchaseInvoice(BuyingController):
 						"base_amount": item.get("base_amount"),
 						"amount": item.get("amount")
 					})
+
+	def generate_provission_entries(self):
+		if not self.get("items"): return
+		purchase_order = False
+		for item in self.get("items"):
+			if item.purchase_order:
+				purchase_order = True
+		if frappe.db.get_single_value("Buying Settings", "allow_purchase_order_provision") == 1 and purchase_order:
+			inventory_account = provision_account = ""
+			buying_settings = frappe.get_doc("Buying Settings", "Buying Settings")
+			for account in buying_settings.provision_accounts:
+				if account.account_type == "Provision Account":
+					if account.currency == self.currency:
+						inventory_account = account.account
+				else:
+					provision_account = account.account
+			args = {
+				"doctype": "Journal Entry",
+				"posting_date": self.posting_date,
+				"cheque_no": self.name,
+				"cheque_date": self.posting_date,
+				"total_credit": self.base_total if self.currency == "USD" else self.total,
+				"total_debit": self.base_total if self.currency == "USD" else self.total,
+			}
+			args["accounts"] = []
+			for item in self.get("items"):
+				item_doctype = frappe.get_doc("Item", item.item_code)
+				if item_doctype.is_stock_item == 1:
+					args["accounts"].append({
+						"account": inventory_account,
+						"credit_in_account_currency": item.base_amount if self.currency == "USD" else item.amount,
+						"original_amount_credit": item.amount if self.currency == "USD" else "",
+						"conversion_rate": self.conversion_rate if self.currency == "USD" else "",
+						"cost_center": item.cost_center,
+						"party_type": "Supplier",
+						"party": self.supplier
+					})
+				else:
+					args["accounts"].append({
+						"account": item_doctype.expense_account,
+						"credit_in_account_currency": item.base_amount if self.currency == "USD" else item.amount,
+						"original_amount_credit": item.amount if self.currency == "USD" else "",
+						"conversion_rate": self.conversion_rate if self.currency == "USD" else "",
+						"cost_center": item.cost_center,
+						"party_type": "Supplier",
+						"party": self.supplier						
+					})
+			args["accounts"].append({
+				"account": provision_account,
+				"debit_in_account_currency": self.base_total if self.currency == "USD" else self.total,
+				"original_amount_debit": item.amount if self.currency == "USD" else "",
+				"conversion_rate": self.conversion_rate if self.currency == "USD" else "",
+				"party_type": "Supplier",
+				"party": self.supplier
+			})
+			if args:
+				journal_entry = frappe.get_doc(args)
+				journal_entry.insert()
+				journal_entry.submit()
+
+@frappe.whitelist()
+def make_debit_note(source_name, target_doc=None):
+	from erpnext.controllers.sales_and_purchase_return import make_return_doc
+	return make_return_doc("Purchase Invoice", source_name, target_doc)
 
 	def block_invoice(self, hold_comment=None):
 		self.db_set('on_hold', 1)

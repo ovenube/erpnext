@@ -60,6 +60,7 @@ class PaymentEntry(AccountsController):
 		self.validate_duplicate_entry()
 		self.validate_allocated_amount()
 		self.ensure_supplier_is_not_blocked()
+		self.make_detail_payment()
 
 	def on_submit(self):
 		self.setup_party_account_field()
@@ -69,6 +70,7 @@ class PaymentEntry(AccountsController):
 		self.update_outstanding_amounts()
 		self.update_advance_paid()
 		self.update_expense_claim()
+		self.update_original_outstanding_amount()
 
 
 	def on_cancel(self):
@@ -78,6 +80,8 @@ class PaymentEntry(AccountsController):
 		self.update_advance_paid()
 		self.update_expense_claim()
 		self.delink_advance_entry_references()
+		self.make_detail_payment(make=0)
+		self.update_original_outstanding_amount(cancel=1)
 
 	def update_outstanding_amounts(self):
 		self.set_missing_ref_details(force=True)
@@ -273,6 +277,14 @@ class PaymentEntry(AccountsController):
 					if not valid:
 						frappe.throw(_("Against Journal Entry {0} does not have any unmatched {1} entry")
 							.format(d.reference_name, dr_or_cr))
+
+	def make_detail_payment(self, make=1):
+		if self.details:
+			for d in self.get("details"):
+				if d.pay == 1:
+					frappe.db.sql(
+						"""UPDATE `tabJournal Entry Account` SET is_paid = {0} WHERE name='{1}'""".format(make, d.account))
+					frappe.db.commit()
 
 	def set_amounts(self):
 		self.set_amounts_in_company_currency()
@@ -533,6 +545,47 @@ class PaymentEntry(AccountsController):
 			"cost_center": frappe.get_cached_value('Company',  self.company,  "cost_center"),
 			"amount": self.total_allocated_amount * (tax_details['tax']['rate'] / 100)
 		}
+	def update_original_outstanding_amount(self, cancel=0):
+		if self.references:
+			for d in self.get("references"):
+				if d.reference_doctype in ("Sales Invoice", "Purchase Invoice"):
+					if d.currency == "USD":
+						invoice = frappe.get_doc(d.reference_doctype, d.reference_name)
+						invoice.original_outstanding_amount = invoice.original_outstanding_amount + (1 if cancel==1 else -1) * d.original_allocated_amount
+						invoice.save()
+
+
+@frappe.whitelist()
+def search_journal_entry_document(references):
+	if isinstance(references, basestring):
+		references = json.loads(references)
+	journal_entry = []
+	for reference in references:
+		if reference['reference_doctype'] == "Journal Entry":
+			journal_entry.append(reference['reference_name'])
+	return journal_entry
+
+@frappe.whitelist()
+def get_payment_details(args):
+	if isinstance(args, basestring):
+		args = json.loads(args)
+
+	journal_entry_documents = search_journal_entry_document(args.get("references"))
+	payment_details = []
+	for journal_entry_document in journal_entry_documents:
+		details = frappe.get_all("Journal Entry Account", filters={
+			"parent": journal_entry_document,
+			"parenttype": "Journal Entry",
+			"party_type": args.get("party_type"),
+			"party": args.get("party"),
+			"account": args.get("paid_to"),
+			"is_paid": 0
+		},
+		fields=[
+			'name', 'party_type', 'party', 'tdx_c_refsfp', 'parent', 'parenttype', 'credit', 'tdx_c_montodolares'
+		])
+		payment_details = payment_details + details
+	return payment_details
 
 @frappe.whitelist()
 def get_outstanding_reference_documents(args):
@@ -577,9 +630,13 @@ def get_outstanding_reference_documents(args):
 
 	for d in outstanding_invoices:
 		d["exchange_rate"] = 1
+		if d.voucher_type in ("Sales Invoice", "Purchase Invoice", "Expense Claim"):
+			d["grand_total"] = frappe.db.get_value(d.voucher_type, d.voucher_no, "grand_total")
+			d["conversion_rate"] = frappe.db.get_value(d.voucher_type, d.voucher_no, "conversion_rate")
+			d["currency"] = frappe.db.get_value(d.voucher_type, d.voucher_no, "currency")
 		if party_account_currency != company_currency:
 			if d.voucher_type in ("Sales Invoice", "Purchase Invoice", "Expense Claim"):
-				d["exchange_rate"] = frappe.db.get_value(d.voucher_type, d.voucher_no, "conversion_rate")
+				d["exchange_rate"] = frappe.db.get_value(d.voucher_type, d.voucher_no, "conversion_rate")				
 			elif d.voucher_type == "Journal Entry":
 				d["exchange_rate"] = get_exchange_rate(
 					party_account_currency,	company_currency, d.posting_date
@@ -753,7 +810,7 @@ def get_outstanding_on_journal_entry(name):
 
 @frappe.whitelist()
 def get_reference_details(reference_doctype, reference_name, party_account_currency):
-	total_amount = outstanding_amount = exchange_rate = bill_no = None
+	total_amount = outstanding_amount = exchange_rate = original_amount = conversion_rate = currency = None
 	ref_doc = frappe.get_doc(reference_doctype, reference_name)
 	company_currency = ref_doc.get("company_currency") or erpnext.get_company_currency(ref_doc.company)
 
@@ -788,6 +845,9 @@ def get_reference_details(reference_doctype, reference_name, party_account_curre
 		if reference_doctype in ("Sales Invoice", "Purchase Invoice"):
 			outstanding_amount = ref_doc.get("outstanding_amount")
 			bill_no = ref_doc.get("bill_no")
+			original_amount = ref_doc.get("grand_total")
+			conversion_rate = ref_doc.get("exchange_rate_monthly_closing") if ref_doc.get("exchange_rate_monthly_closing") else ref_doc.get("conversion_rate")
+			currency = ref_doc.get("currency")
 		elif reference_doctype == "Expense Claim":
 			outstanding_amount = flt(ref_doc.get("total_sanctioned_amount")) \
 				- flt(ref_doc.get("total_amount+reimbursed")) - flt(ref_doc.get("total_advance_amount"))
@@ -805,7 +865,10 @@ def get_reference_details(reference_doctype, reference_name, party_account_curre
 		"total_amount": total_amount,
 		"outstanding_amount": outstanding_amount,
 		"exchange_rate": exchange_rate,
-		"bill_no": bill_no
+		"bill_no": bill_no,
+		"original_amount": original_amount,
+		"conversion_rate": conversion_rate,
+		"currency": currency
 	})
 
 
