@@ -842,6 +842,41 @@ class PurchaseInvoice(BuyingController):
 	def on_recurring(self, reference_doc, auto_repeat_doc):
 		self.due_date = None
 
+	def block_invoice(self, hold_comment=None):
+		self.db_set('on_hold', 1)
+		self.db_set('hold_comment', cstr(hold_comment))
+
+	def unblock_invoice(self):
+		self.db_set('on_hold', 0)
+		self.db_set('release_date', None)
+
+	def set_tax_withholding(self):
+		if not self.apply_tds:
+			return
+
+		tax_withholding_details = get_party_tax_withholding_details(self)
+
+		if not tax_withholding_details:
+			return
+
+		accounts = []
+		for d in self.taxes:
+			if d.account_head == tax_withholding_details.get("account_head"):
+				d.update(tax_withholding_details)
+			accounts.append(d.account_head)
+
+		if not accounts or tax_withholding_details.get("account_head") not in accounts:
+			self.append("taxes", tax_withholding_details)
+
+		to_remove = [d for d in self.taxes
+			if not d.tax_amount and d.account_head == tax_withholding_details.get("account_head")]
+
+		for d in to_remove:
+			self.remove(d)
+
+		# calculate totals again after applying TDS
+		self.calculate_taxes_and_totals()
+	
 	def get_inafected_item(self, item):
 		tax_rate = json.loads(item.get("item_tax_rate"))
 		if tax_rate:
@@ -910,46 +945,6 @@ class PurchaseInvoice(BuyingController):
 				journal_entry = frappe.get_doc(args)
 				journal_entry.insert()
 				journal_entry.submit()
-
-@frappe.whitelist()
-def make_debit_note(source_name, target_doc=None):
-	from erpnext.controllers.sales_and_purchase_return import make_return_doc
-	return make_return_doc("Purchase Invoice", source_name, target_doc)
-
-	def block_invoice(self, hold_comment=None):
-		self.db_set('on_hold', 1)
-		self.db_set('hold_comment', cstr(hold_comment))
-
-	def unblock_invoice(self):
-		self.db_set('on_hold', 0)
-		self.db_set('release_date', None)
-
-	def set_tax_withholding(self):
-		if not self.apply_tds:
-			return
-
-		tax_withholding_details = get_party_tax_withholding_details(self)
-
-		if not tax_withholding_details:
-			return
-
-		accounts = []
-		for d in self.taxes:
-			if d.account_head == tax_withholding_details.get("account_head"):
-				d.update(tax_withholding_details)
-			accounts.append(d.account_head)
-
-		if not accounts or tax_withholding_details.get("account_head") not in accounts:
-			self.append("taxes", tax_withholding_details)
-
-		to_remove = [d for d in self.taxes
-			if not d.tax_amount and d.account_head == tax_withholding_details.get("account_head")]
-
-		for d in to_remove:
-			self.remove(d)
-
-		# calculate totals again after applying TDS
-		self.calculate_taxes_and_totals()
 
 @frappe.whitelist()
 def make_debit_note(source_name, target_doc=None):
