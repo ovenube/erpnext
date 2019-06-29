@@ -5,6 +5,7 @@ from __future__ import unicode_literals
 import frappe, erpnext
 from frappe import _, scrub
 from frappe.utils import getdate, nowdate, flt, cint, formatdate, cstr, get_last_day
+import datetime
 
 class ReceivablePayableReportSFP(object):
 	def __init__(self, filters=None):
@@ -346,20 +347,28 @@ class ReceivablePayableReportSFP(object):
 			paid_amt = invoiced_amount - outstanding_amount - credit_note_amount
 		row += [invoiced_amount, paid_amt, credit_note_amount, outstanding_amount]
 
+		if get_last_day(self.filters.get("report_date")) == self.filters.get("report_date"):
+			original_outstanding_amount = 0
+			conversion_rate = 1
+			report_date = datetime.datetime.strftime(self.filters.get("report_date"), '%Y-%m-%d')
+			exchange_rate = self.get_exchange_rate(self.voucher_details.get(gle.voucher_no, {}).get("original_currency", "PEN"), "PEN", report_date)				
+			if gle.voucher_type == "Purchase Invoice":
+				conversion_rate = exchange_rate.conversion_rate_sales
+			elif gle.voucher_type == "Sales Invoice":
+				conversion_rate = exchange_rate.conversion_rate_purchase
+			row += [
+					conversion_rate,
+					outstanding_amount / conversion_rate,
+					self.voucher_details.get(gle.voucher_no, {}).get("original_currency", "PEN")
+				]
+
 		# ageing data
 		if self.filters.ageing_based_on == "Due Date":
 			entry_date = due_date
 		elif self.filters.ageing_based_on == "Supplier Invoice Date":
 			entry_date = bill_date
 		else:
-			entry_date = gle.posting_date
-		
-		if get_last_day(self.filters.get("report_date")) == self.filters.get("report_date"):
-			row += [
-					self.voucher_details.get(gle.voucher_no, {}).get("conversion_rate", ""),
-					self.voucher_details.get(gle.voucher_no, {}).get("original_outstanding_amount", ""),
-					self.voucher_details.get(gle.voucher_no, {}).get("original_currency", "")
-				]
+			entry_date = gle.posting_date		
 
 		row += get_ageing_data(cint(self.filters.range1), cint(self.filters.range2),
 			cint(self.filters.range3), cint(self.filters.range4), self.age_as_on, entry_date, outstanding_amount)
@@ -503,7 +512,7 @@ class ReceivablePayableReportSFP(object):
 			from
 				`tabGL Entry`
 			where
-				docstatus < 2 and party_type=%s and (party is not null and party != '' and voucher_type != 'Journal Entry') {1}
+				docstatus < 2 and party_type=%s and (party is not null and party != '') {1}
 				group by voucher_type, voucher_no, against_voucher_type, against_voucher, party
 				order by posting_date, party"""
 			.format(select_fields, conditions), values, as_dict=True)
@@ -636,6 +645,29 @@ class ReceivablePayableReportSFP(object):
 			"type": 'percentage'
 		}
 
+	def get_exchange_rate(self, from_currency, to_currency, transaction_date=None):
+		if not (from_currency and to_currency):
+			# manqala 19/09/2016: Should this be an empty return or should it throw and exception?
+			return
+
+		if from_currency == to_currency:
+			return frappe._dict({
+				"conversion_rate_sales": 1,
+				"conversion_rate_purchase": 1
+			})
+
+		if not transaction_date:
+			transaction_date = nowdate()
+
+		try:
+			currency_exchange = frappe.get_doc("Currency Exchange", transaction_date + "-" + from_currency + "-" + to_currency)
+			return frappe._dict({
+				"conversion_rate_sales": currency_exchange.exchange_rate,
+				"conversion_rate_purchase": currency_exchange.tdx_c_compra
+			})
+		except:
+			frappe.throw(_("Currency Exchange don't exist"))
+
 def execute(filters=None):
 	args = {
 		"party_type": "Customer",
@@ -744,7 +776,7 @@ def get_voucher_details(party_type, voucher_nos, dn_details):
 
 	if party_type == "Customer":
 		for si in frappe.db.sql("""
-			select inv.name, inv.due_date, inv.po_no, GROUP_CONCAT(steam.sales_person SEPARATOR ', ') as sales_person, ifnull(exchange_rate_monthly_closing, conversion_rate) as conversion_rate, outstanding_amount / ifnull(exchange_rate_monthly_closing, conversion_rate) as original_outstanding_amount, currency as original_currency 
+			select inv.name, inv.due_date, inv.po_no, GROUP_CONCAT(steam.sales_person SEPARATOR ', ') as sales_person, ifnull(exchange_rate_monthly_closing, conversion_rate) as conversion_rate, currency as original_currency 
 			from `tabSales Invoice` inv
 			left join `tabSales Team` steam on steam.parent = inv.name and steam.parenttype = 'Sales Invoice'
 			where inv.docstatus=1 and inv.name in (%s)
@@ -754,7 +786,7 @@ def get_voucher_details(party_type, voucher_nos, dn_details):
 				voucher_details.setdefault(si.name, si)
 
 	if party_type == "Supplier":
-		for pi in frappe.db.sql("""select name, due_date, bill_no, bill_date, ifnull(exchange_rate_monthly_closing, conversion_rate) as conversion_rate, outstanding_amount / ifnull(exchange_rate_monthly_closing, conversion_rate) as original_outstanding_amount, currency as original_currency
+		for pi in frappe.db.sql("""select name, due_date, bill_no, bill_date, ifnull(exchange_rate_monthly_closing, conversion_rate) as conversion_rate, currency as original_currency
 			from `tabPurchase Invoice` where docstatus = 1 and name in (%s)
 			""" %(','.join(['%s'] *len(voucher_nos))), (tuple(voucher_nos)), as_dict=1):
 			voucher_details.setdefault(pi.name, pi)
