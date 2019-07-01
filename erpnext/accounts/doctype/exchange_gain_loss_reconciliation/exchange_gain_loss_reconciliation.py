@@ -7,7 +7,7 @@ import frappe
 from frappe import _
 from frappe.model.document import Document
 from ple.ple_peru.utils import Utils
-from frappe.utils import flt, add_days
+from frappe.utils import flt, add_days, nowdate
 import datetime
 
 class ExchangeGainLossReconciliation(Utils):
@@ -94,7 +94,10 @@ class ExchangeGainLossReconciliation(Utils):
 			return
 
 		if from_currency == to_currency:
-			return 1
+			return frappe._dict({
+				"conversion_rate_sales": 1,
+				"conversion_rate_purchase": 1
+			})
 
 		if not transaction_date:
 			transaction_date = nowdate()

@@ -10,14 +10,26 @@ from erpnext.controllers.accounts_controller import AccountsController
 from frappe import _, throw
 
 class MassivePaymentTool(Document):
+	def __init__(self, *args, **kwargs):
+		gain_account = loss_account = ""
+		accounts_settings = frappe.get_doc("Accounts Settings", "Accounts Settings")
+		for account in accounts_settings.exchange_difference_accounts:
+			if account.account_type == "Gain" and account.currency == "USD":
+				self.gain_account = account.account
+			elif account.account_type == "Loss" and account.currency == "USD":
+				self.loss_account = account.account
+		self.exchange_difference_cost_center = accounts_settings.exchange_difference_cost_center
+		return super(MassivePaymentTool, self).__init__(*args, **kwargs)
+
 	def before_submit(self):
 		try:
 			self.make_journal_entry()
 			self.process_employee_advance()
 			self.make_payment_entries()
-			self.submit_journal_entry()
 			self.process_detraction()
+			self.submit_journal_entry()
 		except:
+			self.make_journal_entry(cancel=1)
 			throw(_("Error while validating Massive Payment Tool"))
 
 	def before_cancel(self):
@@ -25,12 +37,13 @@ class MassivePaymentTool(Document):
 			self.make_journal_entry(cancel=1)
 			self.process_employee_advance(cancel=1)
 			self.make_payment_entries(cancel=1)
-			self.submit_journal_entry(cancel=1)
 			self.process_detraction(cancel=1)
+			self.submit_journal_entry(cancel=1)			
 		except:
 			throw(_("Error while canceling Massive Payment Tool"))
 
 	def make_journal_entry(self, cancel=0):
+		allocated_amount = 0.0
 		if self.payment_type == "Petty Cash" or self.payment_type == "Down Payment":
 			document = {
 				"doctype": "Journal Entry",
@@ -44,6 +57,7 @@ class MassivePaymentTool(Document):
 			document['accounts'] = []
 			for detail in self.get('details'):
 				if detail.detail_doctype == "Purchase Invoice":
+					allocated_amount += detail.total_amount if detail.currency != "USD" else 0.0
 					document['accounts'].append({
 						"account": detail.account,
 						"party_type": detail.party_type,
@@ -55,16 +69,11 @@ class MassivePaymentTool(Document):
 						"reference_name": detail.detail_name
 					})
 					if detail.currency == "USD":
-						for account in accounts_settings.exchange_difference_accounts:
-							if account.account_type == "Gain" and account.currency == "USD":
-								gain_account = account.account
-							elif account.account_type == "Loss" and account.currency == "USD":
-								loss_account = account.account
 						document['accounts'].append({
-							"account": loss_account if detail.exchange_difference > 0 else gain_account,
+							"account": self.loss_account if detail.exchange_difference > 0 else self.gain_account,
 							"debit_in_account_currency": detail.exchange_difference if detail.exchange_difference > 0 else 0.0,
 							"credit_in_account_currency": detail.exchange_difference if detail.exchange_difference > 0 else 0.0,
-							"cost_center": accounts_setting.exchange_difference_cost_center,
+							"cost_center": self.exchange_difference_cost_center,
 						})
 			if self.get('references'):
 				for reference in self.get('references'):
@@ -73,7 +82,7 @@ class MassivePaymentTool(Document):
 						"account": reference.account,
 						"party_type": "Employee",
 						"party": employee_advance.employee,
-						"credit_in_account_currency": reference.allocated_amount,
+						"credit_in_account_currency": allocated_amount,
 						"reference_type": reference.reference_doctype,
 						"reference_name": reference.reference_name
 					})
@@ -86,7 +95,7 @@ class MassivePaymentTool(Document):
 				else:
 					journal_entry.submit()
 			else:
-				for journal_entry_name in find_journal_entries:
+				for journal_entry_name in self.find_journal_entries(allocated_amount):
 					journal_entry = frappe.get_doc("Journal Entry", journal_entry_name)
 					journal_entry.flags.ignore_links = True
 					journal_entry.cancel()
@@ -98,13 +107,6 @@ class MassivePaymentTool(Document):
 		if self.references:
 			for reference in self.get('references'):
 				if reference.reference_doctype == "Purchase Invoice" or reference.reference_doctype == "Factoring":
-					gain_account = loss_account = ""
-					accounts_settings = frappe.get_doc("Accounts Settings", "Accounts Settings")
-					for account in accounts_settings.exchange_difference_accounts:
-						if account.account_type == "Gain" and account.currency == "USD":
-							gain_account = account.account
-						elif account.account_type == "Loss" and account.currency == "USD":
-							loss_account = account.account
 					purchase_invoice = frappe.get_doc(reference.reference_doctype, reference.reference_name)
 					document = {
 						"party_type": "Supplier",
@@ -128,8 +130,8 @@ class MassivePaymentTool(Document):
 					}
 					if reference.exchange_difference and reference.currency == "USD":
 						document['deductions'] = {
-							"account": gain_account if reference.exchange_difference < 0 else loss_account,
-							"cost_center": accounts_settings.exchange_difference_cost_center,
+							"account": self.gain_account if reference.exchange_difference < 0 else self.loss_account,
+							"cost_center": self.exchange_difference_cost_center,
 							"amount": reference.exchange_difference
 						}
 					documents.append(document)
@@ -194,13 +196,13 @@ class MassivePaymentTool(Document):
 		}, fields=['name'])
 		return payment_entries_names
 
-	def find_journal_entries(self):
+	def find_journal_entries(self, allocated_amount):
 		journal_entries_names = frappe.get_all('Journal Entry', filters={
 			'voucher_type': 'Journal Entry',
 			'docstatus': 1,
 			'posting_date': self.posting_date,
-			'reference_no': self.reference_no,
-			'reference_date': self.reference_date
+			'total_debit': allocated_amount,
+			'total_credit': allocated_amount
 		}, fields=['name'])
 		return journal_entries_names
 
