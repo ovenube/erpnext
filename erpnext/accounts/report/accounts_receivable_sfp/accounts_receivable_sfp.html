@@ -210,6 +210,9 @@
 							{%= format_currency(data[i]["original_outstanding_amount"], data[i]["original_currency"]) %}</td>
 						<td style="text-align: right">
 							{%= data[i]["original_currency"] %}</td>
+
+						<td style="text-align: right">
+							{%= data[i]["credit_or_debit_to"] %}</td>
 						
 	
 						{% if(filters.show_pdc_in_print) { %}

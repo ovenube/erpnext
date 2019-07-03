@@ -115,6 +115,14 @@ class ReceivablePayableReportSFP(object):
 				"width": 100
 			}]
 
+		columns.append({
+			"label": "Credit/Debit to",
+			"fieldname": "credit_or_debit_to",
+			"fieldtype": "Link",
+			"options": "Account",
+			"width": 120
+		})
+
 		columns += [_("Age (Days)") + ":Int:80"]
 
 		self.ageing_col_idx_start = len(columns)
@@ -361,6 +369,9 @@ class ReceivablePayableReportSFP(object):
 					outstanding_amount / conversion_rate,
 					self.voucher_details.get(gle.voucher_no, {}).get("original_currency", "PEN")
 				]
+		row += [
+			self.voucher_details.get(gle.voucher_no, {}).get("credit_or_debit_to", "")
+		]
 
 		# ageing data
 		if self.filters.ageing_based_on == "Due Date":
@@ -776,7 +787,7 @@ def get_voucher_details(party_type, voucher_nos, dn_details):
 
 	if party_type == "Customer":
 		for si in frappe.db.sql("""
-			select inv.name, inv.due_date, inv.po_no, GROUP_CONCAT(steam.sales_person SEPARATOR ', ') as sales_person, ifnull(exchange_rate_monthly_closing, conversion_rate) as conversion_rate, currency as original_currency 
+			select inv.name, inv.due_date, inv.po_no, GROUP_CONCAT(steam.sales_person SEPARATOR ', ') as sales_person, ifnull(exchange_rate_monthly_closing, conversion_rate) as conversion_rate, currency as original_currency, debit_to as credit_or_debit_to
 			from `tabSales Invoice` inv
 			left join `tabSales Team` steam on steam.parent = inv.name and steam.parenttype = 'Sales Invoice'
 			where inv.docstatus=1 and inv.name in (%s)
@@ -786,7 +797,7 @@ def get_voucher_details(party_type, voucher_nos, dn_details):
 				voucher_details.setdefault(si.name, si)
 
 	if party_type == "Supplier":
-		for pi in frappe.db.sql("""select name, due_date, bill_no, bill_date, ifnull(exchange_rate_monthly_closing, conversion_rate) as conversion_rate, currency as original_currency
+		for pi in frappe.db.sql("""select name, due_date, bill_no, bill_date, ifnull(exchange_rate_monthly_closing, conversion_rate) as conversion_rate, currency as original_currency, credit_to as credit_or_debit_to
 			from `tabPurchase Invoice` where docstatus = 1 and name in (%s)
 			""" %(','.join(['%s'] *len(voucher_nos))), (tuple(voucher_nos)), as_dict=1):
 			voucher_details.setdefault(pi.name, pi)
