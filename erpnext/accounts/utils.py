@@ -867,3 +867,13 @@ def get_allow_cost_center_in_entry_of_bs_account():
 	def generator():
 		return cint(frappe.db.get_value('Accounts Settings', None, 'allow_cost_center_in_entry_of_bs_account'))
 	return frappe.local_cache("get_allow_cost_center_in_entry_of_bs_account", (), generator, regenerate_if_none=True)
+
+def find_journal_entries(transaction_date, name, base_total, currency, total):
+	journal_entry_names = frappe.get_all('Journal Entry', filters={
+		'voucher_type': "Journal Entry",
+		'posting_date': transaction_date,
+		'cheque_no': name,
+		'total_credit': base_total if currency == "USD" else total,
+		'total_debit': base_total if currency == "USD" else total,
+	}, fields=['name'])
+	return journal_entry_names

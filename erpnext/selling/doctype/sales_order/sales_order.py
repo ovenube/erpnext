@@ -19,6 +19,7 @@ from erpnext.selling.doctype.customer.customer import check_credit_limit
 from erpnext.stock.doctype.item.item import get_item_defaults
 from erpnext.setup.doctype.item_group.item_group import get_item_group_defaults
 from erpnext.manufacturing.doctype.production_plan.production_plan import get_items_for_material_requests
+from erpnext.accounts.utils import find_journal_entries
 
 form_grid_templates = {
 	"items": "templates/form_grid/item_grid.html"
@@ -182,6 +183,8 @@ class SalesOrder(SellingController):
 
 		self.update_blanket_order()
 
+		self.generate_provission_entries()
+
 	def on_cancel(self):
 		# Cannot cancel closed SO
 		if self.status == 'Closed':
@@ -195,6 +198,8 @@ class SalesOrder(SellingController):
 		frappe.db.set(self, 'status', 'Cancelled')
 
 		self.update_blanket_order()
+
+		self.generate_provission_entries(cancel=1)
 
 	def update_project(self):
 		if frappe.db.get_single_value('Selling Settings', 'sales_update_frequency') != "Each Transaction":
@@ -454,6 +459,67 @@ class SalesOrder(SellingController):
 				frappe.throw(_("Cannot ensure delivery by Serial No as \
 				Item {0} is added with and without Ensure Delivery by \
 				Serial No.").format(item.item_code))
+	
+	def generate_provission_entries(self, cancel=0):
+		payment_entry_names = []
+		if not self.get("items"): return
+		if cancel == 0:
+			if frappe.db.get_single_value("Buying Settings", "allow_purchase_order_provision") == 1:
+				inventory_account = provision_account = ""
+				buying_settings = frappe.get_doc("Buying Settings", "Buying Settings")
+				for account in buying_settings.provision_accounts:
+					if account.account_type == "Provision Account":
+						if account.currency == self.currency:
+							provision_account = account.account
+					else:
+						inventory_account = account.account
+				args = {
+					"doctype": "Journal Entry",
+					"posting_date": self.transaction_date,
+					"cheque_no": self.name,
+					"cheque_date": self.transaction_date,
+					"total_credit": self.base_total if self.currency == "USD" else self.total,
+					"total_debit": self.base_total if self.currency == "USD" else self.total,
+				}
+				args["accounts"] = []
+				for item in self.get("items"):
+					item_doctype = frappe.get_doc("Item", item.item_code)
+					if item_doctype.is_stock_item == 1:
+						args["accounts"].append({
+							"account": inventory_account,
+							"credit_in_account_currency": item.base_amount if self.currency == "USD" else item.amount,
+							"original_amount_credit": item.amount if self.currency == "USD" else "",
+							"conversion_rate": self.conversion_rate if self.currency == "USD" else "",
+							"cost_center": item.cost_center,
+							"party_type": "Supplier",
+							"party": self.supplier
+						})
+					else:
+						args["accounts"].append({
+							"account": item_doctype.expense_account,
+							"credit_in_account_currency": item.base_amount if self.currency == "USD" else item.amount,
+							"original_amount_credit": item.amount if self.currency == "USD" else "",
+							"conversion_rate": self.conversion_rate if self.currency == "USD" else "",
+							"cost_center": item.cost_center,
+							"party_type": "Supplier",
+							"party": self.supplier						
+						})
+				args["accounts"].append({
+					"account": provision_account,
+					"debit_in_account_currency": self.base_total if self.currency == "USD" else self.total,
+					"original_amount_debit": item.amount if self.currency == "USD" else "",
+					"conversion_rate": self.conversion_rate if self.currency == "USD" else "",
+					"party_type": "Supplier",
+					"party": self.supplier
+				})
+				if args:
+					journal_entry = frappe.get_doc(args)
+					journal_entry.insert()
+					journal_entry.submit()
+		else:
+			for journal_entry_name in find_journal_entries(self.transaction_date, self.name, self.base_total, self.currency, self.total):
+				journal_entry = frappe.get_doc('Journal Entry', journal_entry_name)
+				journal_entry.cancel()
 
 def get_list_context(context=None):
 	from erpnext.controllers.website_list_for_contact import get_list_context

@@ -14,6 +14,7 @@ from frappe.desk.notifications import clear_doctype_notifications
 from erpnext.buying.utils import validate_for_items, check_for_closed_status
 from erpnext.stock.utils import get_bin
 from erpnext.accounts.party import get_party_account_currency
+from erpnext.accounts.utils import find_journal_entries
 from six import string_types
 from erpnext.stock.doctype.item.item import get_item_defaults
 from erpnext.setup.doctype.item_group.item_group import get_item_group_defaults
@@ -218,6 +219,7 @@ class PurchaseOrder(BuyingController):
 			self.company, self.base_grand_total)
 
 		self.update_blanket_order()
+		self.generate_provission_entries()
 
 
 	def on_cancel(self):
@@ -243,6 +245,8 @@ class PurchaseOrder(BuyingController):
 		self.update_ordered_qty()
 
 		self.update_blanket_order()
+
+		self.generate_provission_entries(cancel=1)
 
 
 	def on_update(self):
@@ -297,16 +301,6 @@ class PurchaseOrder(BuyingController):
 			received_qty += item.received_qty
 			total_qty += item.qty
 		self.db_set("per_received", flt(received_qty/total_qty) * 100, update_modified=False)
-
-	def find_journal_entries(self):
-		journal_entry_names = frappe.get_all('Journal Entry', filters={
-			'voucher_type': "Journal Entry",
-			'posting_date': self.transaction_date,
-			'cheque_no': self.name,
-			'total_credit': self.base_total if self.currency == "USD" else self.total,
-			'total_debit': self.base_total if self.currency == "USD" else self.total,
-		}, fields=['name'])
-		return journal_entry_names
 
 	def generate_provission_entries(self, cancel=0):
 		payment_entry_names = []
@@ -365,7 +359,7 @@ class PurchaseOrder(BuyingController):
 					journal_entry.insert()
 					journal_entry.submit()
 		else:
-			for journal_entry_name in self.find_journal_entries():
+			for journal_entry_name in find_journal_entries(self.transaction_date, self.name, self.base_total, self.currency, self.total):
 				journal_entry = frappe.get_doc('Journal Entry', journal_entry_name)
 				journal_entry.cancel()
 
