@@ -464,9 +464,9 @@ class SalesOrder(SellingController):
 		payment_entry_names = []
 		if not self.get("items"): return
 		if cancel == 0:
-			if frappe.db.get_single_value("Buying Settings", "allow_purchase_order_provision") == 1:
+			if frappe.db.get_single_value("Selling Settings", "allow_sales_order_provision") == 1:
 				inventory_account = provision_account = ""
-				buying_settings = frappe.get_doc("Buying Settings", "Buying Settings")
+				buying_settings = frappe.get_doc("Selling Settings", "Selling Settings")
 				for account in buying_settings.provision_accounts:
 					if account.account_type == "Provision Account":
 						if account.currency == self.currency:

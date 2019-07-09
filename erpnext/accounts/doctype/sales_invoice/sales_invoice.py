@@ -1174,14 +1174,14 @@ class SalesInvoice(SellingController):
 
 	def generate_provission_entries(self, cancel=0):
 		if not self.get("items"): return
-		purchase_order = False
+		sales_order = False
 		for item in self.get("items"):
-			if item.purchase_order:
-				purchase_order = True
-		if frappe.db.get_single_value("Buying Settings", "allow_purchase_order_provision") == 1 and purchase_order:
+			if item.sales_order:
+				sales_order = True
+		if frappe.db.get_single_value("Selling Settings", "allow_sales_order_provision") == 1 and sales_order:
 			if cancel == 0:
 				inventory_account = provision_account = ""
-				buying_settings = frappe.get_doc("Buying Settings", "Buying Settings")
+				buying_settings = frappe.get_doc("Selling Settings", "Selling Settings")
 				for account in buying_settings.provision_accounts:
 					if account.account_type == "Provision Account":
 						if account.currency == self.currency:
