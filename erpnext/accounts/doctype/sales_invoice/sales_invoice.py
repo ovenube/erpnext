@@ -1211,7 +1211,7 @@ class SalesInvoice(SellingController):
 						})
 					else:
 						args["accounts"].append({
-							"account": item_doctype.expense_account,
+							"account": item_doctype.deferred_revenue_account if not item.income_account else item.income_account,
 							"debit_in_account_currency": item.base_amount if self.currency == "USD" else item.amount,
 							"original_amount_debit": item.amount if self.currency == "USD" else "",
 							"conversion_rate": self.conversion_rate if self.currency == "USD" else "",

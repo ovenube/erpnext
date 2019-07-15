@@ -786,6 +786,8 @@ class PurchaseInvoice(BuyingController):
 		self.update_project()
 		frappe.db.set(self, 'status', 'Cancelled')
 
+		self.generate_provission_entries(cancel=1)
+
 		unlink_inter_company_invoice(self.doctype, self.name, self.inter_company_invoice_reference)
 
 	def update_project(self):
@@ -926,7 +928,7 @@ class PurchaseInvoice(BuyingController):
 						})
 					else:
 						args["accounts"].append({
-							"account": item_doctype.expense_account,
+							"account": item_doctype.deferred_expense_account if not item.expense_account else item.expense_account,
 							"credit_in_account_currency": item.base_amount if self.currency == "USD" else item.amount,
 							"original_amount_credit": item.amount if self.currency == "USD" else "",
 							"conversion_rate": self.conversion_rate if self.currency == "USD" else "",
