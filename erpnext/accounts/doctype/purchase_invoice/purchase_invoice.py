@@ -949,7 +949,7 @@ class PurchaseInvoice(BuyingController):
 					journal_entry.insert()
 					journal_entry.submit()
 			else:
-				for journal_entry_name in find_journal_entries(self.transaction_date, self.name, self.base_total, self.currency, self.total):
+				for journal_entry_name in find_journal_entries(self.posting_date, self.name, self.base_total, self.currency, self.total):
 					journal_entry = frappe.get_doc('Journal Entry', journal_entry_name)
 					journal_entry.cancel()
 
