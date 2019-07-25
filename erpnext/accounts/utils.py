@@ -877,3 +877,14 @@ def find_journal_entries(transaction_date, name, base_total, currency, total):
 		'total_debit': base_total if currency == "USD" else total,
 	}, fields=['name'])
 	return journal_entry_names
+
+def get_inventory_and_provision_accounts(currency):
+	inventory_account = provision_account = ""
+	buying_settings = frappe.get_doc("Buying Settings", "Buying Settings")
+	for account in buying_settings.provision_accounts:
+		if account.account_type == "Provision Account":
+			if account.currency == currency:
+				provision_account = account.account
+		else:
+			inventory_account = account.account
+	return inventory_account, provision_account

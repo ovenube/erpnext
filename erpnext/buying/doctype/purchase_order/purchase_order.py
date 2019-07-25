@@ -14,7 +14,7 @@ from frappe.desk.notifications import clear_doctype_notifications
 from erpnext.buying.utils import validate_for_items, check_for_closed_status
 from erpnext.stock.utils import get_bin
 from erpnext.accounts.party import get_party_account_currency
-from erpnext.accounts.utils import find_journal_entries
+from erpnext.accounts.utils import find_journal_entries, get_inventory_and_provision_accounts
 from six import string_types
 from erpnext.stock.doctype.item.item import get_item_defaults
 from erpnext.setup.doctype.item_group.item_group import get_item_group_defaults
@@ -307,14 +307,7 @@ class PurchaseOrder(BuyingController):
 		if not self.get("items"): return
 		if cancel == 0:
 			if frappe.db.get_single_value("Buying Settings", "allow_purchase_order_provision") == 1:
-				inventory_account = provision_account = ""
-				buying_settings = frappe.get_doc("Buying Settings", "Buying Settings")
-				for account in buying_settings.provision_accounts:
-					if account.account_type == "Provision Account":
-						if account.currency == self.currency:
-							provision_account = account.account
-					else:
-						inventory_account = account.account
+				inventory_account, provision_account = get_inventory_and_provision_accounts(self.currency)
 				args = {
 					"doctype": "Journal Entry",
 					"posting_date": self.transaction_date,

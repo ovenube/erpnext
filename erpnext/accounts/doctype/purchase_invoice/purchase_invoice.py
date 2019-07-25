@@ -12,7 +12,7 @@ import json
 from erpnext.assets.doctype.asset_category.asset_category import get_asset_category_account
 from erpnext.controllers.buying_controller import BuyingController
 from erpnext.accounts.party import get_party_account, get_due_date
-from erpnext.accounts.utils import get_account_currency, get_fiscal_year, find_journal_entries
+from erpnext.accounts.utils import get_account_currency, get_fiscal_year, find_journal_entries, get_inventory_and_provision_accounts
 from erpnext.stock.doctype.purchase_receipt.purchase_receipt import update_billed_amount_based_on_po
 from erpnext.stock import get_warehouse_account_map
 from erpnext.accounts.general_ledger import make_gl_entries, merge_similar_entries, delete_gl_entries
@@ -897,14 +897,7 @@ class PurchaseInvoice(BuyingController):
 				purchase_order = True
 		if frappe.db.get_single_value("Buying Settings", "allow_purchase_order_provision") == 1 and purchase_order:
 			if cancel == 0:
-				inventory_account = provision_account = ""
-				buying_settings = frappe.get_doc("Buying Settings", "Buying Settings")
-				for account in buying_settings.provision_accounts:
-					if account.account_type == "Provision Account":
-						if account.currency == self.currency:
-							inventory_account = account.account
-					else:
-						provision_account = account.account
+				inventory_account, provision_account = get_inventory_and_provision_accounts(self.currency)
 				args = {
 					"doctype": "Journal Entry",
 					"posting_date": self.posting_date,

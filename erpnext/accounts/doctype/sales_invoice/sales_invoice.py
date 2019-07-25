@@ -12,7 +12,7 @@ from frappe.model.mapper import get_mapped_doc
 from erpnext.accounts.doctype.sales_invoice.pos import update_multi_mode_option
 
 from erpnext.controllers.selling_controller import SellingController
-from erpnext.accounts.utils import get_account_currency, find_journal_entries
+from erpnext.accounts.utils import get_account_currency, find_journal_entries, get_inventory_and_provision_accounts
 from erpnext.stock.doctype.delivery_note.delivery_note import update_billed_amount_based_on_so
 from erpnext.projects.doctype.timesheet.timesheet import get_projectwise_timesheet_data
 from erpnext.assets.doctype.asset.depreciation \
@@ -1180,14 +1180,7 @@ class SalesInvoice(SellingController):
 				sales_order = True
 		if frappe.db.get_single_value("Selling Settings", "allow_sales_order_provision") == 1 and sales_order:
 			if cancel == 0:
-				inventory_account = provision_account = ""
-				buying_settings = frappe.get_doc("Selling Settings", "Selling Settings")
-				for account in buying_settings.provision_accounts:
-					if account.account_type == "Provision Account":
-						if account.currency == self.currency:
-							inventory_account = account.account
-					else:
-						provision_account = account.account
+				inventory_account, provision_account = get_inventory_and_provision_accounts(self.currency)
 				args = {
 					"doctype": "Journal Entry",
 					"posting_date": self.posting_date,
