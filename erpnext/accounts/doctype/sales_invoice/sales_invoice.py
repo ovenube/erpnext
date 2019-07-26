@@ -191,7 +191,7 @@ class SalesInvoice(SellingController):
 		if self.redeem_loyalty_points and self.loyalty_points:
 			self.apply_loyalty_points()
 
-		self.generate_provission_entries()
+		self.generate_provision_entries()
 
 		# Healthcare Service Invoice.
 		domain_settings = frappe.get_doc('Domain Settings')
@@ -256,7 +256,7 @@ class SalesInvoice(SellingController):
 		if "Healthcare" in active_domains:
 			manage_invoice_submit_cancel(self, "on_cancel")
 
-		self.generate_provission_entries(cancel=1)
+		self.generate_provision_entries(cancel=1)
 
 	def update_status_updater_args(self):
 		if cint(self.update_stock):
@@ -1172,7 +1172,7 @@ class SalesInvoice(SellingController):
 
 		self.set_missing_values(for_validate = True)
 
-	def generate_provission_entries(self, cancel=0):
+	def generate_provision_entries(self, cancel=0):
 		if not self.get("items"): return
 		sales_order = False
 		for item in self.get("items"):

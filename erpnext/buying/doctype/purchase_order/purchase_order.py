@@ -219,7 +219,7 @@ class PurchaseOrder(BuyingController):
 			self.company, self.base_grand_total)
 
 		self.update_blanket_order()
-		self.generate_provission_entries()
+		self.generate_provision_entries()
 
 
 	def on_cancel(self):
@@ -246,7 +246,7 @@ class PurchaseOrder(BuyingController):
 
 		self.update_blanket_order()
 
-		self.generate_provission_entries(cancel=1)
+		self.generate_provision_entries(cancel=1)
 
 
 	def on_update(self):
@@ -302,7 +302,7 @@ class PurchaseOrder(BuyingController):
 			total_qty += item.qty
 		self.db_set("per_received", flt(received_qty/total_qty) * 100, update_modified=False)
 
-	def generate_provission_entries(self, cancel=0):
+	def generate_provision_entries(self, cancel=0):
 		payment_entry_names = []
 		if not self.get("items"): return
 		if cancel == 0:

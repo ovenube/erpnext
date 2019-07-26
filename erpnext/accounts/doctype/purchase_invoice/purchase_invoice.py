@@ -331,7 +331,7 @@ class PurchaseInvoice(BuyingController):
 		self.check_prev_docstatus()
 		self.update_status_updater_args()
 		self.update_prevdoc_status()
-		self.generate_provission_entries()
+		self.generate_provision_entries()
 
 		frappe.get_doc('Authorization Control').validate_approving_authority(self.doctype,
 			self.company, self.base_grand_total)
@@ -786,7 +786,7 @@ class PurchaseInvoice(BuyingController):
 		self.update_project()
 		frappe.db.set(self, 'status', 'Cancelled')
 
-		self.generate_provission_entries(cancel=1)
+		self.generate_provision_entries(cancel=1)
 
 		unlink_inter_company_invoice(self.doctype, self.name, self.inter_company_invoice_reference)
 
@@ -889,7 +889,7 @@ class PurchaseInvoice(BuyingController):
 						"amount": item.get("amount")
 					})
 
-	def generate_provission_entries(self, cancel=0):
+	def generate_provision_entries(self, cancel=0):
 		if not self.get("items"): return
 		purchase_order = False
 		for item in self.get("items"):
