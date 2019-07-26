@@ -703,6 +703,13 @@ def make_sales_invoice(source_name, target_doc=None, ignore_permissions=False):
 			target.cost_center = item.get("selling_cost_center") \
 				or item_group.get("selling_cost_center")
 
+	def update_item_account(doc):
+		if frappe.db.get_single_value("Selling Settings", "allow_sales_order_provision") == 1:
+			inventory_account, provision_account = get_inventory_and_provision_accounts(doc.currency)
+			for item in doc.items:
+				item.expense_account = provision_account
+		return doc
+
 	doclist = get_mapped_doc("Sales Order", source_name, {
 		"Sales Order": {
 			"doctype": "Sales Invoice",
@@ -732,6 +739,8 @@ def make_sales_invoice(source_name, target_doc=None, ignore_permissions=False):
 			"add_if_empty": True
 		}
 	}, target_doc, postprocess, ignore_permissions=ignore_permissions)
+
+	doclist = update_item_account(doclist)
 
 	return doclist
 

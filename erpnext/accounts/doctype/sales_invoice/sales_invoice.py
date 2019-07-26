@@ -12,7 +12,7 @@ from frappe.model.mapper import get_mapped_doc
 from erpnext.accounts.doctype.sales_invoice.pos import update_multi_mode_option
 
 from erpnext.controllers.selling_controller import SellingController
-from erpnext.accounts.utils import get_account_currency, find_journal_entries, get_inventory_and_provision_accounts
+from erpnext.accounts.utils import get_account_currency, find_journal_entries
 from erpnext.stock.doctype.delivery_note.delivery_note import update_billed_amount_based_on_so
 from erpnext.projects.doctype.timesheet.timesheet import get_projectwise_timesheet_data
 from erpnext.assets.doctype.asset.depreciation \
@@ -191,8 +191,6 @@ class SalesInvoice(SellingController):
 		if self.redeem_loyalty_points and self.loyalty_points:
 			self.apply_loyalty_points()
 
-		self.generate_provision_entries()
-
 		# Healthcare Service Invoice.
 		domain_settings = frappe.get_doc('Domain Settings')
 		active_domains = [d.domain for d in domain_settings.active_domains]
@@ -255,8 +253,6 @@ class SalesInvoice(SellingController):
 
 		if "Healthcare" in active_domains:
 			manage_invoice_submit_cancel(self, "on_cancel")
-
-		self.generate_provision_entries(cancel=1)
 
 	def update_status_updater_args(self):
 		if cint(self.update_stock):
@@ -1171,63 +1167,6 @@ class SalesInvoice(SellingController):
 				item_line.description = checked_item['description']
 
 		self.set_missing_values(for_validate = True)
-
-	def generate_provision_entries(self, cancel=0):
-		if not self.get("items"): return
-		sales_order = False
-		for item in self.get("items"):
-			if item.sales_order:
-				sales_order = True
-		if frappe.db.get_single_value("Selling Settings", "allow_sales_order_provision") == 1 and sales_order:
-			if cancel == 0:
-				inventory_account, provision_account = get_inventory_and_provision_accounts(self.currency)
-				args = {
-					"doctype": "Journal Entry",
-					"posting_date": self.posting_date,
-					"cheque_no": self.name,
-					"cheque_date": self.posting_date,
-					"total_credit": self.base_total if self.currency == "USD" else self.total,
-					"total_debit": self.base_total if self.currency == "USD" else self.total,
-				}
-				args["accounts"] = []
-				for item in self.get("items"):
-					item_doctype = frappe.get_doc("Item", item.item_code)
-					if item_doctype.is_stock_item == 1:
-						args["accounts"].append({
-							"account": inventory_account,
-							"debit_in_account_currency": item.base_amount if self.currency == "USD" else item.amount,
-							"original_amount_debit": item.amount if self.currency == "USD" else "",
-							"conversion_rate": self.conversion_rate if self.currency == "USD" else "",
-							"cost_center": item.cost_center,
-							"party_type": "Supplier",
-							"party": self.supplier
-						})
-					else:
-						args["accounts"].append({
-							"account": item_doctype.deferred_revenue_account if not item.income_account else item.income_account,
-							"debit_in_account_currency": item.base_amount if self.currency == "USD" else item.amount,
-							"original_amount_debit": item.amount if self.currency == "USD" else "",
-							"conversion_rate": self.conversion_rate if self.currency == "USD" else "",
-							"cost_center": item.cost_center,
-							"party_type": "Supplier",
-							"party": self.supplier						
-						})
-				args["accounts"].append({
-					"account": provision_account,
-					"credit_in_account_currency": self.base_total if self.currency == "USD" else self.total,
-					"original_amount_credit": item.amount if self.currency == "USD" else "",
-					"conversion_rate": self.conversion_rate if self.currency == "USD" else "",
-					"party_type": "Supplier",
-					"party": self.supplier
-				})
-				if args:
-					journal_entry = frappe.get_doc(args)
-					journal_entry.insert()
-					journal_entry.submit()
-			else:
-				for journal_entry_name in find_journal_entries(self.transaction_date, self.name, self.base_total, self.currency, self.total):
-					journal_entry = frappe.get_doc('Journal Entry', journal_entry_name)
-					journal_entry.cancel()
 
 def validate_inter_company_party(doctype, party, company, inter_company_invoice_reference):
 	if not party:

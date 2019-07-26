@@ -455,12 +455,7 @@ def make_purchase_invoice(source_name, target_doc=None):
 	
 	def update_item_account(doc):
 		if frappe.db.get_single_value("Buying Settings", "allow_purchase_order_provision") == 1:
-			provision_account = ""
-			buying_settings = frappe.get_doc("Buying Settings", "Buying Settings")
-			for account in buying_settings.provision_accounts:
-				if account.account_type == "Provision Account":
-					if account.currency == doc.currency:
-						provision_account = account.account
+			inventory_account, provision_account = get_inventory_and_provision_accounts(doc.currency)
 			for item in doc.items:
 				item.expense_account = provision_account
 		return doc
