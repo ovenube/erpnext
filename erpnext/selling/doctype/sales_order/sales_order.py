@@ -483,9 +483,7 @@ class SalesOrder(SellingController):
 							"credit_in_account_currency": item.base_amount if self.currency == "USD" else item.amount,
 							"original_amount_credit": item.amount if self.currency == "USD" else "",
 							"conversion_rate": self.conversion_rate if self.currency == "USD" else "",
-							"cost_center": item.cost_center,
-							"party_type": "Supplier",
-							"party": self.supplier
+							"cost_center": item.cost_center
 						})
 					else:
 						args["accounts"].append({
@@ -493,14 +491,12 @@ class SalesOrder(SellingController):
 							"credit_in_account_currency": item.base_amount if self.currency == "USD" else item.amount,
 							"original_amount_credit": item.amount if self.currency == "USD" else "",
 							"conversion_rate": self.conversion_rate if self.currency == "USD" else "",
-							"cost_center": item.cost_center,
-							"party_type": "Supplier",
-							"party": self.supplier						
+							"cost_center": item.cost_center					
 						})
 				args["accounts"].append({
 					"account": provision_account,
 					"debit_in_account_currency": self.base_total if self.currency == "USD" else self.total,
-					"original_amount_debit": item.amount if self.currency == "USD" else "",
+					"original_amount_debit": self.total if self.currency == "USD" else "",
 					"conversion_rate": self.conversion_rate if self.currency == "USD" else "",
 					"party_type": "Supplier",
 					"party": self.supplier
