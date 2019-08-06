@@ -75,6 +75,18 @@ class MassivePaymentTool(Document):
 							"credit_in_account_currency": detail.exchange_difference if detail.exchange_difference > 0 else 0.0,
 							"cost_center": self.exchange_difference_cost_center,
 						})
+				elif detail.detail_doctype == "Expense Claim":
+					allocated_amount += detail.total_amount
+					document['accounts'].append({
+						"account": detail.account,
+						"party_type": detail.party_type,
+						"party": detail.party,
+						"debit_in_account_currency": detail.total_amount,
+						"original_amount_debit": detail.grand_total,
+						"conversion_rate": 1,
+						"reference_type": detail.detail_doctype,
+						"reference_name": detail.detail_name
+					})
 			if self.get('references'):
 				for reference in self.get('references'):
 					employee_advance = frappe.get_doc(reference.reference_doctype, reference.reference_name)
@@ -99,7 +111,6 @@ class MassivePaymentTool(Document):
 					journal_entry = frappe.get_doc("Journal Entry", journal_entry_name)
 					journal_entry.flags.ignore_links = True
 					journal_entry.cancel()
-
 
 	def make_payment_entries(self, cancel=0):
 		payment_entry_names = []
@@ -134,26 +145,6 @@ class MassivePaymentTool(Document):
 							"cost_center": self.exchange_difference_cost_center,
 							"amount": reference.exchange_difference
 						}
-					documents.append(document)
-		if self.details:
-			for detail in self.get('details'):
-				if detail.detail_doctype == "Expense Claim":
-					document = {
-						"party_type": detail.party_type,
-						"party": detail.party,
-						"paid_from": self.get_paid_to_account_reference(),
-						"paid_to": detail.account,
-						"paid_amount": detail.total_amount,
-						"source_exchange_rate": reference.conversion_rate if reference.currency == "USD" else 1,
-					}
-					document['references'] = {
-						"reference_doctype": detail.detail_doctype,
-						"reference_name": detail.detail_name,
-						"bill_no": detail.bill_no,
-						"total_amount": detail.total_amount,
-						"outstanding_amount": detail.total_amount,
-						"allocated_amount": detail.total_amount
-					}
 					documents.append(document)
 		if self.reconciliations:
 			for reconciliation in self.get("reconciliations"):
