@@ -1,0 +1,100 @@
+{% extends "templates/web.html" %}
+
+{% block breadcrumbs %}
+    {% include "templates/includes/breadcrumbs.html" %}
+{% endblock %}
+
+{% block header %}
+<h1>{{ cicle }}</h1>
+{% endblock %}
+
+{% block page_content %}
+
+<div class="table">
+    <table class="table table-bordered table-hover">
+      <thead>
+        <tr class="active">
+            <th style="width: 150px">Tipo</th>
+            <th style="width: 150px">Recurso</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr>
+                <td>Libro</td>
+                <td>
+                    <table>
+                        {%- if material_book_unit_1 -%}
+                        <tr>
+                            <td><a href='{{ material_book_unit_1 }}' target="_blank">Unidad 1</a></td>
+                        </tr>
+                        {% endif %}
+                        {%- if material_book_unit_2 -%}
+                        <tr>
+                            <td><a href='{{ material_book_unit_2 }}' target="_blank">Unidad 2</a></td>
+                        </tr>
+                        {% endif %}
+                        {%- if material_book_unit_3 -%}
+                        <tr>
+                            <td><a href='{{ material_book_unit_3 }}' target="_blank">Unidad 3</a></td>
+                        </tr>
+                        {% endif %}
+                        {%- if material_book_unit_4 -%}
+                        <tr>
+                            <td><a href='{{ material_book_unit_4 }}' target="_blank">Unidad 4</a></td>
+                        </tr>
+                        {% endif %}
+                        {%- if material_book_unit_5 -%}
+                        <tr>
+                            <td><a href='{{ material_book_unit_5 }}' target="_blank">Unidad 5</a></td>
+                        </tr>
+                        {% endif %}
+                        {%- if material_book_unit_6 -%}
+                        <tr>
+                            <td><a href='{{ material_book_unit_6 }}' target="_blank">Unidad 6</a></td>
+                        </tr>
+                        {% endif %}
+                        {%- if material_book_unit_7 -%}
+                        <tr>
+                            <td><a href='{{ material_book_unit_7 }}' target="_blank">Unidad 6</a></td>
+                        </tr>
+                        {% endif %}
+                  </table>
+              </td>
+          </tr>
+          <tr>
+                <td>Multimedia</td>
+                <td>
+                    <table>
+                        {%- if material_audio -%}
+                        <tr>
+                            <td><a href='{{ material_audio }}' target="_blank">Audio</a></td>
+                        </tr>
+                        {% endif %}
+                        {%- if material_hipnopedia -%}
+                        <tr>
+                            <td><a href='{{ material_hipnopedia }}' target="_blank">Hipnopedia</a></td>
+                        </tr>
+                        {% endif %}
+                        {%- if material_karaoke -%}
+                        <tr>
+                            <td><a href='{{ material_karaoke }}' target="_blank">Karaoke</a></td>
+                        </tr>
+                        {% endif %}
+                        {%- if material_reader -%}
+                        <tr>
+                            <td><a href='{{ material_reader }}' target="_blank">Reader</a></td>
+                        </tr>
+                        {% endif %}
+                        {%- if material_otros -%}
+                        <tr>
+                            <td><a href='{{ material_otros }}' target="_blank">Otros</a></td>
+                        </tr>
+                        {% endif %}
+                    </table>
+                </td>
+            </tr>
+      </tbody>
+    </table>
+</div>
+
+{% endblock %}
