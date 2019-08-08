@@ -31,11 +31,13 @@ def get_cicle_list(doctype, txt=None, filters=None, limit_start=0, limit_page_le
 		student_list = frappe.get_all('Student', filters={'student_email_id': user}, fields=['name'])
 		if student_list:
 			student = student_list[0]
-			program_enrollment_list = frappe.get_all('Program Enrollment', filters={'student': student.name}, fields=['name'])
-			program_enrollment = frappe.get_doc('Program Enrollment', program_enrollment_list[0].name)
 			courses = []
-			for row in program_enrollment.courses:
-				courses.append(row.course)
+			program_enrollment_list = frappe.get_all('Program Enrollment', filters={'student': student.name}, fields=['name'])
+			for r in program_enrollment_list:
+				program_enrollment = frappe.get_doc('Program Enrollment', r.name)
+				for row in program_enrollment.courses:
+					if not row.course[:3] in courses:
+						courses.append(row.course[:3])
 			for r in frappe.get_all('Educational Material', fields=['name', 'cicle'], filters=[('Educational Material', 'cicle', 'in', courses)]):
 				data.append(r)
 	return data
