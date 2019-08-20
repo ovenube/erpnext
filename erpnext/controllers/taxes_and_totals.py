@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # Copyright (c) 2015, Frappe Technologies Pvt. Ltd. and Contributors
 # License: GNU General Public License v3. See license.txt
 
@@ -8,6 +9,7 @@ from frappe import _, scrub
 from frappe.utils import cint, flt, round_based_on_smallest_currency_fraction
 from erpnext.controllers.accounts_controller import validate_conversion_rate, \
 	validate_taxes_and_charges, validate_inclusive_tax
+from nubefact_integration.nubefact_integration.doctype.configuracion.configuracion import get_productos_bolsas_plasticas
 
 class calculate_taxes_and_totals(object):
 	def __init__(self, doc):
@@ -652,3 +654,18 @@ def get_rounded_tax_amount(itemised_tax, precision):
 	for taxes in itemised_tax.values():
 		for tax_account in taxes:
 			taxes[tax_account]["tax_amount"] = flt(taxes[tax_account]["tax_amount"], precision)
+
+@frappe.whitelist()
+def get_bolsas_plasticas_information(doctype):
+	productos_bolsas_plasticas = get_productos_bolsas_plasticas()
+	if doctype == "Purchase Invoice" or doctype == "Purchase Order":
+		impuesto = frappe.get_single("Configuracion").impuesto_bolsas_plasticas_compras
+		tax = "Purchase Taxes and Charges Template"
+	elif doctype == "Sales Invoice" or doctype == "Sales Order":
+		impuesto = frappe.get_single("Configuracion").impuesto_bolsas_plasticas_ventas
+		tax = "Sales Taxes and Charges Template"
+	impuesto_bolsas_plasticas = frappe.get_doc(tax, impuesto)
+	return frappe._dict({
+		"productos_bolsas_plasticas": productos_bolsas_plasticas,
+		"impuesto_bolsas_plasticas": impuesto_bolsas_plasticas.taxes[0]
+	})

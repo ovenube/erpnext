@@ -217,6 +217,7 @@ erpnext.accounts.SalesInvoiceController = erpnext.selling.SellingController.exte
 	tc_name: function() {
 		this.get_terms();
 	},
+	
 	customer: function() {
 		if (this.frm.doc.is_pos){
 			var pos_profile = this.frm.doc.pos_profile;
