@@ -95,47 +95,47 @@ erpnext.taxes_and_totals = erpnext.payments.extend({
 		var me = this;
 		var productos_bolsas_plasticas = me.bolsas_plasticas_information.productos_bolsas_plasticas.bolsas_plasticas;
 		var impuesto_bolsas_plasticas = me.bolsas_plasticas_information.impuesto_bolsas_plasticas;
+		var taxes = me.frm.doc.taxes;
 		if (!this.discount_amount_applied) {
 			me.bolsas_plasticas_qty = 0;
-			if (me.get_bolsas_plasticas_taxes(me)){
-				var taxes = me.frm.doc.taxes;
-				taxes.forEach(function(tax){
-					if (tax.charge_type == impuesto_bolsas_plasticas.charge_type && tax.account_head == impuesto_bolsas_plasticas.account_head && tax.rate == impuesto_bolsas_plasticas.rate){
-						me.frm.get_field("taxes").grid.grid_rows[tax.idx - 1].remove();
-					}
-				});
-			}
 			$.each(this.frm.doc["items"] || [], function(i, item) {
 				if (productos_bolsas_plasticas.includes(item.item_code) && impuesto_bolsas_plasticas){
-					frappe.model.round_floats_in(item);
-					if (item.net_rate == 0){
-						item.net_rate = item.rate;
-						item.rate = item.rate - impuesto_bolsas_plasticas.tax_amount / me.frm.doc.conversion_rate;
-					}				
-					item.amount = flt(item.rate * item.qty, precision("amount", item));
-					item.item_tax_amount = 0.0;
-					item.total_weight = flt(item.weight_per_unit * item.stock_qty);
 					me.bolsas_plasticas_qty = me.bolsas_plasticas_qty + item.qty;
-				} else {
-					frappe.model.round_floats_in(item);
-					item.net_rate = item.rate;
-					item.amount = flt(item.rate * item.qty, precision("amount", item));
-					item.net_amount = item.amount;
-					item.item_tax_amount = 0.0;
-					item.total_weight = flt(item.weight_per_unit * item.stock_qty);
 				}
+				frappe.model.round_floats_in(item);
+				item.net_rate = item.rate;
+				item.amount = flt(item.rate * item.qty, precision("amount", item));
+				item.net_amount = item.amount;
+				item.item_tax_amount = 0.0;
+				item.total_weight = flt(item.weight_per_unit * item.stock_qty);
 
 				me.set_in_company_currency(item, ["price_list_rate", "rate", "amount", "net_rate", "net_amount"]);
 			});
 
-			if (me.bolsas_plasticas_qty > 0 && !me.get_bolsas_plasticas_taxes(me)){
-				var c = me.frm.add_child("taxes");
-				c.charge_type = impuesto_bolsas_plasticas.charge_type;
-				c.account_head = impuesto_bolsas_plasticas.account_head;
-				c.rate = 0;
-				c.tax_amount = impuesto_bolsas_plasticas.tax_amount / me.frm.doc.conversion_rate * me.bolsas_plasticas_qty;
-				c.total = impuesto_bolsas_plasticas.tax_amount / me.frm.doc.conversion_rate * me.bolsas_plasticas_qty;
-				me.frm.refresh_fields();
+			if (me.bolsas_plasticas_qty > 0){
+				if (!me.get_bolsas_plasticas_taxes(me)){
+					var c = me.frm.add_child("taxes");
+					c.charge_type = impuesto_bolsas_plasticas.charge_type;
+					c.account_head = impuesto_bolsas_plasticas.account_head;
+					c.rate = 0;
+					c.tax_amount = flt(impuesto_bolsas_plasticas.tax_amount / me.frm.doc.conversion_rate * me.bolsas_plasticas_qty, 4);
+					c.total = flt(impuesto_bolsas_plasticas.tax_amount / me.frm.doc.conversion_rate * me.bolsas_plasticas_qty, 4);
+					me.frm.refresh_fields();
+				} else {
+					taxes.forEach(function(tax){
+						if (tax.charge_type == impuesto_bolsas_plasticas.charge_type && tax.account_head == impuesto_bolsas_plasticas.account_head && tax.rate == impuesto_bolsas_plasticas.rate){
+							frappe.model.set_value(tax.doctype, tax.name, "tax_amount", flt(impuesto_bolsas_plasticas.tax_amount / me.frm.doc.conversion_rate * me.bolsas_plasticas_qty, 4));
+						}
+					});
+				}		
+			} else {
+				if (me.get_bolsas_plasticas_taxes(me)){
+					taxes.forEach(function(tax){
+						if (tax.charge_type == impuesto_bolsas_plasticas.charge_type && tax.account_head == impuesto_bolsas_plasticas.account_head && tax.rate == impuesto_bolsas_plasticas.rate){
+							me.frm.get_field("taxes").grid.grid_rows[tax.idx - 1].remove();
+						}
+					});
+				}
 			}
 		}
 	},
