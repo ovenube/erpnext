@@ -9,6 +9,7 @@ from frappe import _
 from frappe.model.mapper import get_mapped_doc
 from frappe.utils import flt, cstr
 from frappe.email.doctype.email_group.email_group import add_subscribers
+from frappe import _, throw
 
 def get_course(program):
 	'''Return list of courses for a particular program
@@ -17,6 +18,24 @@ def get_course(program):
 	courses = frappe.db.sql('''select course, course_name from `tabProgram Course` where parent=%s''',
 			(program), as_dict=1)
 	return courses
+
+def generate_user(studemt):
+	user_doc = {
+		"doctype": "User",
+		"email": studemt.student_email_id,
+		"user_type": "Website User",
+		"first_name": studemt.first_name,
+		"middle_name": studemt.middle_name,
+		"last_name": studemt.last_name,
+		"mobile_no": studemt.student_mobile_number,
+		"birth_date": studemt.date_of_birth,
+		"role_profile_name": "Estudiante"
+	}
+	user = frappe.get_doc(user_doc)
+	try:					
+		user.insert()
+	except:
+		throw(_("Error while validating new User"))
 
 
 @frappe.whitelist()
@@ -38,6 +57,7 @@ def enroll_student(source_name):
 	program_enrollment.student = student.name
 	program_enrollment.student_name = student.title
 	program_enrollment.program = frappe.db.get_value("Student Applicant", source_name, "program")
+	generate_user(student)
 	frappe.publish_realtime('enroll_student_progress', {"progress": [4, 4]}, user=frappe.session.user)	
 	return program_enrollment
 
