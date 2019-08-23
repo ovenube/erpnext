@@ -58,7 +58,9 @@ class AccountsController(TransactionBase):
 
 	def validate(self):
 
-		self.validate_qty_is_not_zero()
+		if not self.get('is_return'):
+			self.validate_qty_is_not_zero()
+
 		if self.get("_action") and self._action != "update_after_submit":
 			self.set_missing_values(for_validate=True)
 
@@ -374,7 +376,7 @@ class AccountsController(TransactionBase):
 	def validate_qty_is_not_zero(self):
 		for item in self.items:
 			if not item.qty:
-				frappe.throw("Item quantity can not be zero")
+				frappe.throw(_("Item quantity can not be zero"))
 
 	def validate_account_currency(self, account, account_currency=None):
 		valid_currency = [self.company_currency]
@@ -747,7 +749,12 @@ class AccountsController(TransactionBase):
 				count += 1
 				item.qty = group_item_qty[item.item_code]
 				item.amount = group_item_amount[item.item_code]
-				item.rate = flt(flt(item.amount) / flt(item.qty), item.precision("rate"))
+
+				if item.qty:
+					item.rate = flt(flt(item.amount) / flt(item.qty), item.precision("rate"))
+				else:
+					item.rate = 0
+
 				item.idx = count
 				del group_item_qty[item.item_code]
 			else:
@@ -820,7 +827,7 @@ class AccountsController(TransactionBase):
 
 			if self.doctype in ("Sales Invoice", "Purchase Invoice"):
 				grand_total = grand_total - flt(self.write_off_amount)
-			if total != grand_total:
+			if total != flt(grand_total, self.precision("grand_total")):
 				frappe.throw(_("Total Payment Amount in Payment Schedule must be equal to Grand / Rounded Total"))
 
 	def is_rounded_total_disabled(self):
@@ -1105,6 +1112,10 @@ def update_child_qty_rate(parent_doctype, trans_items, parent_doctype_name):
 						 .format(child_item.idx, child_item.item_code))
 		else:
 			child_item.rate = flt(d.get("rate"))
+		if flt(child_item.price_list_rate):
+			child_item.discount_percentage = flt((1 - flt(child_item.rate) / flt(child_item.price_list_rate)) * 100.0, \
+				child_item.precision("discount_percentage"))
+
 		child_item.flags.ignore_validate_update_after_submit = True
 		child_item.save()
 
