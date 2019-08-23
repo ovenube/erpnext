@@ -12,7 +12,7 @@ from frappe.model.mapper import get_mapped_doc
 from erpnext.accounts.doctype.sales_invoice.pos import update_multi_mode_option
 
 from erpnext.controllers.selling_controller import SellingController
-from erpnext.accounts.utils import get_account_currency, find_journal_entries
+from erpnext.accounts.utils import get_account_currency
 from erpnext.stock.doctype.delivery_note.delivery_note import update_billed_amount_based_on_so
 from erpnext.projects.doctype.timesheet.timesheet import get_projectwise_timesheet_data
 from erpnext.assets.doctype.asset.depreciation \

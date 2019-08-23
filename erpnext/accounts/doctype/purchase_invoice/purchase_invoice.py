@@ -12,7 +12,7 @@ import json
 from erpnext.assets.doctype.asset_category.asset_category import get_asset_category_account
 from erpnext.controllers.buying_controller import BuyingController
 from erpnext.accounts.party import get_party_account, get_due_date
-from erpnext.accounts.utils import get_account_currency, get_fiscal_year, find_journal_entries
+from erpnext.accounts.utils import get_account_currency, get_fiscal_year
 from erpnext.stock.doctype.purchase_receipt.purchase_receipt import update_billed_amount_based_on_po
 from erpnext.stock import get_warehouse_account_map
 from erpnext.accounts.general_ledger import make_gl_entries, merge_similar_entries, delete_gl_entries
