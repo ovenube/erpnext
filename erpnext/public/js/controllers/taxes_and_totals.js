@@ -114,6 +114,7 @@ erpnext.taxes_and_totals = erpnext.payments.extend({
 				item.net_amount = item.amount;
 				item.item_tax_amount = 0.0;
 				item.total_weight = flt(item.weight_per_unit * item.stock_qty);
+				me.frm.refresh_fields();
 
 				me.set_in_company_currency(item, ["price_list_rate", "rate", "amount", "net_rate", "net_amount"]);
 			});
