@@ -9,7 +9,7 @@ from frappe import _, scrub
 from frappe.utils import cint, flt, round_based_on_smallest_currency_fraction
 from erpnext.controllers.accounts_controller import validate_conversion_rate, \
 	validate_taxes_and_charges, validate_inclusive_tax
-from nubefact_integration.nubefact_integration.doctype.configuracion.configuracion import get_productos_bolsas_plasticas
+from erpnext.accounts.doctype.accounts_settings.accounts_settings import get_plastic_bags_items
 
 class calculate_taxes_and_totals(object):
 	def __init__(self, doc):
@@ -664,16 +664,16 @@ def get_rounded_tax_amount(itemised_tax, precision):
 			taxes[tax_account]["tax_amount"] = flt(taxes[tax_account]["tax_amount"], precision)
 
 @frappe.whitelist()
-def get_bolsas_plasticas_information(doctype):
-	productos_bolsas_plasticas = get_productos_bolsas_plasticas()
+def get_plastic_bags_information(doctype):
+	plastic_bags_items = get_plastic_bags_items()
 	if doctype == "Purchase Invoice" or doctype == "Purchase Order":
-		impuesto = frappe.get_single("Configuracion").impuesto_bolsas_plasticas_compras
+		impuesto = frappe.get_single("Accounts Settings").plastic_bags_tax_purchase
 		tax = "Purchase Taxes and Charges Template"
 	elif doctype == "Sales Invoice" or doctype == "Sales Order":
-		impuesto = frappe.get_single("Configuracion").impuesto_bolsas_plasticas_ventas
+		impuesto = frappe.get_single("Accounts Settings").plastic_bags_tax_sales
 		tax = "Sales Taxes and Charges Template"
-	impuesto_bolsas_plasticas = frappe.get_doc(tax, impuesto)
+	plastic_bags_tax = frappe.get_doc(tax, impuesto)
 	return frappe._dict({
-		"productos_bolsas_plasticas": productos_bolsas_plasticas,
-		"impuesto_bolsas_plasticas": impuesto_bolsas_plasticas.taxes[0]
+		"plastic_bags_items": plastic_bags_items,
+		"plastic_bags_tax": plastic_bags_tax.taxes[0]
 	})
