@@ -421,7 +421,7 @@ def get_document_details(detail_doctype, detail_name, conversion_rate):
 		exchange_rate = det_doc.conversion_rate if currency == "USD" else 0.0
 		conversion_rate = conversion_rate if currency == "USD" else 0.0
 		exchange_amount = (exchange_rate * grand_total) if currency == "USD" else 0.0
-		total_amount = (conversion_rate * grand_total) if currency == "USD" else det_doc.base_grand_total
+		total_amount = (conversion_rate * grand_total) if currency == "USD" else det_doc.grand_total
 		exchange_difference = total_amount - exchange_amount if currency == "USD" else 0.0
 	elif detail_doctype == "Expense Claim":
 		due_date = det_doc.get("posting_date")
