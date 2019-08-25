@@ -408,7 +408,7 @@ def invoice_filter(doctype, txt, searchfield, start, page_len, filters):
 @frappe.whitelist()
 def get_document_details(detail_doctype, detail_name, conversion_rate):
 	bill_no = account = currency = ""
-	grand_total = exchange_rate = conversion_rate = exchange_amount = exchange_difference = 0.0
+	grand_total = exchange_rate = exchange_amount = exchange_difference = 0.0
 	det_doc = frappe.get_doc(detail_doctype, detail_name)
 	if detail_doctype == "Purchase Invoice":
 		grand_total = det_doc.grand_total
@@ -419,7 +419,7 @@ def get_document_details(detail_doctype, detail_name, conversion_rate):
 		account = det_doc.credit_to
 		currency = det_doc.currency
 		exchange_rate = det_doc.conversion_rate if currency == "USD" else 0.0
-		conversion_rate = conversion_rate if currency == "USD" else 0.0
+		conversion_rate = float(conversion_rate) if currency == "USD" else 0.0
 		exchange_amount = (exchange_rate * grand_total) if currency == "USD" else 0.0
 		total_amount = (conversion_rate * grand_total) if currency == "USD" else det_doc.grand_total
 		exchange_difference = total_amount - exchange_amount if currency == "USD" else 0.0
