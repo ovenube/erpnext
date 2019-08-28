@@ -57,12 +57,12 @@ class MassivePaymentTool(Document):
 			document['accounts'] = []
 			for detail in self.get('details'):
 				if detail.detail_doctype == "Purchase Invoice":
-					allocated_amount += detail.total_amount if detail.currency != "USD" else 0.0
+					allocated_amount += detail.total_amount
 					document['accounts'].append({
 						"account": detail.account,
 						"party_type": detail.party_type,
 						"party": detail.party,
-						"debit_in_account_currency": detail.total_amount if detail.currency != "USD" else 0.0,
+						"debit_in_account_currency": detail.total_amount if detail.currency != "USD" else detail.exchange_amount,
 						"original_amount_debit": detail.grand_total if detail.currency == "USD" else 0.0,
 						"conversion_rate": self.conversion_rate if detail.currency == "USD" else 0.0,
 						"reference_type": detail.detail_doctype,
@@ -72,7 +72,7 @@ class MassivePaymentTool(Document):
 						document['accounts'].append({
 							"account": self.loss_account if detail.exchange_difference > 0 else self.gain_account,
 							"debit_in_account_currency": detail.exchange_difference if detail.exchange_difference > 0 else 0.0,
-							"credit_in_account_currency": detail.exchange_difference if detail.exchange_difference > 0 else 0.0,
+							"credit_in_account_currency": (detail.exchange_difference * -1) if detail.exchange_difference < 0 else 0.0,
 							"cost_center": self.exchange_difference_cost_center,
 						})
 				elif detail.detail_doctype == "Expense Claim":
@@ -418,11 +418,11 @@ def get_document_details(detail_doctype, detail_name, conversion_rate):
 		party = det_doc.supplier
 		account = det_doc.credit_to
 		currency = det_doc.currency
-		exchange_rate = det_doc.conversion_rate if currency == "USD" else 0.0
+		exchange_rate = round(det_doc.conversion_rate, 4) if currency == "USD" else 0.0
 		conversion_rate = float(conversion_rate) if currency == "USD" else 0.0
-		exchange_amount = (exchange_rate * grand_total) if currency == "USD" else 0.0
-		total_amount = (conversion_rate * grand_total) if currency == "USD" else det_doc.grand_total
-		exchange_difference = total_amount - exchange_amount if currency == "USD" else 0.0
+		exchange_amount = round(exchange_rate * grand_total, 4) if currency == "USD" else 0.0
+		total_amount = round(conversion_rate * grand_total, 4) if currency == "USD" else det_doc.grand_total
+		exchange_difference = round(total_amount - exchange_amount, 4) if currency == "USD" else 0.0
 	elif detail_doctype == "Expense Claim":
 		due_date = det_doc.get("posting_date")
 		party_type = "Employee"
