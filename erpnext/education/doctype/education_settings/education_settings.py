@@ -35,6 +35,10 @@ class EducationSettings(Document):
 		else:
 			make_property_setter('Instructor', "naming_series", "hidden", 1, "Check")
 
+def get_student_profile():
+	education_settings = frappe.get_doc("Education Settings", "Education Settings")
+	return education_settings.student_profile
+
 @frappe.whitelist()
 def get_token():
 	education_settings = frappe.get_doc("Education Settings", "Education Settings")

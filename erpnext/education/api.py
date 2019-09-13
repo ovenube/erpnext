@@ -10,6 +10,8 @@ from frappe.model.mapper import get_mapped_doc
 from frappe.utils import flt, cstr
 from frappe.email.doctype.email_group.email_group import add_subscribers
 from frappe import _, throw
+from frappe.utils.password import set_encrypted_password
+from erpnext.education.doctype.education_settings.education_settings import get_student_profile
 
 def get_course(program):
 	'''Return list of courses for a particular program
@@ -19,23 +21,26 @@ def get_course(program):
 			(program), as_dict=1)
 	return courses
 
-def generate_user(studemt):
+def generate_user(student, password="vivential"):
+	student_profile = get_student_profile()
 	user_doc = {
 		"doctype": "User",
-		"email": studemt.student_email_id,
+		"email": student.student_email_id,
 		"user_type": "Website User",
-		"first_name": studemt.first_name,
-		"middle_name": studemt.middle_name,
-		"last_name": studemt.last_name,
-		"mobile_no": studemt.student_mobile_number,
-		"birth_date": studemt.date_of_birth,
-		"role_profile_name": "Estudiante"
+		"first_name": student.first_name,
+		"middle_name": student.middle_name,
+		"last_name": student.last_name,
+		"mobile_no": student.student_mobile_number,
+		"birth_date": student.date_of_birth,
+		"role_profile_name": student_profile
 	}
 	user = frappe.get_doc(user_doc)
 	try:					
 		user.insert()
 	except:
 		throw(_("Error while validating new User"))
+	else:		
+		set_encrypted_password("User", user.name, password)
 
 
 @frappe.whitelist()
@@ -57,7 +62,8 @@ def enroll_student(source_name):
 	program_enrollment.student = student.name
 	program_enrollment.student_name = student.title
 	program_enrollment.program = frappe.db.get_value("Student Applicant", source_name, "program")
-	generate_user(student)
+	password = frappe.db.get_value("Student Applicant", source_name, "tdx_c_ndocumento")
+	generate_user(student, password)
 	frappe.publish_realtime('enroll_student_progress', {"progress": [4, 4]}, user=frappe.session.user)	
 	return program_enrollment
 
@@ -304,7 +310,7 @@ def get_grade(grading_scale, percentage):
 
 @frappe.whitelist()
 def mark_assessment_result(assessment_plan, scores):
-	student_score = json.loads(scores);
+	student_score = json.loads(scores)
 	assessment_details = []
 	for criteria in student_score.get("assessment_details"):
 		assessment_details.append({
