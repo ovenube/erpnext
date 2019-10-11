@@ -1,5 +1,6 @@
 // Copyright (c) 2015, Frappe Technologies Pvt. Ltd. and Contributors
 // License: GNU General Public License v3. See license.txt
+cur_frm.add_fetch('task', 'depth', 'tdx_c_prfinitur');
 
 frappe.ui.form.on("Timesheet", {
 	setup: function(frm) {

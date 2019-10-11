@@ -114,6 +114,7 @@ class Timesheet(Document):
 	def on_submit(self):
 		self.validate_mandatory_fields()
 		self.update_task_and_project()
+		self.set_task_depth()
 
 	def validate_mandatory_fields(self):
 		for data in self.time_logs:
@@ -209,6 +210,12 @@ class Timesheet(Document):
 	def update_time_rates(self, ts_detail):
 		if not ts_detail.billable:
 			ts_detail.billing_rate = 0.0
+
+	def set_task_depth(self):
+		if self.tdx_c_prffintur:
+			task = frappe.get_doc("Task", self.task)
+			task.depth = self.tdx_c_prffintur
+			task.save()
 
 @frappe.whitelist()
 def get_projectwise_timesheet_data(project, parent=None):
