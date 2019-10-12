@@ -40,6 +40,6 @@ def get_student_profile():
 	return education_settings.student_profile
 
 @frappe.whitelist()
-def get_token():
+def get_secure_url():
 	education_settings = frappe.get_doc("Education Settings", "Education Settings")
-	return education_settings.token
+	return education_settings.secure_url

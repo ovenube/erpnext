@@ -8,17 +8,7 @@ frappe.ready(function(){
             },
             callback: function(r) {
                 if (r) {
-                    var req = new XMLHttpRequest();
-                    req.open('GET', r.message.url, true);
-                    req.setRequestHeader('Authorization', "Token " + r.message.token);
-                    req.onreadystatechange = function (aEvt) {
-                        if (req.readyState == 4) {
-                           if (req.status != 200){
-                             alert("Error loading page\n");
-                           }
-                        }
-                    };             
-                    req.send();
+                    window.open(r.message);
                 }
             }
         });

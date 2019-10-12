@@ -25,52 +25,52 @@
                     <table>
                         {%- if material_book_unit_1 -%}
                         <tr>
-                            <td><a href='{{ material_book_unit_1 }}' target="_blank">Unidad 1</a></td>
+                            <td><input class="btn btn-primary" type="button" value="Unidad 1"></td>
                         </tr>
                         {% endif %}
                         {%- if material_book_unit_2 -%}
                         <tr>
-                            <td><a href='{{ material_book_unit_2 }}' target="_blank">Unidad 2</a></td>
+                            <td><input class="btn btn-primary" type="button" value="Unidad 2"></td>
                         </tr>
                         {% endif %}
                         {%- if material_book_unit_3 -%}
                         <tr>
-                            <td><a href='{{ material_book_unit_3 }}' target="_blank">Unidad 3</a></td>
+                            <td><input class="btn btn-primary" type="button" value="Unidad 3"></td>
                         </tr>
                         {% endif %}
                         {%- if material_book_unit_4 -%}
                         <tr>
-                            <td><a href='{{ material_book_unit_4 }}' target="_blank">Unidad 4</a></td>
+                            <td><input class="btn btn-primary" type="button" value="Unidad 4"></td>
                         </tr>
                         {% endif %}
                         {%- if material_book_unit_5 -%}
                         <tr>
-                            <td><a href='{{ material_book_unit_5 }}' target="_blank">Unidad 5</a></td>
+                            <td><input class="btn btn-primary" type="button" value="Unidad 5"></td>
                         </tr>
                         {% endif %}
                         {%- if material_book_unit_6 -%}
                         <tr>
-                            <td><a href='{{ material_book_unit_6 }}' target="_blank">Unidad 6</a></td>
+                            <td><input class="btn btn-primary" type="button" value="Unidad 6"></td>
                         </tr>
                         {% endif %}
                         {%- if material_book_unit_7 -%}
                         <tr>
-                            <td><a href='{{ material_book_unit_7 }}' target="_blank">Unidad 7</a></td>
+                            <td><input class="btn btn-primary" type="button" value="Unidad 7"></td>
                         </tr>
                         {% endif %}
                         {%- if material_book_unit_8 -%}
                         <tr>
-                            <td><a href='{{ material_book_unit_8 }}' target="_blank">Unidad 8</a></td>
+                            <td><input class="btn btn-primary" type="button" value="Unidad 8"></td>
                         </tr>
                         {% endif %}
                         {%- if material_book_unit_9 -%}
                         <tr>
-                            <td><a href='{{ material_book_unit_9 }}' target="_blank">Unidad 9</a></td>
+                            <td><input class="btn btn-primary" type="button" value="Unidad 9"></td>
                         </tr>
                         {% endif %}
                         {%- if material_book_unit_10 -%}
                         <tr>
-                            <td><a href='{{ material_book_unit_10 }}' target="_blank">Unidad 10</a></td>
+                            <td><input class="btn btn-primary" type="button"value="Unidad 10" ></td>
                         </tr>
                         {% endif %}
                   </table>
@@ -82,27 +82,27 @@
                     <table>
                         {%- if material_audio -%}
                         <tr>
-                            <td><a href='{{ material_audio }}' target="_blank">Audio</a></td>
+                            <td><input class="btn btn-primary" type="button" value="Audio"></td>
                         </tr>
                         {% endif %}
                         {%- if material_hipnopedia -%}
                         <tr>
-                            <td><a href='{{ material_hipnopedia }}' target="_blank">Hipnopedia</a></td>
+                            <td><input class="btn btn-primary" type="button" value="Hipnopedia"></td>
                         </tr>
                         {% endif %}
                         {%- if material_karaoke -%}
                         <tr>
-                            <td><a href='{{ material_karaoke }}' target="_blank">Karaoke</a></td>
+                            <td><input class="btn btn-primary" type="button" value="Karaoke"></td>
                         </tr>
                         {% endif %}
                         {%- if material_reader -%}
                         <tr>
-                            <td><a href='{{ material_reader }}' target="_blank">Reader</a></td>
+                            <td><input class="btn btn-primary" type="button" value="Reader"></td>
                         </tr>
                         {% endif %}
                         {%- if material_otros -%}
                         <tr>
-                            <td><a href='{{ material_otros }}' target="_blank">Otros</a></td>
+                            <td><input class="btn btn-primary" type="button" value="Otros"></td>
                         </tr>
                         {% endif %}
                     </table>
@@ -112,4 +112,13 @@
     </table>
 </div>
 
+{% endblock %}
+
+{% block script %}
+    <script> {% include "templates/generators/educational_material.js" %} </script>
+    <script>
+		window.doc_info = {
+			cicle: '{{ cicle }}'
+		}
+	</script>
 {% endblock %}
