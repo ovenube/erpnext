@@ -10,7 +10,7 @@ from frappe.model.mapper import get_mapped_doc
 from frappe.utils import flt, cstr
 from frappe.email.doctype.email_group.email_group import add_subscribers
 from frappe import _, throw
-from frappe.utils.password import set_encrypted_password
+from frappe.utils.password import update_password
 from erpnext.education.doctype.education_settings.education_settings import get_student_profile
 
 def get_course(program):
@@ -40,7 +40,7 @@ def generate_user(student, password="vivential"):
 	except:
 		throw(_("Error while validating new User"))
 	else:		
-		set_encrypted_password("User", user.name, password)
+		update_password(user=user.name, pwd=password)
 
 
 @frappe.whitelist()
