@@ -106,6 +106,9 @@ erpnext.taxes_and_totals = erpnext.payments.extend({
 						me.plastic_bags_qty = me.plastic_bags_qty + item.qty;
 					}
 				}
+				if (item.rate == 0 && in_list(["Sales Invoice", "Purchase Invoice"], me.frm.doc.doctype)){
+					item.free_amount = flt(item.unit_value * item.qty);
+				}
 				frappe.model.round_floats_in(item);
 				item.net_rate = item.rate;
 
@@ -253,6 +256,8 @@ erpnext.taxes_and_totals = erpnext.payments.extend({
 	calculate_net_total: function() {
 		var me = this;
 		this.frm.doc.total_qty = this.frm.doc.total = this.frm.doc.base_total = this.frm.doc.net_total = this.frm.doc.base_net_total = 0.0;
+		if (in_list(["Sales Invoice", "Purchase Invoice"], this.frm.doc.doctype))
+			this.frm.doc.total_amount_free = 0.0;
 
 		$.each(this.frm.doc["items"] || [], function(i, item) {
 			me.frm.doc.total += item.amount;
@@ -260,6 +265,8 @@ erpnext.taxes_and_totals = erpnext.payments.extend({
 			me.frm.doc.base_total += item.base_amount;
 			me.frm.doc.net_total += item.net_amount;
 			me.frm.doc.base_net_total += item.base_net_amount;
+			if (in_list(["Sales Invoice", "Purchase Invoice"], me.frm.doc.doctype))
+				me.frm.doc.total_amount_free += item.free_amount;
 			});
 
 		frappe.model.round_floats_in(this.frm.doc, ["total", "base_total", "net_total", "base_net_total"]);
@@ -780,7 +787,6 @@ erpnext.taxes_and_totals = erpnext.payments.extend({
 			return tax_found;
 		} else {
 			return null;
-		}
-		
+		}		
 	}
 });
