@@ -13,6 +13,7 @@
   "tax_id",
   "due_date",
   "is_paid",
+  "is_factoring",
   "is_return",
   "apply_tds",
   "column_break1",
@@ -88,10 +89,13 @@
   "base_taxes_and_charges_added",
   "base_taxes_and_charges_deducted",
   "base_total_taxes_and_charges",
+  "base_inafected_taxes_and_charges",
   "column_break_40",
   "taxes_and_charges_added",
   "taxes_and_charges_deducted",
   "total_taxes_and_charges",
+  "total_amount_free",
+  "inafected_taxes_and_charges",
   "section_break_44",
   "apply_discount_on",
   "base_discount_amount",
@@ -339,6 +343,7 @@
    "label": "Supplier Invoice Details"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "bill_no",
    "fieldtype": "Data",
    "label": "Supplier Invoice No",
@@ -351,6 +356,7 @@
    "fieldtype": "Column Break"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "bill_date",
    "fieldtype": "Date",
    "label": "Supplier Invoice Date",
@@ -1282,12 +1288,37 @@
   {
    "fieldname": "dimension_col_break",
    "fieldtype": "Column Break"
+  },
+  {
+   "allow_on_submit": 1,
+   "default": "0",
+   "fieldname": "is_factoring",
+   "fieldtype": "Check",
+   "label": "Is Factoring?"
+  },
+  {
+   "fieldname": "base_inafected_taxes_and_charges",
+   "fieldtype": "Currency",
+   "label": "Inafected Taxes and Charges (Company Currency)",
+   "options": "Company:company:default_currency"
+  },
+  {
+   "fieldname": "total_amount_free",
+   "fieldtype": "Currency",
+   "label": "Total Amount Free",
+   "options": "currency"
+  },
+  {
+   "fieldname": "inafected_taxes_and_charges",
+   "fieldtype": "Currency",
+   "label": "Inafected Taxes and Charges",
+   "options": "currency"
   }
  ],
  "icon": "fa fa-file-text",
  "idx": 204,
  "is_submittable": 1,
- "modified": "2019-09-17 22:31:42.666601",
+ "modified": "2019-12-23 11:02:39.118318",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Purchase Invoice",

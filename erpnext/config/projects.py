@@ -40,6 +40,11 @@ def get_data():
 				},
 				{
 					"type": "doctype",
+					"name": "Catalogo Proyecto",
+					"description": _("Define el Catatogo de Proyecto."),
+				},
+				{
+					"type": "doctype",
 					"name": "Project Update",
 					"description": _("Project Update."),
 					"dependencies": ["Project"],
@@ -66,6 +71,26 @@ def get_data():
 					"name": "Activity Cost",
 					"description": _("Cost of various activities"),
 					"dependencies": ["Activity Type"],
+				},
+			]
+		},
+		{
+			"label": _("Perforado"),
+			"items": [
+				{
+					"type": "doctype",
+					"name": "Rango Perforado",
+					"description": _("Rango de Perforado."),
+				},
+				{
+					"type": "doctype",
+					"name": "Valoracion Perforado",
+					"description": _("Valoracion de cada Rango de Perforado"),
+				},
+				{
+					"type": "doctype",
+					"name": "Medida",
+					"description": _("Medida del proyecto"),
 				},
 			]
 		},

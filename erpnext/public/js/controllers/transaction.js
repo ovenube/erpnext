@@ -784,6 +784,9 @@ erpnext.TransactionController = erpnext.taxes_and_totals.extend({
 		/* manqala 19/09/2016: let the translation date be whichever of the transaction_date or posting_date is available */
 		var transaction_date = this.frm.doc.transaction_date || this.frm.doc.posting_date;
 		/* end manqala */
+		if (this.frm.doc.bill_date){
+			transaction_date = this.frm.doc.bill_date;
+		}
 		var me = this;
 		this.set_dynamic_labels();
 		var company_currency = this.get_company_currency();

@@ -111,6 +111,7 @@ class Timesheet(Document):
 	def on_submit(self):
 		self.validate_mandatory_fields()
 		self.update_task_and_project()
+		self.set_task_depth()
 
 	def validate_mandatory_fields(self):
 		for data in self.time_logs:
@@ -210,6 +211,12 @@ class Timesheet(Document):
 					data.costing_rate = flt(rate.get('costing_rate')) if flt(data.costing_rate) == 0 else data.costing_rate
 					data.billing_amount = data.billing_rate * hours
 					data.costing_amount = data.costing_rate * costing_hours
+
+	def set_task_depth(self):
+		if self.tdx_c_prffintur:
+			task = frappe.get_doc("Task", self.task)
+			task.depth = self.tdx_c_prffintur
+			task.save()
 
 	def update_time_rates(self, ts_detail):
 		if not ts_detail.billable:

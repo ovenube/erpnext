@@ -38,3 +38,13 @@ class AccountsSettings(Document):
 		show_field = 0 if cint(self.allow_cost_center_in_entry_of_bs_account) else 1
 		for doctype in ("Sales Invoice", "Purchase Invoice", "Payment Entry"):
 			make_property_setter(doctype, "cost_center", "hidden", show_field, "Check")
+
+@frappe.whitelist()
+def get_plastic_bags_items():
+    configuracion = frappe.get_doc("Accounts Settings", "Accounts Settings")
+    plastic_bags_items = []
+    for row in configuracion.plastic_bags_items:
+        plastic_bags_items.append(row.item)
+    return frappe._dict({
+        "plastic_bags": plastic_bags_items
+    })

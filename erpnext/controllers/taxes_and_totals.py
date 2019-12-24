@@ -668,3 +668,23 @@ def get_rounded_tax_amount(itemised_tax, precision):
 	for taxes in itemised_tax.values():
 		for tax_account in taxes:
 			taxes[tax_account]["tax_amount"] = flt(taxes[tax_account]["tax_amount"], precision)
+
+@frappe.whitelist()
+def get_plastic_bags_information(doctype):
+	plastic_bags_items = get_plastic_bags_items()
+	if frappe.get_single("Accounts Settings").allow_plastic_bags_tax:
+		if doctype == "Purchase Invoice" or doctype == "Purchase Order" or doctype == "Supplier Quotation" or doctype == "Purchase Receipt":
+			impuesto = frappe.get_single("Accounts Settings").plastic_bags_tax_purchase
+			tax = "Purchase Taxes and Charges Template"
+		elif doctype == "Sales Invoice" or doctype == "Sales Order" or doctype == "Quotation" or doctype == "Delivery Note":
+			impuesto = frappe.get_single("Accounts Settings").plastic_bags_tax_sales
+			tax = "Sales Taxes and Charges Template"
+		else:
+			return None
+		plastic_bags_tax = frappe.get_doc(tax, impuesto)
+		return frappe._dict({
+			"plastic_bags_items": plastic_bags_items,
+			"plastic_bags_tax": plastic_bags_tax.taxes[0]
+		})
+	else:
+		return None

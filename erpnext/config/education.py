@@ -270,6 +270,10 @@ def get_data():
 				{
 					"type": "doctype",
 					"name": "Education Settings"
+				},
+				{
+					"type": "doctype",
+					"name": "Educational Material"
 				}
 			]
 		},

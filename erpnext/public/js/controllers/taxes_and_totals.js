@@ -61,15 +61,21 @@ erpnext.taxes_and_totals = erpnext.payments.extend({
 	},
 
 	_calculate_taxes_and_totals: function() {
-		this.validate_conversion_rate();
-		this.calculate_item_values();
-		this.initialize_taxes();
-		this.determine_exclusive_rate();
-		this.calculate_net_total();
-		this.calculate_taxes();
-		this.manipulate_grand_total_for_inclusive_tax();
-		this.calculate_totals();
-		this._cleanup();
+		var me = this;
+		new Promise(function(resolve, reject) {
+			var plastic_bags_information = me.get_plastic_bags_information(me);
+			resolve(plastic_bags_information);
+		}).then(function(values){
+			me.validate_conversion_rate();
+			me.calculate_item_values();
+			me.initialize_taxes();
+			me.determine_exclusive_rate();
+			me.calculate_net_total();
+			me.calculate_taxes();
+			me.manipulate_grand_total_for_inclusive_tax();
+			me.calculate_totals();
+			me._cleanup();
+		});		
 	},
 
 	validate_conversion_rate: function() {
@@ -94,8 +100,22 @@ erpnext.taxes_and_totals = erpnext.payments.extend({
 
 	calculate_item_values: function() {
 		var me = this;
+		if(me.plastic_bags_information){
+			var plastic_bags_items = me.plastic_bags_information.plastic_bags_items.plastic_bags;
+			var plastic_bags_tax = me.plastic_bags_information.plastic_bags_tax;
+		}
+		var taxes = me.frm.doc.taxes;
 		if (!this.discount_amount_applied) {
+			me.plastic_bags_qty = 0;
 			$.each(this.frm.doc["items"] || [], function(i, item) {
+				if (me.plastic_bags_information){
+					if (plastic_bags_items.includes(item.item_code)){
+						me.plastic_bags_qty = me.plastic_bags_qty + item.qty;
+					}
+				}
+				if (item.rate == 0 && in_list(["Sales Invoice", "Purchase Invoice"], me.frm.doc.doctype)){
+					item.free_amount = flt(item.unit_value * item.qty);
+				}
 				frappe.model.round_floats_in(item);
 				item.net_rate = item.rate;
 
@@ -108,9 +128,36 @@ erpnext.taxes_and_totals = erpnext.payments.extend({
 				item.net_amount = item.amount;
 				item.item_tax_amount = 0.0;
 				item.total_weight = flt(item.weight_per_unit * item.stock_qty);
+				me.frm.refresh_fields();
 
 				me.set_in_company_currency(item, ["price_list_rate", "rate", "amount", "net_rate", "net_amount"]);
 			});
+
+			if (me.plastic_bags_qty > 0){
+				if (!me.get_plastic_bags_taxes(me)){
+					var c = me.frm.add_child("taxes");
+					c.charge_type = plastic_bags_tax.charge_type;
+					c.account_head = plastic_bags_tax.account_head;
+					c.rate = 0;
+					c.tax_amount = flt(plastic_bags_tax.tax_amount / me.frm.doc.conversion_rate * me.plastic_bags_qty, 4);
+					c.total = flt(plastic_bags_tax.tax_amount / me.frm.doc.conversion_rate * me.plastic_bags_qty, 4);
+					me.frm.refresh_fields();
+				} else {
+					taxes.forEach(function(tax){
+						if (tax.charge_type == plastic_bags_tax.charge_type && tax.account_head == plastic_bags_tax.account_head && tax.rate == plastic_bags_tax.rate){
+							frappe.model.set_value(tax.doctype, tax.name, "tax_amount", flt(plastic_bags_tax.tax_amount / me.frm.doc.conversion_rate * me.plastic_bags_qty, 4));
+						}
+					});
+				}		
+			} else {
+				if (me.get_plastic_bags_taxes(me)){
+					taxes.forEach(function(tax){
+						if (tax.charge_type == plastic_bags_tax.charge_type && tax.account_head == plastic_bags_tax.account_head && tax.rate == plastic_bags_tax.rate){
+							me.frm.get_field("taxes").grid.grid_rows[tax.idx - 1].remove();
+						}
+					});
+				}
+			}
 		}
 	},
 
@@ -216,6 +263,8 @@ erpnext.taxes_and_totals = erpnext.payments.extend({
 	calculate_net_total: function() {
 		var me = this;
 		this.frm.doc.total_qty = this.frm.doc.total = this.frm.doc.base_total = this.frm.doc.net_total = this.frm.doc.base_net_total = 0.0;
+		if (in_list(["Sales Invoice", "Purchase Invoice"], this.frm.doc.doctype))
+			this.frm.doc.total_amount_free = 0.0;
 
 		$.each(this.frm.doc["items"] || [], function(i, item) {
 			me.frm.doc.total += item.amount;
@@ -223,6 +272,8 @@ erpnext.taxes_and_totals = erpnext.payments.extend({
 			me.frm.doc.base_total += item.base_amount;
 			me.frm.doc.net_total += item.net_amount;
 			me.frm.doc.base_net_total += item.base_net_amount;
+			if (in_list(["Sales Invoice", "Purchase Invoice"], me.frm.doc.doctype))
+				me.frm.doc.total_amount_free += item.free_amount;
 			});
 
 		frappe.model.round_floats_in(this.frm.doc, ["total", "base_total", "net_total", "base_net_total"]);
@@ -699,5 +750,37 @@ erpnext.taxes_and_totals = erpnext.payments.extend({
 			this.frm.doc.paid_amount = 0.0;
 		}
 		this.calculate_outstanding_amount(false);
+	},
+
+	get_plastic_bags_information: function(me){
+		return frappe.call({
+			method: "erpnext.controllers.taxes_and_totals.get_plastic_bags_information",
+			args: {
+				"doctype": me.frm.doc.doctype
+			},
+			callback: function(r){
+				if (r.message){
+					me.plastic_bags_information = r.message;
+				}
+			}
+		});
+	},
+
+	get_plastic_bags_taxes: function(me){
+		var tax_found = false;
+		if (me.plastic_bags_information){
+			var plastic_bags_tax = me.plastic_bags_information.plastic_bags_tax;
+			var taxes = me.frm.doc.taxes;
+			if (taxes){
+				taxes.forEach(function(tax){
+					if (tax.charge_type == plastic_bags_tax.charge_type && tax.account_head == plastic_bags_tax.account_head && tax.rate == plastic_bags_tax.rate){
+						tax_found = true;
+					}
+				});
+			}	
+			return tax_found;
+		} else {
+			return null;
+		}		
 	}
 });

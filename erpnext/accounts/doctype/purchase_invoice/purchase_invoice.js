@@ -513,5 +513,24 @@ frappe.ui.form.on("Purchase Invoice", {
 			erpnext.buying.get_default_bom(frm);
 		}
 		frm.toggle_reqd("supplier_warehouse", frm.doc.is_subcontracted==="Yes");
+	},
+
+	before_save: function(frm) {
+		$.each(frm.doc["items"] || [], function(i, item) {
+			frappe.call({
+				method: "get_inafected_item",
+				doc: frm.doc,
+				args: {
+					"item": item,
+				},
+				callback: function(r, rt){
+					if(r.message){
+						frm.set_value("base_inafected_taxes_and_charges", r.message.base_amount);
+						frm.set_value("inafected_taxes_and_charges", r.message.amount);						
+						frm.refresh_fields();
+					}
+				}
+			})
+		})
 	}
 })

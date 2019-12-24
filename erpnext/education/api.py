@@ -5,10 +5,12 @@
 from __future__ import unicode_literals
 import frappe
 import json
-from frappe import _
+from frappe import _, throw
+from frappe.utils.password import update_password
 from frappe.model.mapper import get_mapped_doc
 from frappe.utils import flt, cstr
 from frappe.email.doctype.email_group.email_group import add_subscribers
+from erpnext.education.doctype.education_settings.education_settings import get_student_profile
 
 def get_course(program):
 	'''Return list of courses for a particular program
@@ -18,6 +20,26 @@ def get_course(program):
 			(program), as_dict=1)
 	return courses
 
+def generate_user(student, password="vivential"):
+	student_profile = get_student_profile()
+	user_doc = {
+		"doctype": "User",
+		"email": student.student_email_id,
+		"user_type": "Website User",
+		"first_name": student.first_name,
+		"middle_name": student.middle_name,
+		"last_name": student.last_name,
+		"mobile_no": student.student_mobile_number,
+		"birth_date": student.date_of_birth,
+		"role_profile_name": student_profile
+	}
+	user = frappe.get_doc(user_doc)
+	try:					
+		user.insert()
+	except:
+		throw(_("Error while validating new User"))
+	else:		
+		update_password(user=user.name, pwd=password)
 
 @frappe.whitelist()
 def enroll_student(source_name):
@@ -38,6 +60,8 @@ def enroll_student(source_name):
 	program_enrollment.student = student.name
 	program_enrollment.student_name = student.title
 	program_enrollment.program = frappe.db.get_value("Student Applicant", source_name, "program")
+	password = frappe.db.get_value("Student Applicant", source_name, "tdx_c_ndocumento")
+	generate_user(student, password)
 	frappe.publish_realtime('enroll_student_progress', {"progress": [2, 4]}, user=frappe.session.user)
 	return program_enrollment
 

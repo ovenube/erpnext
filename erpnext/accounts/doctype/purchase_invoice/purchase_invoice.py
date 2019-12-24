@@ -7,6 +7,7 @@ import frappe, erpnext
 from frappe.utils import cint, cstr, formatdate, flt, getdate, nowdate
 from frappe import _, throw
 import frappe.defaults
+import json
 
 from erpnext.assets.doctype.asset_category.asset_category import get_asset_category_account
 from erpnext.controllers.buying_controller import BuyingController
@@ -926,6 +927,16 @@ class PurchaseInvoice(BuyingController):
 
 	def on_recurring(self, reference_doc, auto_repeat_doc):
 		self.due_date = None
+
+	def get_inafected_item(self, item):
+		tax_rate = json.loads(item.get("item_tax_rate"))
+		if tax_rate:
+			for key, value in tax_rate.items():
+				if value == 0:
+					return frappe._dict({
+						"base_amount": item.get("base_amount"),
+						"amount": item.get("amount")
+					})
 
 	def block_invoice(self, hold_comment=None):
 		self.db_set('on_hold', 1)

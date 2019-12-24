@@ -35,7 +35,8 @@
   "col_break3",
   "is_advance",
   "user_remark",
-  "against_account"
+  "against_account",
+  "is_paid"
  ],
  "fields": [
   {
@@ -268,11 +269,17 @@
    "fieldtype": "Link",
    "label": "Bank Account",
    "options": "Bank Account"
+  },
+  {
+   "default": "0",
+   "fieldname": "is_paid",
+   "fieldtype": "Check",
+   "label": "Is Paid?"
   }
  ],
  "idx": 1,
  "istable": 1,
- "modified": "2019-10-02 12:23:21.693443",
+ "modified": "2019-12-22 23:57:05.513251",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Journal Entry Account",
