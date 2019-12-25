@@ -8,6 +8,7 @@ from frappe import _, scrub
 from frappe.utils import cint, flt, round_based_on_smallest_currency_fraction
 from erpnext.controllers.accounts_controller import validate_conversion_rate, \
 	validate_taxes_and_charges, validate_inclusive_tax
+from erpnext.accounts.doctype.accounts_settings.accounts_settings import get_plastic_bags_items
 
 class calculate_taxes_and_totals(object):
 	def __init__(self, doc):
