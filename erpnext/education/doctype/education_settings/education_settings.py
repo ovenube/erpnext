@@ -37,3 +37,12 @@ class EducationSettings(Document):
 
 def update_website_context(context):
 	context["lms_enabled"] = frappe.get_doc("Education Settings").enable_lms
+
+def get_student_profile():
+	education_settings = frappe.get_doc("Education Settings", "Education Settings")
+	return education_settings.student_profile
+
+@frappe.whitelist()
+def get_secure_url():
+	education_settings = frappe.get_doc("Education Settings", "Education Settings")
+	return education_settings.secure_url
