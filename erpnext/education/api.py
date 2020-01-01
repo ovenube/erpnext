@@ -33,13 +33,12 @@ def generate_user(student, password="vivential"):
 		"birth_date": student.date_of_birth,
 		"role_profile_name": student_profile
 	}
-	user = frappe.get_doc(user_doc)
 	try:					
-		user.insert()
+		user = frappe.get_doc(user_doc)
 	except:
 		throw(_("Error while validating new User"))
 	else:		
-		update_password(user=user.name, pwd=password)
+		update_password(user=student.student_email_id, pwd=password)
 
 @frappe.whitelist()
 def enroll_student(source_name):
