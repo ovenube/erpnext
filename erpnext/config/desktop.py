@@ -158,7 +158,7 @@ def get_data():
 		},
 		{
 			"module_name": "Hotels",
-			"category": "Domains",
+			"category": "Modules",
 			"label": _("Hotels"),
 			"color": "#EA81E8",
 			"icon": "fa fa-bed",
@@ -177,7 +177,7 @@ def get_data():
 		},
 		{
 			"module_name": "Restaurant",
-			"category": "Domains",
+			"category": "Modules",
 			"label": _("Restaurant"),
 			"color": "#EA81E8",
 			"icon": "fa fa-cutlery",
