@@ -16,6 +16,10 @@ data = {
 		'Hotel Manager',
 		'Hotel Reservation User'
 	],
+	'modules': [
+		'Restaurant',
+		'Hotels'
+	],
 	'custom_fields': {
 		'Sales Invoice': [
 			{
