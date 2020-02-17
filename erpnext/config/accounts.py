@@ -89,6 +89,11 @@ def get_data():
 					"description": _("Bank/Cash transactions against party or for internal transfer")
 				},
 				{
+					"type": "doctype",
+					"name": "Massive Payment Tool",
+					"description": _("Tool for paying multiple documents")
+				},
+				{
 					"type": "report",
 					"name": "Accounts Payable",
 					"doctype": "Purchase Invoice",
@@ -123,7 +128,7 @@ def get_data():
 					"name": "Received Items To Be Billed",
 					"is_query_report": True,
 					"doctype": "Purchase Invoice"
-				},
+				}
 			]
 		},
 		{
