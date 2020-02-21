@@ -1,0 +1,169 @@
+<!-- jQuery -->
+<script type="text/javascript" src="assets/erpnext/js/restaurant_pos/jquery-2.2.2.min.js"></script>
+<script type="text/javascript" src="assets/erpnext/js/restaurant_pos/loading.js"></script>
+   <!-- *************************************************** if a table was choosen ********************************** -->
+<div class="container-fluid">
+   <div class="row text-center">
+      <h3 style="cursive;">Mesa - 1</h3>
+   </div>
+   <div class="row">
+      <ul class="cbp-vimenu2">
+      	<li data-toggle="tooltip"  data-html="true" data-placement="left" title="Cancelar&nbsp;Todas"><a href=""><i class="fa fa-times" aria-hidden="true"></i></a></li>
+      	<li data-toggle="tooltip"  data-html="true" data-placement="left" title="Regreso"><a href="pos/switshtable"><i class="fa fa-reply" aria-hidden="true"></i></a></li>
+        <li data-toggle="tooltip"  data-html="true" data-placement="left" title="Ir&nbsp;a&nbsp;la&nbsp;página&nbsp;de&nbsp;la&nbsp;cocina"><a href="kitchens"><i class="fa fa-cutlery" aria-hidden="true"></i></a></li>
+      </ul>
+      <div class="col-md-5 left-side">
+         <div class="row">
+            <div class="row row-horizon">
+               <span class="holdList">
+                  <!-- list Holds goes here -->
+               </span>
+               <span class="Hold pl">+</i></span>
+               <span class="Hold pl">-</span>
+            </div>
+         </div>
+         <div class="col-xs-8">
+            <h2>Elegir Cliente</h2>
+         </div>
+         <div class="col-xs-4 client-add">
+            <a href="" data-toggle="modal" data-target="#AddCustomer">
+               <span class="fa-stack fa-lg" data-toggle="tooltip" data-placement="top" title="Agregar Cliente">
+                  <i class="fa fa-square fa-stack-2x grey"></i>
+                  <i class="fa fa-user-plus fa-stack-1x fa-inverse dark-blue"></i>
+               </span>
+            </a>
+            <a href="">
+               <span class="fa-stack fa-lg" data-toggle="tooltip" data-placement="top" title="Ver ultima boleta">
+                  <i class="fa fa-square fa-stack-2x grey"></i>
+                  <i class="fa fa-ticket fa-stack-1x fa-inverse dark-blue"></i>
+               </span>
+            </a>
+         </div>
+         <div class="col-sm-6">
+            <select class="js-select-options form-control" id="customerSelect">
+              <option value="0">Cliente sin Registrar</option>
+                               <option value="11">Ana / Espinoza</option>
+                          </select>
+            <span class="hidden" id="customerS"></span>
+         </div>
+         <div class="col-sm-6">
+            <select class="js-select-options form-control" id="WaiterName">
+              <option value="0">sin camarero</option>
+                          </select>
+            <span class="hidden" id="waiterS"></span>
+         </div>
+         <div class="col-sm-12">
+            <form>
+               <input type="text" autofocus id="keyboard" class="form-control barcode" placeholder="Lector de Productos">
+            </form>
+         </div>
+         <div class="col-xs-5 table-header">
+            <h3>Productos</h3>
+         </div>
+         <div class="col-xs-2 table-header">
+            <h3>Precio</h3>
+         </div>
+         <div class="col-xs-3 table-header nopadding">
+            <h3 class="text-left">Cantidad</h3>
+         </div>
+         <div class="col-xs-2 table-header nopadding">
+            <h3>Total</h3>
+         </div>
+         <div id="productList">
+            <!-- product List goes here  -->
+         </div>
+         <div class="footer-section">
+            <div class="table-responsive col-sm-12 totalTab">
+               <table class="table">
+                  <tr>
+                     <td class="active" width="40%">SubTotal</td>
+                     <td class="whiteBg" width="60%"><span id="Subtot"></span> PEN                        <span class="float-right"><b id="ItemsNum"><span></span> items</b></span>
+                     </td>
+                  </tr>
+                  <tr>
+                     <td class="active">Impuesto IVA</td>
+                     <td class="whiteBg"><input type="text" value="18%" id="num01" class="total-input TAX" placeholder="N/A"  maxlength="8">
+                        <span class="float-right"><b id="taxValue"></b></span>
+                     </td>
+                  </tr>
+                  <tr>
+                     <td class="active">Descuento</td>
+                     <td class="whiteBg"><input type="text" value="" id="num02" class="total-input Remise" placeholder="N/A"  maxlength="8">
+                        <span class="float-right"><b id="RemiseValue"></b></span>
+                     </td>
+                  </tr>
+                  <tr>
+                     <td class="active">Total</td>
+                     <td class="whiteBg light-blue text-bold"><span id="total"></span> PEN</td>
+                  </tr>
+               </table>
+            </div>
+            <button type="button" class="btn btn-red col-md-6 flat-box-btn"><h5 class="text-bold">CANCELAR VENTA</h5></button>
+            <button type="button" class="btn btn-green col-md-6 flat-box-btn" data-toggle="modal" data-target="#AddSale"><h5 class="text-bold">PROCESAR VENTA</h5></button>
+         </div>
+
+      </div>
+      <div class="col-md-7 right-side nopadding">
+         <div class="row row-horizon">
+                  <span class="categories selectedGat" id=""><i class="fa fa-home"></i></span>
+                                 </div>
+               <div class="col-sm-12">
+                  <div id="searchContaner">
+                      <div class="input-group stylish-input-group">
+                          <input type="text" id="searchProd" class="form-control"  placeholder="Buscar" >
+                          <span class="input-group-addon">
+                              <button type="submit">
+                                  <span class="glyphicon glyphicon-search"></span>
+                              </button>
+                          </span>
+                      </div>
+                  </div>
+              </div>
+              <!-- product list section -->
+         <div id="productList2">
+                     </div>
+      </div>
+   </div>
+</div>
+
+
+
+
+<!-- slim scroll script -->
+<script type="text/javascript" src="assets/erpnext/js/restaurant_pos/jquery.slimscroll.min.js"></script>
+<!-- waves material design effect -->
+<script type="text/javascript" src="assets/erpnext/js/restaurant_pos/waves.min.js"></script>
+<!-- Bootstrap Core JavaScript -->
+<script type="text/javascript" src="assets/erpnext/js/restaurant_pos/bootstrap.min.js"></script>
+<!-- keyboard widget dependencies -->
+<script type="text/javascript" src="assets/erpnext/js/restaurant_pos/jquery.keyboard.js"></script>
+<script type="text/javascript" src="assets/erpnext/js/restaurant_pos/jquery.keyboard.extension-all.js"></script>
+<script type="text/javascript" src="assets/erpnext/js/restaurant_pos/jquery.keyboard.extension-extender.js"></script>
+<script type="text/javascript" src="assets/erpnext/js/restaurant_pos/jquery.keyboard.extension-typing.js"></script>
+<script type="text/javascript" src="assets/erpnext/js/restaurant_pos/jquery.mousewheel.js"></script>
+<!-- select2 plugin script -->
+<script type="text/javascript" src="assets/erpnext/js/restaurant_pos/select2.min.js"></script>
+<!-- dalatable scripts -->
+<script src="assets/erpnext/datatables/js/jquery.dataTables.min.js"></script>
+<script src="assets/erpnext/datatables/js/dataTables.bootstrap.js"></script>
+<!-- summernote js -->
+<script src="assets/erpnext/js/restaurant_pos/summernote.js"></script>
+<!-- chart.js script -->
+<script src="assets/erpnext/js/restaurant_pos/Chart.js"></script>
+<!-- moment JS -->
+<script type="text/javascript" src="assets/erpnext/js/restaurant_pos/moment.min.js"></script>
+<!-- Include Date Range Picker -->
+<script type="text/javascript" src="assets/erpnext/js/restaurant_pos/daterangepicker.js"></script>
+<!-- Sweet Alert swal -->
+<script src="assets/erpnext/js/restaurant_pos/sweetalert.min.js"></script>
+<!-- datepicker script -->
+<script src="assets/erpnext/js/restaurant_pos/bootstrap-datepicker.min.js"></script>
+<!-- creditCardValidator script -->
+<script src="assets/erpnext/js/restaurant_pos/jquery.creditCardValidator.js"></script>
+<!-- creditCardValidator script -->
+<script src="assets/erpnext/js/restaurant_pos/credit-card-scanner.js"></script>
+<script src="assets/erpnext/js/restaurant_pos/jquery.redirect.js"></script>
+<!-- ajax form -->
+<script src="assets/erpnext/js/restaurant_pos/jquery.form.min.js"></script>
+<!-- custom script -->
+<script src="assets/erpnext/js/restaurant_pos/app.js"></script>

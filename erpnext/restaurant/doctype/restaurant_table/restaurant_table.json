@@ -6,8 +6,12 @@
  "engine": "InnoDB",
  "field_order": [
   "restaurant",
+  "floor",
   "no_of_seats",
-  "minimum_seating"
+  "minimum_seating",
+  "occupied",
+  "time",
+  "checked"
  ],
  "fields": [
   {
@@ -31,9 +35,33 @@
    "in_list_view": 1,
    "label": "Minimum Seating",
    "reqd": 1
+  },
+  {
+   "fieldname": "floor",
+   "fieldtype": "Link",
+   "label": "Floor",
+   "options": "Restaurant Floor",
+   "reqd": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "occupied",
+   "fieldtype": "Check",
+   "label": "Occupied"
+  },
+  {
+   "fieldname": "time",
+   "fieldtype": "Datetime",
+   "label": "Time"
+  },
+  {
+   "default": "0",
+   "fieldname": "checked",
+   "fieldtype": "Check",
+   "label": "Checked"
   }
  ],
- "modified": "2020-01-20 20:13:36.089396",
+ "modified": "2020-02-13 10:30:22.198246",
  "modified_by": "Administrator",
  "module": "Restaurant",
  "name": "Restaurant Table",

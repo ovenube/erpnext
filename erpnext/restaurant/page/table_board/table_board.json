@@ -1,0 +1,36 @@
+{
+ "content": null,
+ "creation": "2020-02-10 17:54:44.048105",
+ "docstatus": 0,
+ "doctype": "Page",
+ "idx": 0,
+ "modified": "2020-02-13 12:01:30.465987",
+ "modified_by": "Administrator",
+ "module": "Restaurant",
+ "name": "table-board",
+ "owner": "Administrator",
+ "page_name": "table-board",
+ "restrict_to_domain": "Hospitality",
+ "roles": [
+  {
+   "role": "Hotel Manager"
+  },
+  {
+   "role": "Sales Manager"
+  },
+  {
+   "role": "Sales User"
+  },
+  {
+   "role": "Accounts Manager"
+  },
+  {
+   "role": "Accounts User"
+  }
+ ],
+ "script": null,
+ "standard": "Yes",
+ "style": null,
+ "system_page": 0,
+ "title": "Table Board"
+}

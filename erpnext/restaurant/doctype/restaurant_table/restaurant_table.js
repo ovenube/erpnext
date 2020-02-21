@@ -4,5 +4,15 @@
 frappe.ui.form.on('Restaurant Table', {
 	refresh: function(frm) {
 
+	},
+
+	setup: function(frm) {
+		frm.set_query("floor", function() {
+			return {
+				filters: {
+					"restaurant": frm.doc.restaurant
+				}
+			};
+		});
 	}
 });

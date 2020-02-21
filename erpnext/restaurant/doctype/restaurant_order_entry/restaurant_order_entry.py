@@ -74,6 +74,7 @@ def item_query_restaurant(doctype='Item', txt='', searchfield='name', start=0, p
 
 	return item_query('Item', txt, searchfield, start, page_len, filters, as_dict)
 
+@frappe.whitelist()
 def get_restaurant_and_menu_name(table):
 	if not table:
 		frappe.throw(_('Please select a table'))

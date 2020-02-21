@@ -28,6 +28,10 @@ def get_data():
                 },
                 {
                     "type": "doctype",
+                    "name": "Restaurant Floor",
+                },
+                {
+                    "type": "doctype",
                     "name": "Restaurant Table",
                 },
                 {
@@ -35,5 +39,17 @@ def get_data():
                     "name": "Restaurant Menu",
                 },
             ]
-        }
+        },
+        {
+            "label": _("POS"),
+            "items": [
+                {
+                    "type": "page",
+                    "name": "table-board",
+                    "label": _("Table Board"),
+					"icon": "fa fa-bar-chart",
+					"onboard": 1,
+                }
+            ]
+        },
     ]

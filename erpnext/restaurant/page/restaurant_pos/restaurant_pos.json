@@ -1,0 +1,37 @@
+{
+ "content": null,
+ "creation": "2020-02-16 15:51:02.597349",
+ "docstatus": 0,
+ "doctype": "Page",
+ "icon": "fa fa-th",
+ "idx": 0,
+ "modified": "2020-02-16 16:01:33.598076",
+ "modified_by": "Administrator",
+ "module": "Restaurant",
+ "name": "restaurant-pos",
+ "owner": "Administrator",
+ "page_name": "restaurant-pos",
+ "restrict_to_domain": "Hospitality",
+ "roles": [
+  {
+   "role": "Sales User"
+  },
+  {
+   "role": "Sales Manager"
+  },
+  {
+   "role": "Accounts User"
+  },
+  {
+   "role": "Restaurant Manager"
+  },
+  {
+   "role": "Accounts Manager"
+  }
+ ],
+ "script": null,
+ "standard": "Yes",
+ "style": null,
+ "system_page": 0,
+ "title": "Restaurant POS"
+}
