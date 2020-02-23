@@ -6,8 +6,9 @@ from __future__ import unicode_literals
 import frappe, re
 from frappe.model.document import Document
 from frappe.model.naming import make_autoname
+from frappe import _
 
 class RestaurantTable(Document):
 	def autoname(self):
-		prefix = re.sub('-+', '-', self.restaurant.replace(' ', '-'))
-		self.name = make_autoname(prefix + '-.##')
+		prefix = _("Table")
+		self.name = make_autoname(prefix + ' .##')

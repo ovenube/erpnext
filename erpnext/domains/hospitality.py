@@ -29,6 +29,10 @@ data = {
 			{
 				'fieldname': 'restaurant_table', 'fieldtype': 'Link', 'options': 'Restaurant Table',
 				'insert_after': 'restaurant', 'label': 'Restaurant Table',
+			},
+			{
+				'fieldname': 'restaurant_order', 'fieldtype': 'Link', 'options': 'Restaurant Order',
+				'insert_after': 'restaurant_table', 'label': 'Restaurant Order',
 			}
 		],
 		'Price List': [

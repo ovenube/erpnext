@@ -45,17 +45,15 @@ TableBoard = Class.extend({
 			$("#tables").empty();
 			var selected_floor = floors.options[floors.selectedIndex].text;
 			frappe.db.get_list("Restaurant Table", {filters: {floor: selected_floor}}).then((result) => {
-				var table_count = 0;
 				if (result == []){
 					frappe.msgprint(__("Please add Restaurant Tables"));
 				} else {
 					result.forEach(table => {
-						table_count++;
 						$('#tables').append(`
 						<div class="col-sm-2 col-xs-4 tableList">
-							<a href="pos/selectTable/44">
+							<a href="#restaurant-pos/` + table.name.replace(" ", "%20") + `">
 								<img src="assets/erpnext/images/table.svg" alt="store">
-								<h2>`+ table_count + `</h2>
+								<h2>`+ table.name + `</h2>
 							</a>
 						</div>`);
 					});

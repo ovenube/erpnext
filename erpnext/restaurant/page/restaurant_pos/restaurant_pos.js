@@ -2,6 +2,7 @@
 frappe.provide('erpnext.restaurant_pos');
 
 frappe.pages['restaurant-pos'].on_page_load = function(wrapper) {
+	var table = window.location.hash.split("/")[1];
 	frappe.ui.make_app_page({
 		parent: wrapper,
 		title: __('Restaurant POS'),
@@ -11,7 +12,7 @@ frappe.pages['restaurant-pos'].on_page_load = function(wrapper) {
 	frappe.db.get_value('POS Settings', {name: 'POS Settings'}, 'is_online', (r) => {
 		if (r && !cint(r.use_pos_in_offline_mode)) {
 			// online
-			wrapper.pos = new erpnext.restaurant_pos.PointOfSale(wrapper);
+			wrapper.pos = new erpnext.restaurant_pos.PointOfSale(wrapper, table);
 			window.cur_pos = wrapper.pos;
 		} else {
 			// offline
@@ -32,7 +33,7 @@ frappe.pages['restaurant-pos'].refresh = function(wrapper) {
 }
 
 erpnext.restaurant_pos.PointOfSale = class PointOfSale {
-	constructor(wrapper) {
+	constructor(wrapper, table) {
 		this.wrapper = $(wrapper).find('.layout-main-section');
 		this.page = wrapper.page;
 
@@ -42,15 +43,15 @@ erpnext.restaurant_pos.PointOfSale = class PointOfSale {
 		];
 
 		frappe.require(assets, () => {
-			this.make();
+			this.make(table);
 		});
 	}
 
-	make() {
+	make(table) {
 		return frappe.run_serially([
 			() => frappe.dom.freeze(),
 			() => {
-				this.prepare_dom();
+				this.prepare_dom(table);
 				this.prepare_menu();
 				this.set_online_status();
 			},
@@ -87,17 +88,6 @@ erpnext.restaurant_pos.PointOfSale = class PointOfSale {
 		});
 	}
 
-	get_active_menu(table) {
-		return frappe.db.get_value("Restaurant Table", table, "restaurant")
-		.then((r) => {
-			frappe.db.get_value("Restaurant", r.name, "active_menu").then((r) => {
-				if(r) {
-
-				}
-			});
-		});
-	}
-
 	set_online_status() {
 		this.connection_status = false;
 		this.page.set_indicator(__("Offline"), "grey");
@@ -117,8 +107,13 @@ erpnext.restaurant_pos.PointOfSale = class PointOfSale {
 		frappe.throw(__("POS Profile is required to use Point-of-Sale"));
 	}
 
-	prepare_dom() {
+	prepare_dom(table) {
 		this.wrapper.append(`
+			<div class="container">
+				<div class="row justify-content-center">
+					<h1 class="text-center">` + table.replace("%20", " ") + `</h1>
+				</div>
+			</div>
 			<div class="pos">
 				<section class="cart-container">
 
@@ -559,6 +554,25 @@ erpnext.restaurant_pos.PointOfSale = class PointOfSale {
 		})
 	}
 
+	make_new_order(table) {
+		return frappe.run_serially([
+			() => this.make_new_order_frm(table),
+		])
+	}
+
+	make_new_order_frm(table) {
+		const doctype = "Restaurant Order";
+		frappe.db.get_list(doctype, {filters: {table: table, order_status: "In progress"}}).then((result) => {
+			if (result == []){
+				const name = frappe.model.make_new_doc_and_get_name(doctype, true);
+				frm.doc.restaurant_order = name;
+				frm.refresh_field(restaurant_order);
+			} else {
+
+			}
+		})
+	}
+
 	make_new_invoice() {
 		return frappe.run_serially([
 			() => this.make_sales_invoice_frm(),
@@ -657,14 +671,6 @@ erpnext.restaurant_pos.PointOfSale = class PointOfSale {
 		//
 		// }).addClass('visible-xs');
 
-		this.page.add_menu_item(__("Form View"), function () {
-			frappe.model.sync(me.frm.doc);
-			frappe.set_route("Form", me.frm.doc.doctype, me.frm.doc.name);
-		});
-
-		this.page.add_menu_item(__("POS Profile"), function () {
-			frappe.set_route('List', 'POS Profile');
-		});
 
 		this.page.add_menu_item(__('POS Settings'), function() {
 			frappe.set_route('Form', 'POS Settings');
@@ -673,6 +679,7 @@ erpnext.restaurant_pos.PointOfSale = class PointOfSale {
 		this.page.add_menu_item(__('Change POS Profile'), function() {
 			me.change_pos_profile();
 		});
+
 		this.page.add_menu_item(__('Close the POS'), function() {
 			var voucher = frappe.model.get_new_doc('POS Closing Voucher');
 			voucher.pos_profile = me.frm.doc.pos_profile;
@@ -1256,15 +1263,15 @@ class POSItems {
 		this.events = events;
 		this.currency = this.frm.doc.currency;
 
-		// frappe.db.get_value("Item Group", {lft: 1, is_group: 1}, "name", (r) => {
-			// this.parent_item_group = r.name;
+		frappe.db.get_value("Item Group", {lft: 1, is_group: 1}, "name", (r) => {
+			this.parent_item_group = r.name;
 			this.make_dom();
 			this.make_fields();
 
 			this.init_clusterize();
 			this.bind_events();
 			this.load_items_data();
-		// })
+		})
 	}
 
 	load_items_data() {
@@ -1325,10 +1332,36 @@ class POSItems {
 			clearTimeout(this.last_search);
 			this.last_search = setTimeout(() => {
 				const search_term = e.target.value;
+				const item_group = this.item_group_field ?
+					this.item_group_field.get_value() : '';
 
-				//filter by menu
-				this.filter_items({ search_term:search_term});
+				this.filter_items({ search_term:search_term,  item_group: item_group});
 			}, 300);
+		});
+
+		this.item_group_field = frappe.ui.form.make_control({
+			df: {
+				fieldtype: 'Link',
+				label: 'Item Group',
+				options: 'Item Group',
+				default: me.parent_item_group,
+				onchange: () => {
+					const item_group = this.item_group_field.get_value();
+					if (item_group) {
+						this.filter_items({ item_group: item_group });
+					}
+				},
+				get_query: () => {
+					return {
+						query: 'erpnext.selling.page.point_of_sale.point_of_sale.item_group_query',
+						filters: {
+							pos_profile: this.frm.doc.pos_profile
+						}
+					};
+				}
+			},
+			parent: this.wrapper.find('.item-group-field'),
+			render_input: true
 		});
 	}
 
@@ -1367,8 +1400,7 @@ class POSItems {
 		this.clusterize.update(row_items);
 	}
 
-	//filter by menu
-	filter_items({ search_term='' }={}) {
+	filter_items({ search_term='', item_group=this.parent_item_group }={}) {
 		if (search_term) {
 			search_term = search_term.toLowerCase();
 
@@ -1381,10 +1413,12 @@ class POSItems {
 				this.set_item_in_the_cart(items);
 				return;
 			}
+		} else if (item_group == this.parent_item_group) {
+			this.items = this.all_items;
+			return this.render_items(this.all_items);
 		}
 
-		//add menu filter
-		this.get_items({search_value: search_term })
+		this.get_items({search_value: search_term, item_group })
 			.then(({ items, serial_no, batch_no, barcode }) => {
 				if (search_term && !barcode) {
 					this.search_index[search_term] = items;
@@ -1484,18 +1518,17 @@ class POSItems {
 		return template;
 	}
 
-	//add menu filter
-	get_items({start = 0, page_length = 40, search_value=''}={}) {
+	get_items({start = 0, page_length = 40, search_value='', item_group=this.parent_item_group}={}) {
 		const price_list = this.frm.doc.selling_price_list;
 		return new Promise(res => {
 			frappe.call({
-				method: "erpnext.restaurant.page.restaurant_pos.restaurant_pos.get_items",
+				method: "erpnext.selling.page.point_of_sale.point_of_sale.get_items",
 				freeze: true,
 				args: {
 					start,
 					page_length,
 					price_list,
-					// item_group,
+					item_group,
 					search_value,
 					pos_profile: this.frm.doc.pos_profile
 				}
