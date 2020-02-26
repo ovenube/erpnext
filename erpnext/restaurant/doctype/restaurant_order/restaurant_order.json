@@ -5,6 +5,7 @@
  "engine": "InnoDB",
  "field_order": [
   "restaurant_table",
+  "customer",
   "order_status",
   "current_order",
   "items"
@@ -27,17 +28,23 @@
    "fieldname": "items",
    "fieldtype": "Table",
    "label": "Items",
-   "options": "Restaurant Order Entry Item"
+   "options": "Restaurant Order Item"
   },
   {
    "fieldname": "order_status",
    "fieldtype": "Select",
    "label": "Order Status",
-   "options": "\nIn progress\nAttended\nCanceled"
+   "options": "\nTaken\nIn progress\nAttended\nPaid\nCanceled"
+  },
+  {
+   "fieldname": "customer",
+   "fieldtype": "Link",
+   "label": "Customer",
+   "options": "Customer"
   }
  ],
- "modified": "2020-02-23 09:58:50.561740",
- "modified_by": "Administrator",
+ "modified": "2020-02-25 22:32:55.073025",
+ "modified_by": "carlos_jcez@hotmail.com",
  "module": "Restaurant",
  "name": "Restaurant Order",
  "owner": "Administrator",
