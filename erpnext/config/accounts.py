@@ -128,7 +128,7 @@ def get_data():
 					"name": "Received Items To Be Billed",
 					"is_query_report": True,
 					"doctype": "Purchase Invoice"
-				}
+				},
 			]
 		},
 		{

@@ -41,6 +41,7 @@ class StudentApplicant(Document):
 	def on_submit(self):
 		if self.student_email_id:
 			self.student_email_id = self.student_email_id.lower()
+			
 		if self.paid and not self.student_admission:
 			frappe.throw(_("Please select Student Admission which is mandatory for the paid student applicant"))
 
