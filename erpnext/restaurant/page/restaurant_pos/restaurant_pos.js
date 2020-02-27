@@ -69,7 +69,7 @@ erpnext.restaurant_pos.PointOfSale = class PointOfSale {
 				frappe.dom.unfreeze();
 			},
 			() => this.page.set_title(__('Restaurant POS')),
-			() => this.get_order_customer(table)
+			() => this.get_order_customer(table),
 		]);
 	}
 
@@ -130,7 +130,7 @@ erpnext.restaurant_pos.PointOfSale = class PointOfSale {
 		this.wrapper.append(`
 			<div class="container">
 				<div class="row justify-content-center">
-					<h1 class="text-center">` + table.replace("%20", " ") + `</h1>
+					<h1 class="text-center" id="table-title">` + table.replace("%20", " ") + `</h1>
 				</div>
 			</div>
 			<div class="pos">
@@ -159,62 +159,7 @@ erpnext.restaurant_pos.PointOfSale = class PointOfSale {
 									order.items.forEach(order_item => {
 										var item = this.frm.add_child('items', { item_code: order_item.item });
 										item['qty'] = 1;
-										frappe.flags.hide_serial_batch_dialog = true;
-										frappe.run_serially([
-											() => {
-												frappe.model.set_value(item.doctype, item.name, 'qty', order_item.qty).then(() => {
-													for (var i=0; i < order_item.qty; i++){
-														frappe.run_serially([
-															() => {
-																this.frm.script_manager.trigger('item_code', item.doctype, item.name)
-																	.then(() => {
-																		this.frm.script_manager.trigger('qty', item.doctype, item.name)
-																			.then(() => {
-																				frappe.run_serially([
-																					() => {
-																						let items = this.frm.doc.items.map(i => i.name);
-																						if (items && items.length > 0 && items.includes(item.name)) {
-																							this.frm.doc.items.forEach(item_row => {
-																								// update cart
-																								this.on_qty_change(item_row);
-																							});
-																						} else {
-																							this.on_qty_change(item);
-																						}
-																					},
-																					() => this.post_qty_change(item)
-																				]);
-																			});
-																	});
-															},
-															() => {
-																const show_dialog = item.has_serial_no || item.has_batch_no;
-												
-																// if actual_batch_qty and actual_qty if then there is only one batch. In such
-																// a case, no point showing the dialog
-																if (show_dialog && field == 'qty' && ((!item.batch_no && item.has_batch_no) ||
-																	(item.has_serial_no) || (item.actual_batch_qty != item.actual_qty)) ) {
-																	// check has serial no/batch no and update cart
-																	this.select_batch_and_serial_no(item);
-																}
-															}
-														]);
-													}
-												});
-											}
-										]);
-										
-
-										// var item = this.frm.add_child('items', { item_code: order_item.item });	
-										// item['qty'] = 1;
-										// frappe.run_serially([
-										// 	() => this.on_qty_change(item),
-										// 	() => this.post_qty_change(item),
-										// 	() => this.update_item_in_frm(order_item.name, 'qty', order_item.qty - 1)
-										// ])
-										// for (var i=0; i < (order_item.qty - 1); i++){
-										// 	this.update_item_in_frm(order_item.name, 'qty', '+1');
-										// }
+										this.get_items_from_order(item, order_item);
 									})
 								})
 							}
@@ -293,6 +238,53 @@ erpnext.restaurant_pos.PointOfSale = class PointOfSale {
 				this.items.reset_items();
 			}
 		})
+	}
+
+	get_items_from_order(item, order_item){
+		frappe.flags.hide_serial_batch_dialog = true;
+		frappe.run_serially([
+			() => {
+				frappe.model.set_value(item.doctype, item.name, 'qty', order_item.qty).then(() => {
+					for (var i=0; i < order_item.qty; i++){
+						frappe.run_serially([
+							() => {
+								this.frm.script_manager.trigger('item_code', item.doctype, item.name)
+									.then(() => {
+										this.frm.script_manager.trigger('qty', item.doctype, item.name)
+											.then(() => {
+												frappe.run_serially([
+													() => {
+														let items = this.frm.doc.items.map(i => i.name);
+														if (items && items.length > 0 && items.includes(item.name)) {
+															this.frm.doc.items.forEach(item_row => {
+																// update cart
+																this.on_qty_change(item_row);
+															});
+														} else {
+															this.on_qty_change(item);
+														}
+													},
+													() => this.post_qty_change(item)
+												]);
+											});
+									});
+							},
+							() => {
+								const show_dialog = item.has_serial_no || item.has_batch_no;
+				
+								// if actual_batch_qty and actual_qty if then there is only one batch. In such
+								// a case, no point showing the dialog
+								if (show_dialog && field == 'qty' && ((!item.batch_no && item.has_batch_no) ||
+									(item.has_serial_no) || (item.actual_batch_qty != item.actual_qty)) ) {
+									// check has serial no/batch no and update cart
+									this.select_batch_and_serial_no(item);
+								}
+							}
+						]);
+					}
+				});
+			}
+		]);
 	}
 
 	toggle_editing(flag) {
@@ -511,29 +503,26 @@ erpnext.restaurant_pos.PointOfSale = class PointOfSale {
 	}
 
 	submit_sales_invoice() {
+		var me = this;
 		this.frm.save().then(() => {
-			this.frm.doc.docstatus = 1;
-			this.frm.save()
-				.then((r) => {
-					if (r && r.doc) {
-						this.frm.doc.docstatus = r.doc.docstatus;
-						frappe.show_alert({
-							indicator: 'green',
-							message: __(`Sales invoice ${r.doc.name} created succesfully`)
-						});
+			frappe.xcall('erpnext.restaurant.page.restaurant_pos.restaurant_pos.generate_electronic_invoice', {
+				'company': this.frm.doc.company,
+				'invoice': this.frm.doc.name,
+				'doctype': this.frm.doc.doctype
+			}).then((r) => {
+				
+				if (r != "") {
+					frappe.show_alert({
+						indicator: 'green',
+						message: __(`Sales invoice ${this.frm.doc.name} created succesfully`)
+					});
 
-						var doctype = "Restaurant Order";
-						frappe.db.get_list(doctype, {filters: {"restaurant_table": me.frm.doc.restaurant_table, "order_status": "Taken"}}).then((result) => {
-							if (result.length == 1) {
-								frappe.db.set_value(doctype, result[0].name, 'order_status', "Paid").then(() => {
-									this.toggle_editing();
-									this.set_form_action();
-									this.set_primary_action_in_modal();
-								});
-							}
-						})						
-					}
-				});
+					me.toggle_editing();
+					me.set_form_action();
+					me.set_primary_action_in_modal();
+					window.open(r.enlace_del_pdf);				
+				}
+			});
 		})
 	}
 
@@ -687,30 +676,30 @@ erpnext.restaurant_pos.PointOfSale = class PointOfSale {
 		// }).addClass('visible-xs');
 
 		this.page.add_menu_item(__('Return to board'), function() {
-			var doctype = "Restaurant Order";
-			var items = [];
-			frappe.db.get_list(doctype, {filters: {"restaurant_table": me.frm.doc.restaurant_table, "order_status": "Taken"}}).then((result) => {
-				me.frm.doc.items.forEach(item => {
-					var item = {
-						"item": item.item_code,
-						"qty": item.qty,
-						"rate": item.rate
+			if (me.frm.doc.customer) {
+				var doctype = "Restaurant Order";
+				var items = [];
+				frappe.db.get_list(doctype, {filters: {"restaurant_table": me.frm.doc.restaurant_table, "order_status": "Taken"}}).then((result) => {
+					me.frm.doc.items.forEach(item => {
+						var item = {
+							"item": item.item_code,
+							"qty": item.qty,
+							"rate": item.rate
+						}
+						items.push(item);
+					});
+					if (result.length == 1) {
+						frappe.db.delete_doc(doctype, result[0].name);
 					}
-					items.push(item);
-				});
-				if (result.length > 0) {
-					order = frappe.db.get_doc(doctype, result[0].name).then((order) => {
-						frappe.model.set_value("Restaurant Order", order.name, 'items', items);
-					})
-				} else {
 					var order = frappe.model.get_new_doc(doctype);
 					order.order_status = "Taken";
 					order.items = items;
 					order.restaurant_table = me.frm.doc.restaurant_table;
 					order.customer = me.frm.doc.customer;
 					frappe.db.insert(order);
-				}
-			})
+				})
+			}
+			frappe.ui.toolbar.clear_cache();
 			frappe.set_route('#table-board');
 		});
 
@@ -1142,7 +1131,6 @@ class POSCart {
 	}
 
 	get_item_html(item) {
-		console.log(item);
 		const is_stock_item = this.get_item_details(item.item_code).is_stock_item;
 		const rate = format_currency(item.rate, this.frm.doc.currency);
 		const indicator_class = (!is_stock_item || item.actual_qty >= item.qty) ? 'green' : 'red';
@@ -1966,4 +1954,9 @@ class Payment {
 		}
 	}
 
+}
+
+window.onload=function(){
+	this.console.log("funciona");
+	document.getElementById("table-title").contentWindow.location.reload(true);
 }
