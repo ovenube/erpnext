@@ -202,6 +202,7 @@ erpnext.restaurant_pos.PointOfSale = class PointOfSale {
 									order.items.forEach(order_item => {
 										var item = this.frm.add_child('items', { item_code: order_item.item });
 										item['qty'] = 1;
+										item['observations'] = order_item['observations'];
 										this.get_items_from_order(item, order_item);
 									})
 								})
@@ -215,6 +216,7 @@ erpnext.restaurant_pos.PointOfSale = class PointOfSale {
 											order.items.forEach(order_item => {
 												var item = this.frm.add_child('items', { item_code: order_item.item });
 												item['qty'] = 1;
+												item['observations'] = order_item['observations'];
 												this.get_items_from_order(item, order_item);
 											})
 										})
@@ -1297,7 +1299,7 @@ class POSCart {
 			const $item = $input.closest('.list-item[data-item-code]');
 			const item_code = unescape($item.attr('data-item-code'));
 			const item = me.frm.doc.items.find(i => i['item_code'] === item_code);
-			me.frm.set_value(item.doctype, item.docname, "observations", $input.val());
+			item["observations"] = $input.val();
 			frappe.xcall('erpnext.restaurant.page.restaurant_pos.restaurant_pos.update_order_items', 
 				{"order": me.frm.doc.restaurant_order, "items": me.frm.doc.items}).then((r) => {})
 		});
