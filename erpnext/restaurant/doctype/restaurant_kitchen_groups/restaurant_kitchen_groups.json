@@ -1,0 +1,29 @@
+{
+ "creation": "2020-02-28 16:44:20.512109",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "item_group"
+ ],
+ "fields": [
+  {
+   "fieldname": "item_group",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Item Group",
+   "options": "Item Group"
+  }
+ ],
+ "istable": 1,
+ "modified": "2020-02-28 16:49:40.131827",
+ "modified_by": "Administrator",
+ "module": "Restaurant",
+ "name": "Restaurant Kitchen Groups",
+ "owner": "Administrator",
+ "permissions": [],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}

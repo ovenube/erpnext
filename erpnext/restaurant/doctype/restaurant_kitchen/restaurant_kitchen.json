@@ -1,0 +1,48 @@
+{
+ "autoname": "field:kitchen_name",
+ "creation": "2020-02-28 16:45:45.538285",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "kitchen_name",
+  "item_groups"
+ ],
+ "fields": [
+  {
+   "fieldname": "kitchen_name",
+   "fieldtype": "Data",
+   "label": "Kitchen Name",
+   "unique": 1
+  },
+  {
+   "fieldname": "item_groups",
+   "fieldtype": "Table",
+   "label": "Item Groups",
+   "options": "Restaurant Kitchen Groups"
+  }
+ ],
+ "modified": "2020-02-28 16:45:45.538285",
+ "modified_by": "Administrator",
+ "module": "Restaurant",
+ "name": "Restaurant Kitchen",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}
