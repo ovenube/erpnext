@@ -7,6 +7,8 @@
   "item",
   "qty",
   "served",
+  "discount_percentage",
+  "observations",
   "rate"
  ],
  "fields": [
@@ -35,11 +37,23 @@
    "fieldname": "rate",
    "fieldtype": "Currency",
    "in_list_view": 1,
-   "label": "Rate"
+   "label": "Rate",
+   "reqd": 1
+  },
+  {
+   "fieldname": "observations",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Observations"
+  },
+  {
+   "fieldname": "discount_percentage",
+   "fieldtype": "Percent",
+   "label": "Discount"
   }
  ],
  "istable": 1,
- "modified": "2020-02-23 12:34:50.189108",
+ "modified": "2020-03-02 16:50:21.460921",
  "modified_by": "Administrator",
  "module": "Restaurant",
  "name": "Restaurant Order Item",

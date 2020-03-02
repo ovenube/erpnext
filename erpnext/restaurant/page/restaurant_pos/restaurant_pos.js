@@ -3,6 +3,15 @@ frappe.provide('erpnext.restaurant_pos');
 
 frappe.pages['restaurant-pos'].on_page_load = function(wrapper) {
 	var table = window.location.hash.split("/")[1];
+	if (table == "delivery"){
+		if (window.location.hash.split('/').length == 3){
+			var restaurant_order = window.location.hash.split("/")[2];
+		} else {
+			var restaurant_order = "";
+		}		
+	} else {
+		var restaurant_order = "";
+	}
 	frappe.ui.make_app_page({
 		parent: wrapper,
 		title: __('Restaurant POS'),
@@ -12,7 +21,7 @@ frappe.pages['restaurant-pos'].on_page_load = function(wrapper) {
 	frappe.db.get_value('POS Settings', {name: 'POS Settings'}, 'is_online', (r) => {
 		if (r && !cint(r.use_pos_in_offline_mode)) {
 			// online
-			wrapper.pos = new erpnext.restaurant_pos.PointOfSale(wrapper, table);
+			wrapper.pos = new erpnext.restaurant_pos.PointOfSale(wrapper, table, restaurant_order);
 			window.cur_pos = wrapper.pos;
 		} else {
 			// offline
@@ -33,7 +42,7 @@ frappe.pages['restaurant-pos'].refresh = function(wrapper) {
 }
 
 erpnext.restaurant_pos.PointOfSale = class PointOfSale {
-	constructor(wrapper, table) {
+	constructor(wrapper, table, restaurant_order="") {
 		this.wrapper = $(wrapper).find('.layout-main-section');
 		this.page = wrapper.page;
 
@@ -43,11 +52,11 @@ erpnext.restaurant_pos.PointOfSale = class PointOfSale {
 		];
 
 		frappe.require(assets, () => {
-			this.make(table);	
+			this.make(table, restaurant_order);	
 		});
 	}
 
-	make(table) {
+	make(table, restaurant_order) {
 		return frappe.run_serially([
 			() => frappe.dom.freeze(),
 			() => {
@@ -69,26 +78,59 @@ erpnext.restaurant_pos.PointOfSale = class PointOfSale {
 				frappe.dom.unfreeze();
 			},
 			() => this.page.set_title(__('Restaurant POS')),
-			() => this.get_order_customer(table),
+			() => this.get_order_customer(table, restaurant_order),
 		]);
 	}
 
-	get_order_customer(table) {
-		var table = table.replace("%20", " ");
+	get_order_customer(table, restaurant_order="") {
 		var doctype = "Restaurant Order";
-		frappe.db.get_doc("Restaurant Table", table).then((result_table) => {
-			if (result_table){
-				this.frm.doc.restaurant = result_table.restaurant;
-				this.frm.doc.restaurant_table = result_table.name;
-				frappe.db.get_list(doctype, {filters: {"restaurant_table": result_table.name, "order_status": "Taken"}}).then((result) => {
-					if (result.length == 1) {
-						frappe.db.get_doc(doctype, result[0].name).then((order) => {
-							this.cart.customer_field.set_value(order.customer);
+		if (restaurant_order != ""){
+			this.frm.set_value("restaurant_order", restaurant_order);
+			this.frm.refresh_field('restaurant_order');
+			frappe.db.get_doc(doctype, restaurant_order).then((order) => {
+				this.cart.customer_field.set_value(order.customer);		
+			})
+		} else {
+			if (table == "delivery"){
+				frappe.db.insert({
+					doctype: doctype,
+					order_status: 'Taken',
+					time: frappe.datetime.now_time()
+				}).then((order) => {
+					this.frm.set_value("restaurant_order", order.name);
+					this.frm.refresh_field('restaurant_order');
+				})				
+			} else {
+				var table = table.replace("%20", " ");
+				frappe.db.get_doc("Restaurant Table", table).then((result_table) => {
+					if (result_table){
+						this.frm.doc.restaurant = result_table.restaurant;
+						this.frm.doc.restaurant_table = result_table.name;
+						frappe.db.get_list(doctype, {filters: {"restaurant_table": result_table.name, "order_status": ['in', ["Taken", "In progress"]]}}).then((result) => {
+							if (result.length == 1) {
+								frappe.db.get_doc(doctype, result[0].name).then((order) => {
+									this.cart.customer_field.set_value(order.customer);
+									this.frm.set_value("restaurant_order", order.name);
+									this.frm.refresh_field('restaurant_order');
+								})
+							} else {
+								frappe.xcall("erpnext.restaurant.page.restaurant_pos.restaurant_pos.update_table", 
+									{'restaurant_table': table, 'occupied': 1}).then((r) => {
+									frappe.db.insert({
+										doctype: doctype,
+										restaurant_table: table,
+										order_status: 'Taken'
+									}).then((order) => {
+										this.frm.set_value("restaurant_order", order.name);
+										this.frm.refresh_field('restaurant_order');
+									})
+								})
+							}
 						})
 					}
 				})
 			}
-		})
+		}
 	}
 
 	get_pos_profile() {
@@ -130,7 +172,7 @@ erpnext.restaurant_pos.PointOfSale = class PointOfSale {
 		this.wrapper.append(`
 			<div class="container">
 				<div class="row justify-content-center">
-					<h1 class="text-center" id="table-title">` + table.replace("%20", " ") + `</h1>
+					<h1 class="text-center" id="table-title">` + table.replace("%20", " ").toUpperCase() + `</h1>
 				</div>
 			</div>
 			<div class="pos">
@@ -153,17 +195,33 @@ erpnext.restaurant_pos.PointOfSale = class PointOfSale {
 					this.frm.set_value('customer', customer);
 					if (this.frm.doc.codigo_tipo_documento != "" && this.frm.doc.customer != ""){
 						var doctype = "Restaurant Order";
-						frappe.db.get_list(doctype, {filters: {"restaurant_table": this.frm.doc.restaurant_table, "order_status": "Taken"}}).then((result) => {
-							if (result.length == 1) {
-								frappe.db.get_doc(doctype, result[0].name).then((order) => {
+						if (this.frm.doc.restaurant_order != undefined){
+							frappe.db.get_doc(doctype, this.frm.doc.restaurant_order).then((order) => {
+								frappe.xcall('erpnext.restaurant.page.restaurant_pos.restaurant_pos.update_order_customer', 
+									{"order": this.frm.doc.restaurant_order, "customer": this.frm.doc.customer}).then((r) => {
 									order.items.forEach(order_item => {
 										var item = this.frm.add_child('items', { item_code: order_item.item });
 										item['qty'] = 1;
 										this.get_items_from_order(item, order_item);
 									})
 								})
-							}
-						})
+							})
+						} else {
+							frappe.db.get_list(doctype, {filters: {"restaurant_table": this.frm.doc.restaurant_table, "order_status": "Taken"}}).then((result) => {
+								if (result.length == 1) {
+									frappe.db.get_doc(doctype, result[0].name).then((order) => {
+									frappe.xcall('erpnext.restaurant.page.restaurant_pos.restaurant_pos.update_order_customer', 
+										{"order": this.frm.doc.restaurant_order, "customer": this.frm.doc.customer}).then((r) => {
+											order.items.forEach(order_item => {
+												var item = this.frm.add_child('items', { item_code: order_item.item });
+												item['qty'] = 1;
+												this.get_items_from_order(item, order_item);
+											})
+										})
+									})
+								}
+							})
+						}
 					}
 				},
 				on_field_change: (item_code, field, value, batch_no) => {
@@ -361,7 +419,11 @@ erpnext.restaurant_pos.PointOfSale = class PointOfSale {
 									this.on_qty_change(item);
 								}
 							},
-							() => this.post_qty_change(item)
+							() => this.post_qty_change(item),
+							() => {
+								frappe.xcall('erpnext.restaurant.page.restaurant_pos.restaurant_pos.update_order_items', 
+									{"order": this.frm.doc.restaurant_order, "items": this.frm.doc.items}).then((r) => {})
+							}
 						]);
 					});
 			}
@@ -410,6 +472,10 @@ erpnext.restaurant_pos.PointOfSale = class PointOfSale {
 					// check has serial no/batch no and update cart
 					this.select_batch_and_serial_no(item);
 				}
+			},
+			() => {
+				frappe.xcall('erpnext.restaurant.page.restaurant_pos.restaurant_pos.update_order_items', 
+					{"order": this.frm.doc.restaurant_order, "items": this.frm.doc.items}).then((r) => {})
 			}
 		]);
 	}
@@ -520,7 +586,12 @@ erpnext.restaurant_pos.PointOfSale = class PointOfSale {
 					me.toggle_editing();
 					me.set_form_action();
 					me.set_primary_action_in_modal();
-					window.open(r.enlace_del_pdf);				
+					window.open(r.enlace_del_pdf);		
+					frappe.xcall("erpnext.restaurant.page.restaurant_pos.restaurant_pos.update_table", 
+						{'restaurant_table': table, 'occupied': 0}).then((r) => {
+							frappe.xcall("erpnext.restaurant.page.restaurant_pos.restaurant_pos.pay_restaurant_order",
+							{'restaurant_order': me.frm.doc.restaurant_order}).then((r) => {})
+						})	
 				}
 			});
 		})
@@ -676,29 +747,6 @@ erpnext.restaurant_pos.PointOfSale = class PointOfSale {
 		// }).addClass('visible-xs');
 
 		this.page.add_menu_item(__('Return to board'), function() {
-			if (me.frm.doc.customer) {
-				var doctype = "Restaurant Order";
-				var items = [];
-				frappe.db.get_list(doctype, {filters: {"restaurant_table": me.frm.doc.restaurant_table, "order_status": "Taken"}}).then((result) => {
-					me.frm.doc.items.forEach(item => {
-						var item = {
-							"item": item.item_code,
-							"qty": item.qty,
-							"rate": item.rate
-						}
-						items.push(item);
-					});
-					if (result.length == 1) {
-						frappe.db.delete_doc(doctype, result[0].name);
-					}
-					var order = frappe.model.get_new_doc(doctype);
-					order.order_status = "Taken";
-					order.items = items;
-					order.restaurant_table = me.frm.doc.restaurant_table;
-					order.customer = me.frm.doc.customer;
-					frappe.db.insert(order);
-				})
-			}
 			frappe.ui.toolbar.clear_cache();
 			frappe.set_route('#table-board');
 		});
@@ -773,6 +821,7 @@ class POSCart {
 							<div class="list-item__content list-item__content--flex-1.5 text-muted">${__('Item Name')}</div>
 							<div class="list-item__content text-muted text-right">${__('Quantity')}</div>
 							<div class="list-item__content text-muted text-right">${__('Discount')}</div>
+							<div class="list-item__content text-muted text-right">${__('Obs')}</div>
 							<div class="list-item__content text-muted text-right">${__('Rate')}</div>
 						</div>
 						<div class="cart-items">
@@ -955,6 +1004,10 @@ class POSCart {
 		this.$grand_total.find('.rounded-total-value').text(
 			format_currency(this.frm.doc.rounded_total, this.frm.currency)
 		);
+
+		frappe.xcall('erpnext.restaurant.page.restaurant_pos.restaurant_pos.update_order_totals', 
+			{"order": this.frm.doc.restaurant_order, "grand_total": this.frm.doc.grand_total,
+			"total_taxes_and_charges": this.frm.doc.total_taxes_and_charges}).then((r) => {})
 	}
 
 	update_qty_total() {
@@ -1135,6 +1188,7 @@ class POSCart {
 		const rate = format_currency(item.rate, this.frm.doc.currency);
 		const indicator_class = (!is_stock_item || item.actual_qty >= item.qty) ? 'green' : 'red';
 		const batch_no = item.batch_no || '';
+		const obs = item.observations || ''
 
 		return `
 			<div class="list-item indicator ${indicator_class}" data-item-code="${escape(item.item_code)}"
@@ -1147,6 +1201,9 @@ class POSCart {
 				</div>
 				<div class="discount list-item__content text-right">
 					${item.discount_percentage}%
+				</div>
+				<div class="observations list-item__content text-right">
+					${get_observations_html(obs)}
 				</div>
 				<div class="rate list-item__content text-right">
 					${rate}
@@ -1166,6 +1223,14 @@ class POSCart {
 					<span class="input-group-btn">
 						<button class="btn btn-default btn-xs" data-action="decrement">-</button>
 					</span>
+				</div>
+			`;
+		}
+
+		function get_observations_html(value) {
+			return `
+				<div class="input-group input-group-xs">
+					<input class="form-control" type="text" value="${value}">
 				</div>
 			`;
 		}
@@ -1225,6 +1290,16 @@ class POSCart {
 			const $item = $input.closest('.list-item[data-item-code]');
 			const item_code = unescape($item.attr('data-item-code'));
 			events.on_field_change(item_code, 'qty', flt($input.val()));
+		});
+
+		this.$cart_items.on('change', '.observations input', function() {
+			const $input = $(this);
+			const $item = $input.closest('.list-item[data-item-code]');
+			const item_code = unescape($item.attr('data-item-code'));
+			const item = me.frm.doc.items.find(i => i['item_code'] === item_code);
+			me.frm.set_value(item.doctype, item.docname, "observations", $input.val());
+			frappe.xcall('erpnext.restaurant.page.restaurant_pos.restaurant_pos.update_order_items', 
+				{"order": me.frm.doc.restaurant_order, "items": me.frm.doc.items}).then((r) => {})
 		});
 
 		// current item
@@ -1954,9 +2029,4 @@ class Payment {
 		}
 	}
 
-}
-
-window.onload=function(){
-	this.console.log("funciona");
-	document.getElementById("table-title").contentWindow.location.reload(true);
 }

@@ -4,7 +4,7 @@
  "docstatus": 0,
  "doctype": "Page",
  "idx": 0,
- "modified": "2020-02-13 12:01:30.465987",
+ "modified": "2020-03-01 22:22:52.758121",
  "modified_by": "Administrator",
  "module": "Restaurant",
  "name": "table-board",
@@ -12,9 +12,6 @@
  "page_name": "table-board",
  "restrict_to_domain": "Hospitality",
  "roles": [
-  {
-   "role": "Hotel Manager"
-  },
   {
    "role": "Sales Manager"
   },
@@ -26,6 +23,9 @@
   },
   {
    "role": "Accounts User"
+  },
+  {
+   "role": "Restaurant Manager"
   }
  ],
  "script": null,

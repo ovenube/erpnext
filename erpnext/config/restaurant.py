@@ -28,6 +28,10 @@ def get_data():
                 },
                 {
                     "type": "doctype",
+                    "name": "Restaurant Kitchen",
+                },
+                {
+                    "type": "doctype",
                     "name": "Restaurant Floor",
                 },
                 {
@@ -47,6 +51,13 @@ def get_data():
                     "type": "page",
                     "name": "table-board",
                     "label": _("Table Board"),
+					"icon": "fa fa-bar-chart",
+					"onboard": 1,
+                },
+                {
+                    "type": "page",
+                    "name": "kitchen-view",
+                    "label": _("Kitchen View"),
 					"icon": "fa fa-bar-chart",
 					"onboard": 1,
                 }
