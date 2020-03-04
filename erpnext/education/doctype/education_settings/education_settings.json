@@ -96,6 +96,17 @@
    "label": "Enable LMS"
   },
   {
+   "fieldname": "section_break_10",
+   "fieldtype": "Section Break",
+   "label": "Educational Settings"
+  },
+  {
+   "fieldname": "student_profile",
+   "fieldtype": "Link",
+   "label": "Student Profile",
+   "options": "Role Profile"
+  },
+  {
    "default": "0",
    "description": "By default, a new User is created for every new Student. If enabled, no new User will be created when a new Student is created.",
    "fieldname": "user_creation_skip",
