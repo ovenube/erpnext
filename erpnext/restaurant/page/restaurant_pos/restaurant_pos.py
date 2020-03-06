@@ -37,10 +37,20 @@ def generate_electronic_invoice(company, invoice, doctype):
             pay_restaurant_order(doc.restaurant_table)
             return consult
 
+@frappe.whitelist()
 def pay_restaurant_order(restaurant_order):
-    order_doc = frappe.get_doc("Restaurant Order", order)
-    order_doc = frappe.get_doc("Restaurant Order", order[0].name)
+    order_doc = frappe.get_doc("Restaurant Order", restaurant_order)
     order_doc.order_status = "Paid"
+    if order_doc != "":
+        update_table(order_doc.restaurant_table, 0)
+    order_doc.save()
+
+@frappe.whitelist()
+def cancel_restaurant_order(restaurant_order):
+    order_doc = frappe.get_doc("Restaurant Order", restaurant_order)
+    order_doc.order_status = "Canceled"
+    if order_doc != "":
+        update_table(order_doc.restaurant_table, 0)
     order_doc.save()
 
 @frappe.whitelist()
@@ -80,4 +90,12 @@ def update_order_totals(order, grand_total, total_taxes_and_charges):
 def update_order_customer(order, customer):
     order_doc = frappe.get_doc("Restaurant Order", order)
     order_doc.customer = customer
+    order_doc.save()
+
+@frappe.whitelist()
+def update_order_table(order, table):
+    order_doc = frappe.get_doc("Restaurant Order", order)
+    update_table(order_doc.restaurant_table, 0)
+    order_doc.restaurant_table = table
+    update_table(order_doc.restaurant_table, 1)
     order_doc.save()

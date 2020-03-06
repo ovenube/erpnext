@@ -79,6 +79,7 @@ erpnext.restaurant_pos.PointOfSale = class PointOfSale {
 			},
 			() => this.page.set_title(__('Restaurant POS')),
 			() => this.get_order_customer(table, restaurant_order),
+			() => this.prepare_actions()
 		]);
 	}
 
@@ -95,6 +96,7 @@ erpnext.restaurant_pos.PointOfSale = class PointOfSale {
 				frappe.db.insert({
 					doctype: doctype,
 					order_status: 'Taken',
+					waiter: frappe.user_info().name,
 					time: frappe.datetime.now_time()
 				}).then((order) => {
 					this.frm.set_value("restaurant_order", order.name);
@@ -119,7 +121,8 @@ erpnext.restaurant_pos.PointOfSale = class PointOfSale {
 									frappe.db.insert({
 										doctype: doctype,
 										restaurant_table: table,
-										order_status: 'Taken'
+										order_status: 'Taken',
+										waiter: frappe.user_info().name
 									}).then((order) => {
 										this.frm.set_value("restaurant_order", order.name);
 										this.frm.refresh_field('restaurant_order');
@@ -767,6 +770,43 @@ erpnext.restaurant_pos.PointOfSale = class PointOfSale {
 			voucher.posting_date = me.frm.doc.posting_date;
 			frappe.set_route('Form', 'POS Closing Voucher', voucher.name);
 		});
+
+	}
+
+	prepare_actions() {
+		var me = this;
+		this.page.add_action_item(__("Cancel Order"), function() {
+			frappe.xcall("erpnext.restaurant.page.restaurant_pos.restaurant_pos.cancel_restaurant_order",
+				{'restaurant_order': me.frm.doc.restaurant_order}).then((r) => {
+					frappe.ui.toolbar.clear_cache();
+					frappe.set_route('#table-board');
+				})
+		});
+
+		this.page.add_action_item(__("Change Table"), function() {
+			if (me.frm.doc.restaurant_table){
+				frappe.db.get_list("Restaurant Table", {filters: {occupied: 0}, fields: ['name']}).then((free_tables) => {
+					var table_options = ""
+					free_tables.forEach((free_table) => {
+						table_options = table_options + "\n" + free_table.name;
+					})
+					frappe.prompt([
+						{'fieldname': 'table', 'fieldtype': 'Select', 'options': table_options, 'label': 'New Table', 'reqd': 1}  
+					],
+					function(values){
+						frappe.xcall("erpnext.restaurant.page.restaurant_pos.restaurant_pos.update_order_table",
+							{'order': me.frm.doc.restaurant_order, 'table': values['table']}).then((r) => {
+								frappe.ui.toolbar.clear_cache();
+								frappe.set_route('#table-board');
+							})
+					},
+					'Change Table',
+					'Change'
+					)
+				})
+			}
+		});
+		
 	}
 
 	set_form_action() {
