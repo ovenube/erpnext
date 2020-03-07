@@ -8,6 +8,7 @@ import json
 from frappe import _
 from frappe.model.mapper import get_mapped_doc
 from frappe.utils import flt, cstr
+from frappe.utils.password import update_password
 from frappe.email.doctype.email_group.email_group import add_subscribers
 from erpnext.education.doctype.education_settings.education_settings import get_student_profile
 
