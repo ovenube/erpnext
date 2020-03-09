@@ -1,7 +1,7 @@
 from __future__ import unicode_literals
 import frappe
 from nubefact_integration.nubefact_integration.facturacion_electronica import send_document, consult_document
-from frappe.utils import now_datetime
+from frappe.utils import now_datetime, nowtime
 import json
 
 @frappe.whitelist()
@@ -38,7 +38,7 @@ def generate_electronic_invoice(company, invoice, doctype):
             return consult
 
 @frappe.whitelist()
-def pay_restaurant_order(restaurant_order):
+def pay_restaurant_order(order):
     order_doc = frappe.get_doc("Restaurant Order", restaurant_order)
     order_doc.order_status = "Paid"
     if order_doc != "":
@@ -46,7 +46,7 @@ def pay_restaurant_order(restaurant_order):
     order_doc.save()
 
 @frappe.whitelist()
-def cancel_restaurant_order(restaurant_order):
+def cancel_restaurant_order(order):
     order_doc = frappe.get_doc("Restaurant Order", restaurant_order)
     order_doc.order_status = "Canceled"
     if order_doc != "":
@@ -64,8 +64,9 @@ def update_table(restaurant_table, occupied):
     table.save()
 
 @frappe.whitelist()
-def update_order_items(order, items):
+def update_order_items(order, items, total_qty):
     order_doc = frappe.get_doc("Restaurant Order", order)
+    order_doc.total_qty = total_qty
     items = json.loads(items)
     order_doc.items = {}
     for item in items:
@@ -99,3 +100,11 @@ def update_order_table(order, table):
     order_doc.restaurant_table = table
     update_table(order_doc.restaurant_table, 1)
     order_doc.save()
+
+@frappe.whitelist()
+def get_precount(order):
+    order_doc = frappe.get_doc("Restaurant Order", order)
+    if order_doc.order_status != "Precount":
+        order_doc.order_status = "Precount"
+        order_doc.precount_time = nowtime()
+        order_doc.save()

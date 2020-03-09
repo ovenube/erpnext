@@ -496,7 +496,6 @@ frappe.ui.form.on("Massive Payment Tool Detail", {
 	},
 
 	total_amount: function(frm, cdt, cdn) {
-		var row = locals[cdt][cdn];
 		$.each(locals["Massive Payment Tool Reference"], function(key, reference){
 			var allocated_amount = 0;
 			if(reference.idx==1){

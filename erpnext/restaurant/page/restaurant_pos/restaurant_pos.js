@@ -108,7 +108,7 @@ erpnext.restaurant_pos.PointOfSale = class PointOfSale {
 					if (result_table){
 						this.frm.doc.restaurant = result_table.restaurant;
 						this.frm.doc.restaurant_table = result_table.name;
-						frappe.db.get_list(doctype, {filters: {"restaurant_table": result_table.name, "order_status": ['in', ["Taken", "In progress"]]}}).then((result) => {
+						frappe.db.get_list(doctype, {filters: {"restaurant_table": result_table.name, "order_status": ['in', ["Taken", "In progress", "Precount", "Attended"]]}}).then((result) => {
 							if (result.length == 1) {
 								frappe.db.get_doc(doctype, result[0].name).then((order) => {
 									this.cart.customer_field.set_value(order.customer);
@@ -211,7 +211,7 @@ erpnext.restaurant_pos.PointOfSale = class PointOfSale {
 								})
 							})
 						} else {
-							frappe.db.get_list(doctype, {filters: {"restaurant_table": this.frm.doc.restaurant_table, "order_status": "Taken"}}).then((result) => {
+							frappe.db.get_list(doctype, {filters: {"restaurant_table": this.frm.doc.restaurant_table, "order_status": ['in', ["Taken", "In progress", "Precount", "Attended"]]}}).then((result) => {
 								if (result.length == 1) {
 									frappe.db.get_doc(doctype, result[0].name).then((order) => {
 									frappe.xcall('erpnext.restaurant.page.restaurant_pos.restaurant_pos.update_order_customer', 
@@ -427,7 +427,7 @@ erpnext.restaurant_pos.PointOfSale = class PointOfSale {
 							() => this.post_qty_change(item),
 							() => {
 								frappe.xcall('erpnext.restaurant.page.restaurant_pos.restaurant_pos.update_order_items', 
-									{"order": this.frm.doc.restaurant_order, "items": this.frm.doc.items}).then((r) => {})
+									{"order": this.frm.doc.restaurant_order, "items": this.frm.doc.items, "total_qty": this.frm.doc.total_qty}).then((r) => {})
 							}
 						]);
 					});
@@ -595,7 +595,7 @@ erpnext.restaurant_pos.PointOfSale = class PointOfSale {
 					frappe.xcall("erpnext.restaurant.page.restaurant_pos.restaurant_pos.update_table", 
 						{'restaurant_table': table, 'occupied': 0}).then((r) => {
 							frappe.xcall("erpnext.restaurant.page.restaurant_pos.restaurant_pos.pay_restaurant_order",
-							{'restaurant_order': me.frm.doc.restaurant_order}).then((r) => {})
+							{'order': me.frm.doc.restaurant_order}).then((r) => {})
 						})	
 				}
 			});
@@ -775,9 +775,17 @@ erpnext.restaurant_pos.PointOfSale = class PointOfSale {
 
 	prepare_actions() {
 		var me = this;
+
+		this.page.add_action_item(__("Precount"), function() {
+			frappe.xcall("erpnext.restaurant.page.restaurant_pos.restaurant_pos.get_precount",
+				{'order': me.frm.doc.restaurant_order}).then((r) => {
+					window.open("/printview?doctype=Restaurant%20Order&name=" + me.frm.doc.restaurant_order + "&trigger_print=1&format=Estandar&no_letterhead=0&_lang=es");
+				})
+		});
+
 		this.page.add_action_item(__("Cancel Order"), function() {
 			frappe.xcall("erpnext.restaurant.page.restaurant_pos.restaurant_pos.cancel_restaurant_order",
-				{'restaurant_order': me.frm.doc.restaurant_order}).then((r) => {
+				{'order': me.frm.doc.restaurant_order}).then((r) => {
 					frappe.ui.toolbar.clear_cache();
 					frappe.set_route('#table-board');
 				})

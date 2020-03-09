@@ -12,7 +12,8 @@ KitchenView = Class.extend({
 
 		const assets = [
 			'assets/erpnext/css/kitchen_view.css',
-			'assets/erpnext/css/table_board.css'
+			'assets/erpnext/css/table_board.css',
+			'assets/erpnext/js/restaurant/kitchen_view.js'
 		];
 
 		frappe.require(assets, () => {
@@ -50,7 +51,7 @@ KitchenView = Class.extend({
 				r.forEach(order_table => {
 					$('#kitchen-orders').append(`
 					<div class="col-sm-2 col-xs-4 tableList nohover-item" style="">
-						<a class="btn btn-lg kitchentable-btn` + (order_table.order ? "" : " disabled")  +`" href="javascript:void(0)" onclick="showticket(44)">`+ order_table.table.slice(-2) +`</a>
+						<a class="btn btn-lg kitchentable-btn` + (order_table.order ? "" : " disabled")  +`" href="javascript:void(0)" onclick="openRestauranOrder('` + order_table.order + `')">`+ (order_table.table === undefined ? order_table.time : order_table.table.slice(-2)) +`</a>
 					</div>`);
 				})
 			})

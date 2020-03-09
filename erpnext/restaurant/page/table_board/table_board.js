@@ -60,9 +60,10 @@ TableBoard = Class.extend({
 						frappe.msgprint(__("Please add Restaurant Tables"));
 					} else {
 						result.forEach(table => {
+							var datetime = table.time ? (`<span class="tabletime">` + table.time.substr(11, 5) + `</span>`) : ""
 							$('#tables').append(`
-							<div class="col-sm-2 col-xs-4 tableList">
-								<a href="#restaurant-pos/` + table.name.replace(" ", "%20") + `">
+							<div class="col-sm-2 col-xs-4 tableList">` + datetime + 
+							`<a href="#restaurant-pos/` + table.name.replace(" ", "%20") + `">
 									<img src="assets/erpnext/images/` + (table.occupied == 1 ? "tableB2.svg" : "table.svg") + `" alt="table">
 									<h2>`+ table.name.slice(-2) + `</h2>
 								</a>

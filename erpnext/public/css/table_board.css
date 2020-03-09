@@ -123,3 +123,12 @@ body{
   line-height: 1.3333333;
   border-radius: 6px;
 }
+
+.tabletime{
+	position: absolute;
+	top: 1;
+	left: 72px;
+	padding: 2px 5px;
+	color: #fff;
+	background-color: rgb(143, 143, 143);
+ }

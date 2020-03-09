@@ -13,10 +13,14 @@
   "cancelled_time",
   "current_order",
   "items",
+  "qty",
+  "served_qty",
+  "column_break_01",
+  "total_qty",
   "totals",
-  "total_amount",
   "column_break",
-  "total_taxes_and_charges"
+  "total_taxes_and_charges",
+  "total_amount"
  ],
  "fields": [
   {
@@ -40,7 +44,7 @@
    "fieldname": "order_status",
    "fieldtype": "Select",
    "label": "Order Status",
-   "options": "\nTaken\nIn progress\nAttended\nPaid\nCanceled"
+   "options": "\nTaken\nIn progress\nAttended\nPrecount\nPaid\nCanceled"
   },
   {
    "fieldname": "customer",
@@ -87,10 +91,33 @@
    "fieldname": "cancelled_time",
    "fieldtype": "Time",
    "label": "Paid Time"
+  },
+  {
+   "fieldname": "qty",
+   "fieldtype": "Section Break",
+   "label": "Qty"
+  },
+  {
+   "fieldname": "column_break_01",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "served_qty",
+   "fieldtype": "Int",
+   "label": "Served",
+   "read_only": 1,
+   "report_hide": 1
+  },
+  {
+   "fieldname": "total_qty",
+   "fieldtype": "Int",
+   "label": "Total Qty",
+   "read_only": 1,
+   "report_hide": 1
   }
  ],
- "modified": "2020-03-02 16:22:17.451500",
- "modified_by": "Administrator",
+ "modified": "2020-03-08 22:30:39.835607",
+ "modified_by": "carlos_jcez@hotmail.com",
  "module": "Restaurant",
  "name": "Restaurant Order",
  "owner": "Administrator",

@@ -10,11 +10,11 @@ class RestaurantOrder(Document):
 	pass
 
 def get_order_kitchen(kitchen, table):
+	kitchen_groups = frappe.get_doc("Restaurant Kitchen", kitchen).item_groups
 	table_order = {
 		"table": table['name'],
 		"items": []
-		}
-	kitchen_groups = frappe.get_doc("Restaurant Kitchen", kitchen).item_groups
+		}	
 	orders = frappe.get_list("Restaurant Order", filters={'restaurant_table': table['name'], 'order_status': ['in', ('Taken', 'In progress')]})
 	if len(orders) == 1:
 		order = frappe.get_doc("Restaurant Order", orders[0]['name'])
@@ -24,3 +24,22 @@ def get_order_kitchen(kitchen, table):
 			if item.item_group in kitchen_groups:
 				table_order["items"].append(item)
 	return table_order
+
+def get_order_kitchen_delivery(kitchen):
+	delivery_orders = []
+	kitchen_groups = frappe.get_doc("Restaurant Kitchen", kitchen).item_groups
+	orders = frappe.get_list("Restaurant Order", filters={'restaurant_table': "",'order_status': ['in', ('Taken', 'In progress')]})
+	for order in orders:
+		current_order = {}
+		order = frappe.get_doc("Restaurant Order", order['name'])
+		current_order = {
+			'order': order.name,
+			'time': order.time,
+			'items': []
+		}
+		for order_item in order.items:
+			item = frappe.get_doc("Item", order_item.item)
+			if item.item_group in kitchen_groups:
+				current_order["items"].append(item)
+		delivery_orders.append(current_order)
+	return delivery_orders
