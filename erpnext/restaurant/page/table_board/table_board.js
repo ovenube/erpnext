@@ -44,7 +44,7 @@ TableBoard = Class.extend({
 			if (selected_floor == "Delivery"){
 				$('#delivery-orders').empty();
 				$("#tables").empty();
-				frappe.db.get_list("Restaurant Order", {fields: ['name', 'order_status', 'time'], filters: {restaurant_table: "", order_status: ['in', ['Taken', 'In progress']]}}).then((result) => {
+				frappe.db.get_list("Restaurant Order", {fields: ['name', 'order_status', 'time'], filters: {restaurant_table: "", order_status: ['in', ['Taken', 'In progress', 'Precount']]}}).then((result) => {
 					result.forEach(order => {
 						$('#delivery-orders').append(`
 						<div class="col-sm-2 col-xs-4 tableList nohover-item" style="">

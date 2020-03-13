@@ -17,7 +17,7 @@ frappe.ui.form.on("Restaurant Order Item", {
 		});
 		frm.set_value("served_qty", served_qty);
 		if (served_qty == frm.doc.total_qty){
-			frm.set_value("order_status", "Attended");
+			frm.set_value("attended", 1);
 		}
 		frm.refresh_fields();
 	}

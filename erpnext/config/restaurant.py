@@ -4,13 +4,8 @@ from frappe import _
 def get_data():
 	return [
         {
-            "label": _("Orders and Reservation"),
+            "label": _("Reservation"),
             "items": [
-                {
-                    "type": "doctype",
-                    "name": "Restaurant Order Entry",
-                    "onboard": 1,
-                },
                  {
                     "type": "doctype",
                     "name": "Restaurant Reservation",

@@ -15,7 +15,7 @@ def get_order_kitchen(kitchen, table):
 		"table": table['name'],
 		"items": []
 		}	
-	orders = frappe.get_list("Restaurant Order", filters={'restaurant_table': table['name'], 'order_status': ['in', ('Taken', 'In progress')]})
+	orders = frappe.get_list("Restaurant Order", filters={'restaurant_table': table['name'], 'order_status': ['in', ('Taken', 'In progress', 'Precount')], 'attended': 0})
 	if len(orders) == 1:
 		order = frappe.get_doc("Restaurant Order", orders[0]['name'])
 		table_order['order'] = order.name
@@ -28,7 +28,7 @@ def get_order_kitchen(kitchen, table):
 def get_order_kitchen_delivery(kitchen):
 	delivery_orders = []
 	kitchen_groups = frappe.get_doc("Restaurant Kitchen", kitchen).item_groups
-	orders = frappe.get_list("Restaurant Order", filters={'restaurant_table': "",'order_status': ['in', ('Taken', 'In progress')]})
+	orders = frappe.get_list("Restaurant Order", filters={'restaurant_table': "",'order_status': ['in', ('Taken', 'In progress', 'Precount')], 'attended': 0})
 	for order in orders:
 		current_order = {}
 		order = frappe.get_doc("Restaurant Order", order['name'])

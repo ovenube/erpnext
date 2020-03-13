@@ -15,6 +15,7 @@
   "items",
   "qty",
   "served_qty",
+  "attended",
   "column_break_01",
   "total_qty",
   "totals",
@@ -44,7 +45,7 @@
    "fieldname": "order_status",
    "fieldtype": "Select",
    "label": "Order Status",
-   "options": "\nTaken\nIn progress\nAttended\nPrecount\nPaid\nCanceled"
+   "options": "\nTaken\nIn progress\nPrecount\nPaid\nCanceled"
   },
   {
    "fieldname": "customer",
@@ -114,9 +115,15 @@
    "label": "Total Qty",
    "read_only": 1,
    "report_hide": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "attended",
+   "fieldtype": "Check",
+   "label": "Attended"
   }
  ],
- "modified": "2020-03-08 22:30:39.835607",
+ "modified": "2020-03-13 06:19:46.790175",
  "modified_by": "carlos_jcez@hotmail.com",
  "module": "Restaurant",
  "name": "Restaurant Order",

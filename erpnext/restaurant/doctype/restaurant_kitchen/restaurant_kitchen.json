@@ -5,6 +5,7 @@
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
+  "restaurant",
   "kitchen_name",
   "item_groups"
  ],
@@ -12,7 +13,9 @@
   {
    "fieldname": "kitchen_name",
    "fieldtype": "Data",
+   "in_list_view": 1,
    "label": "Kitchen Name",
+   "reqd": 1,
    "unique": 1
   },
   {
@@ -20,9 +23,17 @@
    "fieldtype": "Table",
    "label": "Item Groups",
    "options": "Restaurant Kitchen Groups"
+  },
+  {
+   "fieldname": "restaurant",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Restaurant",
+   "options": "Restaurant",
+   "reqd": 1
   }
  ],
- "modified": "2020-02-28 16:45:45.538285",
+ "modified": "2020-03-13 06:08:08.260208",
  "modified_by": "Administrator",
  "module": "Restaurant",
  "name": "Restaurant Kitchen",
