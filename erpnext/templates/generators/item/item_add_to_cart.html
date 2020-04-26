@@ -55,6 +55,7 @@
 			erpnext.shopping_cart.update_cart({
 				item_code,
 				qty: 1,
+				cart_id: frappe.get_cookie('cart_id') || "",
 				callback(r) {
 					$btn.prop('disabled', false);
 					if (r.message) {

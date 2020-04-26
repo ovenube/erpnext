@@ -5,9 +5,24 @@
 <h1>{{ _('Products') }}</h1>
 {% endblock header %}
 
+{%- block head_include %}
+	<!-- GOOGLE WEB FONT -->
+    <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,900&display=swap" rel="stylesheet">
+
+    <!-- BASE CSS -->
+    <link href="/assets/erpnext/css/bootstrap.custom.min.css" rel="stylesheet">
+    <link href="/assets/erpnext/css/style.css" rel="stylesheet">
+
+	<!-- SPECIFIC CSS -->
+    <link href="/assets/erpnext/css/listing.css" rel="stylesheet">
+
+    <!-- YOUR CUSTOM CSS -->
+    <link href="/assets/erpnext/css/custom.css" rel="stylesheet">
+{% endblock -%}
+
 {% block page_content %}
 <div class="row">
-	<div class="col-8">
+	<div class="col-9">
 		<div class="input-group input-group-sm mb-3">
 			<input type="search" class="form-control" placeholder="{{_('Search')}}"
 				aria-label="{{_('Product Search')}}" aria-describedby="product-search"
@@ -16,7 +31,7 @@
 		</div>
 	</div>
 
-	<div class="col-4 pl-0">
+	<div class="col-3 pl-0">
 		<button class="btn btn-light btn-sm btn-block d-md-none"
 			type="button"
 			data-toggle="collapse"
@@ -31,16 +46,16 @@
 </div>
 
 <div class="row">
-	<div class="col-12 order-2 col-md-8 order-md-1 products-list">
+	<div class="col-12 order-2 col-md-9 order-md-1 products-list">
 		{% if items %}
 			{% for item in items %}
-				{% include "erpnext/www/all-products/item_row.html" %}
+				{% include "erpnext/www/all-products/item_grid.html" %}
 			{% endfor %}
 		{% else %}
 			{% include "erpnext/www/all-products/not_found.html" %}
 		{% endif %}
 	</div>
-	<div class="col-12 order-1 col-md-4 order-md-2">
+	<div class="col-12 order-1 col-md-3 order-md-2">
 
 		{% if frappe.form_dict.start or frappe.form_dict.field_filters or frappe.form_dict.attribute_filters or frappe.form_dict.search %}
 		<a class="mb-3 d-inline-block" href="/all-products">{{ _('Clear filters') }}</a>
