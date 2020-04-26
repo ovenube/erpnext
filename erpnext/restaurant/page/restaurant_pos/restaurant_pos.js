@@ -214,15 +214,11 @@ erpnext.restaurant_pos.PointOfSale = class PointOfSale {
 							frappe.db.get_list(doctype, {filters: {"restaurant_table": this.frm.doc.restaurant_table, "order_status": ['in', ["Taken", "In progress", "Precount", "Attended"]]}}).then((result) => {
 								if (result.length == 1) {
 									frappe.db.get_doc(doctype, result[0].name).then((order) => {
-									frappe.xcall('erpnext.restaurant.page.restaurant_pos.restaurant_pos.update_order_customer', 
-										{"order": this.frm.doc.restaurant_order, "customer": this.frm.doc.customer}).then((r) => {
-											order.items.forEach(order_item => {
-												var item = this.frm.add_child('items', { item_code: order_item.item });
-												item['qty'] = 1;
-												item['observations'] = order_item['observations'];
-												this.get_items_from_order(item, order_item);
+										if (this.frm.doc.restaurant_order == undefined){this.frm.set_value("restaurant_order", order.name)}
+										frappe.xcall('erpnext.restaurant.page.restaurant_pos.restaurant_pos.update_order_customer', 
+											{"order": order.name, "customer": this.frm.doc.customer}).then((r) => {
+												frappe.ui.toolbar.clear_cache();
 											})
-										})
 									})
 								}
 							})
@@ -1349,7 +1345,7 @@ class POSCart {
 			const item = me.frm.doc.items.find(i => i['item_code'] === item_code);
 			item["observations"] = $input.val();
 			frappe.xcall('erpnext.restaurant.page.restaurant_pos.restaurant_pos.update_order_items', 
-				{"order": me.frm.doc.restaurant_order, "items": me.frm.doc.items, "total_qty": this.frm.doc.total_qty}).then((r) => {})
+				{"order": me.frm.doc.restaurant_order, "items": me.frm.doc.items, "total_qty": me.frm.doc.total_qty}).then((r) => {})
 		});
 
 		// current item

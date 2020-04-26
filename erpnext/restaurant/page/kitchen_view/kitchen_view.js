@@ -51,7 +51,7 @@ KitchenView = Class.extend({
 				r.forEach(order_table => {
 					$('#kitchen-orders').append(`
 					<div class="col-sm-2 col-xs-4 tableList nohover-item" style="">
-						<a class="btn btn-lg kitchentable-btn` + (order_table.order ? "" : " disabled")  +`" href="javascript:void(0)" onclick="openRestauranOrder('` + order_table.order + `')">`+ (order_table.table === undefined ? order_table.time : order_table.table.slice(-2)) +`</a>
+						<a class="btn btn-lg kitchentable-btn` + (order_table.items.length != 0 ? "" : " disabled")  +`" href="javascript:void(0)" onclick="openRestauranOrder('` + order_table.order + `')">`+ (order_table.table === undefined ? order_table.time : order_table.table.slice(-2)) +`</a>
 					</div>`);
 				})
 			})

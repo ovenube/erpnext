@@ -47,7 +47,7 @@ def pay_restaurant_order(order):
 
 @frappe.whitelist()
 def cancel_restaurant_order(order):
-    order_doc = frappe.get_doc("Restaurant Order", restaurant_order)
+    order_doc = frappe.get_doc("Restaurant Order", order)
     order_doc.order_status = "Canceled"
     if order_doc != "":
         update_table(order_doc.restaurant_table, 0)
@@ -66,18 +66,28 @@ def update_table(restaurant_table, occupied):
 @frappe.whitelist()
 def update_order_items(order, items, total_qty):
     order_doc = frappe.get_doc("Restaurant Order", order)
-    order_doc.total_qty = total_qty
+    current_items = order_doc.items
+    if order_doc.total_qty != total_qty:
+        order_doc.attended = 0
     items = json.loads(items)
-    order_doc.items = {}
+    item_dicts = []
     for item in items:
-        order_doc.append("items",
-            {
+        served_qty = 0
+        for current_item in current_items:
+            if current_item.item == item['item_code']:
+                served_qty = current_item.served_qty
+        item_dicts.append({
             'item': item['item_code'],
             'qty': item['qty'],
+            'served_qty': served_qty,
             'rate': item['rate'],
             'discount': item['discount_percentage'],
             'observations': item.get('observations') if item.get('observations') else ""
         })
+    order_doc.items = {}
+    for item_dict in item_dicts:
+        order_doc.append("items", item_dict)
+    order_doc.total_qty = total_qty
     order_doc.save()
 
 @frappe.whitelist()
