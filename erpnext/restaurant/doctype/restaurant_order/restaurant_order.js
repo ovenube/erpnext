@@ -2,9 +2,11 @@
 // For license information, please see license.txt
 
 frappe.ui.form.on('Restaurant Order', {
-	// refresh: function(frm) {
-
-	// }
+	refresh: function(frm) {
+		frm.page.add_menu_item(__("Return to Kitchen View"), function() {
+			frappe.set_route('#kitchen-view');
+		});
+	}
 });
 
 frappe.ui.form.on("Restaurant Order Item", {
