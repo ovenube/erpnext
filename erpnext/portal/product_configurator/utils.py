@@ -1,5 +1,8 @@
 import frappe
 import numpy as np
+from erpnext.shopping_cart.doctype.shopping_cart_settings.shopping_cart_settings \
+	import get_shopping_cart_settings
+from erpnext.utilities.product import get_price
 from erpnext.portal.product_configurator.item_variants_cache import ItemVariantsCacheManager
 
 def get_field_filter_data():
@@ -314,6 +317,7 @@ def get_items_by_fields(field_filters):
 def get_items(filters=None, search=None):
 	start = frappe.form_dict.start or 0
 	products_settings = get_product_settings()
+	cart_settings = get_shopping_cart_settings()
 	page_length = products_settings.products_per_page
 
 	filters = filters or []
@@ -399,6 +403,19 @@ def get_items(filters=None, search=None):
 	for r in results:
 		r.description = r.web_long_description or r.description
 		r.image = r.website_image or r.image
+		r['new_price'] = get_price(
+			r.name,
+			cart_settings.promotional_price_list,
+			cart_settings.default_customer_group,
+			cart_settings.company
+		)
+		r['old_price'] = get_price(
+			r.name,
+			cart_settings.price_list,
+			cart_settings.default_customer_group,
+			cart_settings.company
+		)
+		r['discount'] = round((r['old_price'].price_list_rate - r['new_price'].price_list_rate)/r['old_price'].price_list_rate * 100) if r['new_price'] is not None else 0
 
 	return results
 

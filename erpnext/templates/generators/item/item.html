@@ -2,116 +2,22 @@
 
 {% block title %} {{ title }} {% endblock %}
 
-{%- block head_include %}
-	 <!-- BASE CSS -->
-	 <link href="/assets/erpnext/css/style.css" rel="stylesheet">
- 
-	 <!-- SPECIFIC CSS -->
-	 <link href="/assets/erpnext/css/product_page.css" rel="stylesheet">
-{% endblock -%}
-
 {% block breadcrumbs %}
 	{% include "templates/includes/breadcrumbs.html" %}
 {% endblock %}
 
 {% block page_content %}
-<div class="row">
-	<div class="col-md-6">
-		<div class="all">
-			<div class="slider">
-				<div class="owl-carousel owl-theme main">
-					<div style="background-image: url(img/products/shoes/1.jpg);" class="item-box"></div>
-					<div style="background-image: url(img/products/shoes/2.jpg);" class="item-box"></div>
-					<div style="background-image: url(img/products/shoes/3.jpg);" class="item-box"></div>
-					<div style="background-image: url(img/products/shoes/4.jpg);" class="item-box"></div>
-					<div style="background-image: url(img/products/shoes/5.jpg);" class="item-box"></div>
-					<div style="background-image: url(img/products/shoes/6.jpg);" class="item-box"></div>
-				</div>
-				<div class="left nonl"><i class="ti-angle-left"></i></div>
-				<div class="right"><i class="ti-angle-right"></i></div>
-			</div>
-			<div class="slider-two">
-				<div class="owl-carousel owl-theme thumbs">
-					<div style="background-image: url(img/products/shoes/1.jpg);" class="item active"></div>
-					<div style="background-image: url(img/products/shoes/2.jpg);" class="item"></div>
-					<div style="background-image: url(img/products/shoes/3.jpg);" class="item"></div>
-					<div style="background-image: url(img/products/shoes/4.jpg);" class="item"></div>
-					<div style="background-image: url(img/products/shoes/5.jpg);" class="item"></div>
-					<div style="background-image: url(img/products/shoes/6.jpg);" class="item"></div>
-				</div>
-				<div class="left-t nonl-t"></div>
-				<div class="right-t"></div>
-			</div>
+{% from "erpnext/templates/includes/macros.html" import product_image %}
+<div class="item-content">
+	<div class="product-page-content" itemscope itemtype="http://schema.org/Product">
+		<div class="row mb-5">
+			{% include "templates/generators/item/item_image.html" %}
+			{% include "templates/generators/item/item_details.html" %}
 		</div>
-	</div>
-	<div class="col-md-6">
-		<div class="breadcrumbs">
-			<ul>
-				<li><a href="#">Home</a></li>
-				<li><a href="#">Category</a></li>
-				<li>Page active</li>
-			</ul>
-		</div>
-		<!-- /page_header -->
-		<div class="prod_info">
-			<h1>Armor Air X Fear</h1>
-			<span class="rating"><i class="icon-star voted"></i><i class="icon-star voted"></i><i class="icon-star voted"></i><i class="icon-star voted"></i><i class="icon-star"></i><em>4 reviews</em></span>
-			<p><small>SKU: MTKRY-001</small><br>Sed ex labitur adolescens scriptorem. Te saepe verear tibique sed. Et wisi ridens vix, lorem iudico blandit mel cu. Ex vel sint zril oportere, amet wisi aperiri te cum.</p>
-			<div class="prod_options">
-				<div class="row">
-					<label class="col-xl-5 col-lg-5  col-md-6 col-6 pt-0"><strong>Color</strong></label>
-					<div class="col-xl-4 col-lg-5 col-md-6 col-6 colors">
-						<ul>
-							<li><a href="#0" class="color color_1 active"></a></li>
-							<li><a href="#0" class="color color_2"></a></li>
-							<li><a href="#0" class="color color_3"></a></li>
-							<li><a href="#0" class="color color_4"></a></li>
-						</ul>
-					</div>
-				</div>
-				<div class="row">
-					<label class="col-xl-5 col-lg-5 col-md-6 col-6"><strong>Size</strong> - Size Guide <a href="#0" data-toggle="modal" data-target="#size-modal"><i class="ti-help-alt"></i></a></label>
-					<div class="col-xl-4 col-lg-5 col-md-6 col-6">
-						<div class="custom-select-form">
-							<select class="wide">
-								<option value="" selected>Small (S)</option>
-								<option value="">M</option>
-								<option value=" ">L</option>
-								<option value=" ">XL</option>
-							</select>
-						</div>
-					</div>
-				</div>
-				<div class="row">
-					<label class="col-xl-5 col-lg-5  col-md-6 col-6"><strong>Quantity</strong></label>
-					<div class="col-xl-4 col-lg-5 col-md-6 col-6">
-						<div class="numbers-row">
-							<input type="text" value="1" id="quantity_1" class="qty2" name="quantity_1">
-						</div>
-					</div>
-				</div>
-			</div>
-			<div class="row">
-				<div class="col-lg-5 col-md-6">
-					<div class="price_main"><span class="new_price">$148.00</span><span class="percentage">-20%</span> <span class="old_price">$160.00</span></div>
-				</div>
-				<div class="col-lg-4 col-md-6">
-					<div class="btn_add_to_cart"><a href="#0" class="btn_1">Add to Cart</a></div>
-				</div>
-			</div>
-		</div>
-		<!-- /prod_info -->
-		<div class="product_actions">
-			<ul>
-				<li>
-					<a href="#"><i class="ti-heart"></i><span>Add to Wishlist</span></a>
-				</li>
-				<li>
-					<a href="#"><i class="ti-control-shuffle"></i><span>Add to Compare</span></a>
-				</li>
-			</ul>
-		</div>
-		<!-- /product_actions -->
+
+		{% include "templates/generators/item/item_specifications.html" %}
+
+		{{ doc.website_content or '' }}
 	</div>
 </div>
 {% endblock %}
@@ -123,10 +29,4 @@
 <script type="text/javascript" src="/assets/js/control.min.js"></script>
 <script type="text/javascript" src="/assets/js/dialog.min.js"></script>
 <script type="text/javascript" src="/assets/js/bootstrap-4-web.min.js"></script>
-<!-- COMMON SCRIPTS -->
-<script src="/assets/erpnext/js/common_scripts.min.js"></script>
-<script src="/assets/erpnext/js/main.js"></script>
-
-<!-- SPECIFIC SCRIPTS -->
-<script  src="/assets/erpnext/js/carousel_with_thumbs.js"></script>
 {% endblock %}
