@@ -7,6 +7,7 @@
 	<span>{{ _("Item Code") }}:</span>
 	<span itemprop="productID">{{ doc.name }}</span>
 </p>
+{% include "templates/generators/item/item_rating.html" %}
 <!-- description -->
 <div itemprop="description">
 {% if frappe.utils.strip_html(doc.web_long_description or '') %}
@@ -21,8 +22,10 @@
 {% if has_variants %}
 	<!-- configure template -->
 	{% include "templates/generators/item/item_configure.html" %}
-{% else %}
-	<!-- add variant to cart -->
-	{% include "templates/generators/item/item_add_to_cart.html" %}
 {% endif %}
+<!-- add variant to cart -->
+{% include "templates/generators/item/item_add_to_cart.html" %}
+
+{% include "templates/generators/item/item_share.html" %}
 </div>
+

@@ -2,6 +2,14 @@
 
 {% block title %} {{ title }} {% endblock %}
 
+{%- block style %}
+<link type="text/css" rel="stylesheet" href="/assets/erpnext/css/bootrap.custom.min.css">
+<link type="text/css" rel="stylesheet" href="/assets/erpnext/css/bootrap.min.css">
+<!-- Latest compiled and minified CSS -->
+<link href="/assets/erpnext/css/bootstrap-select.min.css" rel="stylesheet">
+<link href="/assets/erpnext/css/style.css" rel="stylesheet">
+{% endblock -%}
+
 {% block breadcrumbs %}
 	{% include "templates/includes/breadcrumbs.html" %}
 {% endblock %}
@@ -29,4 +37,7 @@
 <script type="text/javascript" src="/assets/js/control.min.js"></script>
 <script type="text/javascript" src="/assets/js/dialog.min.js"></script>
 <script type="text/javascript" src="/assets/js/bootstrap-4-web.min.js"></script>
+<!-- Latest compiled and minified JavaScript -->
+<script type="text/javascript" src="/assets/erpnext/js/bootstrap-select.min.js"></script>
+<script type="text/javascript" src="/assets/erpnext/js/bootstrap-input-spinner.js"></script>
 {% endblock %}
