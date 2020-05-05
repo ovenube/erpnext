@@ -26,13 +26,6 @@ def set_cart_count(quotation=None):
 		if hasattr(frappe.local, "cookie_manager"):
 			frappe.local.cookie_manager.set_cookie("cart_count", cart_count)
 
-def set_cart_id():
-	if hasattr(frappe.local, "session"):
-		if frappe.local.session.get('sid') == "Guest":
-			if hasattr(frappe.local, "cookie_manager"):
-				if not frappe.local.cookie_manager.cookies.get("cart_id"):
-					frappe.local.cookie_manager.set_cookie("cart_id", frappe.generate_hash())			
-
 @frappe.whitelist()
 def get_cart_quotation(doc=None):
 	party = get_party()
@@ -101,19 +94,18 @@ def request_for_quotation():
 	quotation.submit()
 	return quotation.name
 
-@frappe.whitelist(allow_guest=True)
+@frappe.whitelist()
 def update_cart(item_code, qty, additional_notes=None, with_items=False):
-	set_cart_id()
-	quotation = _get_cart_quotation()	
+	quotation = _get_cart_quotation()
 
-	empty_cart = False
+	empty_card = False
 	qty = flt(qty)
 	if qty == 0:
 		quotation_items = quotation.get("items", {"item_code": ["!=", item_code]})
 		if quotation_items:
 			quotation.set("items", quotation_items)
 		else:
-			empty_cart = True
+			empty_card = True
 
 	else:
 		quotation_items = quotation.get("items", {"item_code": item_code})
@@ -132,7 +124,7 @@ def update_cart(item_code, qty, additional_notes=None, with_items=False):
 
 	quotation.flags.ignore_permissions = True
 	quotation.payment_schedule = []
-	if not empty_cart:
+	if not empty_card:
 		quotation.save()
 	else:
 		quotation.delete()
@@ -249,18 +241,11 @@ def decorate_quotation_doc(doc):
 
 def _get_cart_quotation(party=None):
 	'''Return the open Quotation of type "Shopping Cart" or make a new one'''
-	cart_id = None
 	if not party:
 		party = get_party()
 
-	if party.name == "Guest":
-		session = frappe.session
-		if hasattr(frappe.local, "cookie_manager"):
-			if frappe.local.cookie_manager.cookies.get('cart_id'):
-				cart_id = frappe.local.cookie_manager.cookies.get('cart_id')['value']
-
 	quotation = frappe.get_all("Quotation", fields=["name"], filters=
-		{"party_name": party.name, "order_type": "Shopping Cart", "docstatus": 0, "cart_id": cart_id},
+		{"party_name": party.name, "order_type": "Shopping Cart", "docstatus": 0},
 		order_by="modified desc", limit_page_length=1)
 
 	if quotation:
@@ -276,8 +261,7 @@ def _get_cart_quotation(party=None):
 			"status": "Draft",
 			"docstatus": 0,
 			"__islocal": 1,
-			"party_name": party.name,
-			"cart_id": cart_id
+			"party_name": party.name
 		})
 
 		qdoc.contact_person = frappe.db.get_value("Contact", {"email_id": frappe.session.user})

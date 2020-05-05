@@ -4,6 +4,7 @@
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
+  "restaurant",
   "restaurant_table",
   "waiter",
   "customer",
@@ -121,10 +122,16 @@
    "fieldname": "attended",
    "fieldtype": "Check",
    "label": "Attended"
+  },
+  {
+   "fieldname": "restaurant",
+   "fieldtype": "Link",
+   "label": "Restaurant",
+   "options": "Restaurant"
   }
  ],
- "modified": "2020-03-13 06:19:46.790175",
- "modified_by": "carlos_jcez@hotmail.com",
+ "modified": "2020-05-05 13:59:34.322811",
+ "modified_by": "Administrator",
  "module": "Restaurant",
  "name": "Restaurant Order",
  "owner": "Administrator",

@@ -62,6 +62,7 @@ def update_table(restaurant_table, occupied):
     else:
         table.time = ""
     table.save()
+    return table.restaurant
 
 @frappe.whitelist()
 def update_order_items(order, items, total_qty):
@@ -112,9 +113,12 @@ def update_order_table(order, table):
     order_doc.save()
 
 @frappe.whitelist()
-def get_precount(order):
+def get_precount(order, restaurant):
     order_doc = frappe.get_doc("Restaurant Order", order)
+    settings = frappe.get_doc("Restaurant", restaurant)
+    print_format = settings.print_format
     if order_doc.order_status != "Precount":
         order_doc.order_status = "Precount"
         order_doc.precount_time = nowtime()
         order_doc.save()
+    return print_format or ""

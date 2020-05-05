@@ -117,9 +117,10 @@ erpnext.restaurant_pos.PointOfSale = class PointOfSale {
 								})
 							} else {
 								frappe.xcall("erpnext.restaurant.page.restaurant_pos.restaurant_pos.update_table", 
-									{'restaurant_table': table, 'occupied': 1}).then((r) => {
+									{'restaurant_table': table, 'occupied': 1}).then((restaurant) => {
 									frappe.db.insert({
 										doctype: doctype,
+										restaurant: restaurant,
 										restaurant_table: table,
 										order_status: 'Taken',
 										waiter: frappe.user_info().name
@@ -774,8 +775,9 @@ erpnext.restaurant_pos.PointOfSale = class PointOfSale {
 
 		this.page.add_action_item(__("Precount"), function() {
 			frappe.xcall("erpnext.restaurant.page.restaurant_pos.restaurant_pos.get_precount",
-				{'order': me.frm.doc.restaurant_order}).then((r) => {
-					window.open("/printview?doctype=Restaurant%20Order&name=" + me.frm.doc.restaurant_order + "&trigger_print=1&format=Estandar&no_letterhead=0&_lang=es");
+				{'order': me.frm.doc.restaurant_order, "restaurant": me.frm.doc.restaurant}).then((print_format) => {
+					debugger;
+					window.open("/printview?doctype=Restaurant%20Order&name=" + me.frm.doc.restaurant_order + "&trigger_print=1&format=" + (print_format.replace(" ", "%20") ? print_format!="":"Estandar") + "&no_letterhead=0&_lang=es");
 				})
 		});
 
