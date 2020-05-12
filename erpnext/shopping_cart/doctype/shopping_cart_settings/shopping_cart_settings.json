@@ -15,6 +15,7 @@
   "show_quantity_in_website",
   "show_apply_coupon_code_in_website",
   "allow_items_not_in_stock",
+  "allow_guest_orders",
   "section_break_2",
   "company",
   "price_list",
@@ -166,12 +167,18 @@
    "fieldtype": "Link",
    "label": "Promotional Price List",
    "options": "Price List"
+  },
+  {
+   "default": "0",
+   "fieldname": "allow_guest_orders",
+   "fieldtype": "Check",
+   "label": "Allow guest orders"
   }
  ],
  "icon": "fa fa-shopping-cart",
  "idx": 1,
  "issingle": 1,
- "modified": "2020-04-26 09:05:30.596308",
+ "modified": "2020-05-05 19:06:29.800725",
  "modified_by": "Administrator",
  "module": "Shopping Cart",
  "name": "Shopping Cart Settings",

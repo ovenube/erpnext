@@ -58,6 +58,37 @@ frappe.ready(function() {
 });
 
 $.extend(shopping_cart, {
+	setup: function() {
+		const desk = 'desk' in frappe;
+		frappe.require('/assets/js/chat.js', () => {
+			if (frappe.session.user === "Guest" && !desk){
+				frappe.store = frappe.Store.get('erpnext.shopping_cart');
+				var token = frappe.store.get('guest_token');
+
+				if (!token) {
+					frappe.call({
+						"method": "erpnext.shopping_cart.doctype.guest_token.guest_token.token",
+						callback: (r) => {
+							if (r){
+								frappe.store.set("guest_token", r.message);
+							}
+						}
+					})
+				}
+
+				frappe.call({
+					"method": "erpnext.shopping_cart.cart.set_guest_token",
+					"args": {
+						token: token
+					},
+					callback: (r) => {
+
+					}
+				})
+			}
+		})
+	},
+
 	show_shoppingcart_dropdown: function() {
 		$(".shopping-cart").on('shown.bs.dropdown', function() {
 			if (!$('.shopping-cart-menu .cart-container').length) {
@@ -74,40 +105,29 @@ $.extend(shopping_cart, {
 	},
 
 	update_cart: function(opts) {
-		if(frappe.session.user==="Guest") {
-			if(localStorage) {
-				localStorage.setItem("last_visited", window.location.pathname);
-			}
-			window.location.href = "/login";
-		} else {
-			return frappe.call({
-				type: "POST",
-				method: "erpnext.shopping_cart.cart.update_cart",
-				args: {
-					item_code: opts.item_code,
-					qty: opts.qty,
-					additional_notes: opts.additional_notes !== undefined ? opts.additional_notes : undefined,
-					with_items: opts.with_items || 0
-				},
-				btn: opts.btn,
-				callback: function(r) {
-					shopping_cart.set_cart_count();
-					if (r.message.shopping_cart_menu) {
-						$('.shopping-cart-menu').html(r.message.shopping_cart_menu);
-					}
-					if(opts.callback)
-						opts.callback(r);
+		return frappe.call({
+			type: "POST",
+			method: "erpnext.shopping_cart.cart.update_cart",
+			args: {
+				item_code: opts.item_code,
+				qty: opts.qty,
+				additional_notes: opts.additional_notes !== undefined ? opts.additional_notes : undefined,
+				with_items: opts.with_items || 0
+			},
+			btn: opts.btn,
+			callback: function(r) {
+				shopping_cart.set_cart_count();
+				if (r.message.shopping_cart_menu) {
+					$('.shopping-cart-menu').html(r.message.shopping_cart_menu);
 				}
-			});
-		}
+				if(opts.callback)
+					opts.callback(r);
+			}
+		});
 	},
 
 	set_cart_count: function() {
 		var cart_count = frappe.get_cookie("cart_count");
-		if(frappe.session.user==="Guest") {
-			cart_count = 0;
-		}
-
 		if(cart_count) {
 			$(".shopping-cart").toggleClass('hidden', false);
 		}

@@ -92,3 +92,7 @@ def check_shopping_cart_enabled():
 
 def show_attachments():
 	return get_shopping_cart_settings().show_attachments
+
+@frappe.whitelist(allow_guest=True)
+def is_guest_orders_allowed():
+	return bool(frappe.db.get_single_value('Shopping Cart Settings', 'allow_guest_orders'))

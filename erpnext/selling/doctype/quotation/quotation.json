@@ -107,7 +107,7 @@
   "supplier_quotation",
   "opportunity",
   "lost_reasons",
-  "cart_id"
+  "guest_token"
  ],
  "fields": [
   {
@@ -925,10 +925,10 @@
    "read_only": 1
   },
   {
-   "fieldname": "cart_id",
+   "fieldname": "guest_token",
    "fieldtype": "Data",
    "hidden": 1,
-   "label": "Cart ID",
+   "label": "Guest Token",
    "read_only": 1
   }
  ],
@@ -936,7 +936,7 @@
  "idx": 82,
  "is_submittable": 1,
  "max_attachments": 1,
- "modified": "2020-04-22 17:58:35.726695",
+ "modified": "2020-05-07 11:04:58.275674",
  "modified_by": "Administrator",
  "module": "Selling",
  "name": "Quotation",
