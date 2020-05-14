@@ -279,6 +279,7 @@
    "label": "More Details"
   },
   {
+   "allow_on_submit": 1,
    "default": "Draft",
    "fieldname": "status",
    "fieldtype": "Select",
@@ -373,7 +374,8 @@
  "icon": "fa fa-money",
  "idx": 1,
  "is_submittable": 1,
- "modified": "2019-12-24 16:44:30.788613",
+ "links": [],
+ "modified": "2020-03-16 18:11:07.861985",
  "modified_by": "Administrator",
  "module": "HR",
  "name": "Expense Claim",

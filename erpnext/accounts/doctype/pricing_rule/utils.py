@@ -178,7 +178,8 @@ def filter_pricing_rules(args, pricing_rules, doc=None):
 
 		if pricing_rules[0].mixed_conditions and doc:
 			stock_qty, amount, items = get_qty_and_rate_for_mixed_conditions(doc, pr_doc, args)
-			pricing_rules[0].apply_rule_on_other_items = items
+			for pricing_rule_args in pricing_rules:
+				pricing_rule_args.apply_rule_on_other_items = items
 
 		elif pricing_rules[0].is_cumulative:
 			items = [args.get(frappe.scrub(pr_doc.get('apply_on')))]
@@ -245,7 +246,7 @@ def filter_pricing_rules(args, pricing_rules, doc=None):
 
 def validate_quantity_and_amount_for_suggestion(args, qty, amount, item_code, transaction_type):
 	fieldname, msg = '', ''
-	type_of_transaction = 'purcahse' if transaction_type == "buying" else "sale"
+	type_of_transaction = 'purchase' if transaction_type == 'buying' else 'sale'
 
 	for field, value in {'min_qty': qty, 'min_amt': amount}.items():
 		if (args.get(field) and value < args.get(field)
@@ -329,9 +330,9 @@ def get_qty_and_rate_for_mixed_conditions(doc, pr_doc, args):
 			if pr_doc.mixed_conditions:
 				amt = args.get('qty') * args.get("price_list_rate")
 				if args.get("item_code") != row.get("item_code"):
-					amt = row.get('qty') * row.get("price_list_rate")
+					amt = row.get('qty') * (row.get("price_list_rate") or args.get("rate"))
 
-				sum_qty += row.get("stock_qty") or args.get("stock_qty")
+				sum_qty += row.get("stock_qty") or args.get("stock_qty") or args.get("qty")
 				sum_amt += amt
 
 		if pr_doc.is_cumulative:
@@ -435,7 +436,7 @@ def apply_pricing_rule_on_transaction(doc):
 				doc.calculate_taxes_and_totals()
 			elif d.price_or_product_discount == 'Product':
 				item_details = frappe._dict({'parenttype': doc.doctype})
-				get_product_discount_rule(d, item_details, doc)
+				get_product_discount_rule(d, item_details, doc=doc)
 				apply_pricing_rule_for_free_items(doc, item_details.free_item_data)
 				doc.set_missing_values()
 
@@ -443,9 +444,10 @@ def get_applied_pricing_rules(item_row):
 	return (item_row.get("pricing_rules").split(',')
 		if item_row.get("pricing_rules") else [])
 
-def get_product_discount_rule(pricing_rule, item_details, doc=None):
-	free_item = (pricing_rule.free_item
-		if not pricing_rule.same_item or pricing_rule.apply_on == 'Transaction' else item_details.item_code)
+def get_product_discount_rule(pricing_rule, item_details, args=None, doc=None):
+	free_item = pricing_rule.free_item
+	if pricing_rule.same_item:
+		free_item = item_details.item_code or args.item_code
 
 	if not free_item:
 		frappe.throw(_("Free item not set in the pricing rule {0}")
@@ -464,7 +466,7 @@ def get_product_discount_rule(pricing_rule, item_details, doc=None):
 
 	item_details.free_item_data.update(item_data)
 	item_details.free_item_data['uom'] = pricing_rule.free_item_uom or item_data.stock_uom
-	item_details.free_item_data['conversion_factor'] = get_conversion_factor(free_item, 
+	item_details.free_item_data['conversion_factor'] = get_conversion_factor(free_item,
 		item_details.free_item_data['uom']).get("conversion_factor", 1)
 
 	if item_details.get("parenttype") == 'Purchase Order':
@@ -507,7 +509,7 @@ def validate_coupon_code(coupon_name):
 			frappe.throw(_("Sorry,coupon code validity has not started"))
 	elif coupon.valid_upto:
 		if coupon.valid_upto < getdate(today()) :
-			frappe.throw(_("Sorry,coupon code validity has expired"))	
+			frappe.throw(_("Sorry,coupon code validity has expired"))
 	elif coupon.used>=coupon.maximum_use:
 		frappe.throw(_("Sorry,coupon code are exhausted"))
 	else:
