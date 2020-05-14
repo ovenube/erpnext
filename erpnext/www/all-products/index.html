@@ -65,96 +65,141 @@
 		{% endif %}
 	</div>
 	<div class="col-12 order-1 col-md-3 order-md-2">
-
-		{% if frappe.form_dict.start or frappe.form_dict.field_filters or frappe.form_dict.attribute_filters or frappe.form_dict.search %}
-		<a class="mb-3 d-inline-block" href="/all-products">{{ _('Clear filters') }}</a>
-		{% endif  %}
-
-		<div class="collapse d-md-block" id="product-filters">
-			{% for field_filter in field_filters %}
-				{%- set item_field =  field_filter[0] %}
-				{%- set values =  field_filter[1] %}
-				<div class="mb-4">
-					<h6>{{ item_field.label }}</h6>
-
-					{% if values | len > 20 %}
-					<!-- show inline filter if values more than 20 -->
-					<input type="text" class="form-control form-control-sm mb-2 product-filter-filter"/>
-					{% endif %}
-
-					{% if values %}
-					<div class="filter-options">
-						{% for value in values %}
-						<div class="custom-control custom-checkbox" data-value="{{ value }}">
-							<input type="checkbox"
-								class="product-filter field-filter custom-control-input"
-								id="{{value}}"
-								data-filter-name="{{ item_field.fieldname }}"
-								data-filter-value="{{ value }}"
-							>
-							<label class="custom-control-label" for="{{value}}">
-								{{ value }}
+		<div class="filter_col">
+			<div class="inner_bt"><a href="#" class="open_filters"><i class="ti-close"></i></a></div>
+			<div class="filter_type version_2">
+				<h4><a href="#filter_1" data-toggle="collapse" class="opened">Categories</a></h4>
+				<div class="collapse show" id="filter_1">
+					<ul>
+						<li>
+							<label class="container_check">Men <small>12</small>
+								<input type="checkbox">
+								<span class="checkmark"></span>
 							</label>
-						</div>
-						{% endfor %}
-					</div>
-					{% else %}
-					<i class="text-muted">{{ _('No values') }}</i>
-					{% endif %}
-				</div>
-			{% endfor %}
-
-			{% for attribute in attribute_filters %}
-				<div class="mb-4">
-					<h6>{{ attribute.name }}</h6>
-
-					{% if values | len > 20 %}
-					<!-- show inline filter if values more than 20 -->
-					<input type="text" class="form-control form-control-sm mb-2 product-filter-filter"/>
-					{% endif %}
-
-					{% if attribute.item_attribute_values %}
-					<div class="filter-options">
-						{% for attr_value in attribute.item_attribute_values %}
-						<div class="custom-control custom-checkbox" data-value="{{ value }}">
-							<input type="checkbox"
-								class="product-filter attribute-filter custom-control-input"
-								id="{{attr_value.name}}"
-								data-attribute-name="{{ attribute.name }}"
-								data-attribute-value="{{ attr_value.attribute_value }}"
-								{% if attr_value.checked %} checked {% endif %}
-							>
-							<label class="custom-control-label" for="{{attr_value.name}}">
-								{{ attr_value.attribute_value }}
+						</li>
+						<li>
+							<label class="container_check">Women <small>24</small>
+								<input type="checkbox">
+								<span class="checkmark"></span>
 							</label>
-						</div>
-						{% endfor %}
-					</div>
-					{% else %}
-					<i class="text-muted">{{ _('No values') }}</i>
-					{% endif %}
+						</li>
+						<li>
+							<label class="container_check">Running <small>23</small>
+								<input type="checkbox">
+								<span class="checkmark"></span>
+							</label>
+						</li>
+						<li>
+							<label class="container_check">Training <small>11</small>
+								<input type="checkbox">
+								<span class="checkmark"></span>
+							</label>
+						</li>
+					</ul>
 				</div>
-			{% endfor %}
+				<!-- /filter_type -->
+			</div>
+			<!-- /filter_type -->
+			<div class="filter_type version_2">
+				<h4><a href="#filter_2" data-toggle="collapse" class="opened">Color</a></h4>
+				<div class="collapse show" id="filter_2">
+					<ul>
+						<li>
+							<label class="container_check">Blue <small>06</small>
+								<input type="checkbox">
+								<span class="checkmark"></span>
+							</label>
+						</li>
+						<li>
+							<label class="container_check">Red <small>12</small>
+								<input type="checkbox">
+								<span class="checkmark"></span>
+							</label>
+						</li>
+						<li>
+							<label class="container_check">Orange <small>17</small>
+								<input type="checkbox">
+								<span class="checkmark"></span>
+							</label>
+						</li>
+						<li>
+							<label class="container_check">Black <small>43</small>
+								<input type="checkbox">
+								<span class="checkmark"></span>
+							</label>
+						</li>
+					</ul>
+				</div>
+			</div>
+			<!-- /filter_type -->
+			<div class="filter_type version_2">
+				<h4><a href="#filter_3" data-toggle="collapse" class="closed">Brands</a></h4>
+				<div class="collapse" id="filter_3">
+					<ul>
+						<li>
+							<label class="container_check">Adidas <small>11</small>
+								<input type="checkbox">
+								<span class="checkmark"></span>
+							</label>
+						</li>
+						<li>
+							<label class="container_check">Nike <small>08</small>
+								<input type="checkbox">
+								<span class="checkmark"></span>
+							</label>
+						</li>
+						<li>
+							<label class="container_check">Vans <small>05</small>
+								<input type="checkbox">
+								<span class="checkmark"></span>
+							</label>
+						</li>
+						<li>
+							<label class="container_check">Puma <small>18</small>
+								<input type="checkbox">
+								<span class="checkmark"></span>
+							</label>
+						</li>
+					</ul>
+				</div>
+			</div>
+			<!-- /filter_type -->
+			<div class="filter_type version_2">
+				<h4><a href="#filter_4" data-toggle="collapse" class="closed">Price</a></h4>
+				<div class="collapse" id="filter_4">
+					<ul>
+						<li>
+							<label class="container_check">$0 — $50<small>11</small>
+								<input type="checkbox">
+								<span class="checkmark"></span>
+							</label>
+						</li>
+						<li>
+							<label class="container_check">$50 — $100<small>08</small>
+								<input type="checkbox">
+								<span class="checkmark"></span>
+							</label>
+						</li>
+						<li>
+							<label class="container_check">$100 — $150<small>05</small>
+								<input type="checkbox">
+								<span class="checkmark"></span>
+							</label>
+						</li>
+						<li>
+							<label class="container_check">$150 — $200<small>18</small>
+								<input type="checkbox">
+								<span class="checkmark"></span>
+							</label>
+						</li>
+					</ul>
+				</div>
+			</div>
+			<!-- /filter_type -->
+			<div class="buttons">
+				<a href="#0" class="btn_1">Filter</a> <a href="#0" class="btn_1 gray">Reset</a>
+			</div>
 		</div>
-
-		<script>
-			frappe.ready(() => {
-				$('.product-filter-filter').on('keydown', frappe.utils.debounce((e) => {
-					const $input = $(e.target);
-					const keyword = ($input.val() || '').toLowerCase();
-					const $filter_options = $input.next('.filter-options');
-
-					$filter_options.find('.custom-control').show();
-					$filter_options.find('.custom-control').each((i, el) => {
-						const $el = $(el);
-						const value = $el.data('value').toLowerCase();
-						if (!value.includes(keyword)) {
-							$el.hide();
-						}
-					});
-				}, 300));
-			})
-		</script>
 	</div>
 </div>
 <div class="row">

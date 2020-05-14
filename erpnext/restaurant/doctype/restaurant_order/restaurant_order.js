@@ -1,11 +1,14 @@
 // Copyright (c) 2020, Frappe Technologies Pvt. Ltd. and contributors
 // For license information, please see license.txt
-
 frappe.ui.form.on('Restaurant Order', {
 	refresh: function(frm) {
 		frm.page.add_menu_item(__("Return to Kitchen View"), function() {
 			frappe.set_route('#kitchen-view');
 		});
+	},
+
+	setup: function(frm) {
+		frm.add_fetch("item_code", "item_name", "item_name");
 	}
 });
 

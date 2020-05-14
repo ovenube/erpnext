@@ -777,7 +777,7 @@ erpnext.restaurant_pos.PointOfSale = class PointOfSale {
 			frappe.xcall("erpnext.restaurant.page.restaurant_pos.restaurant_pos.get_precount",
 				{'order': me.frm.doc.restaurant_order, "restaurant": me.frm.doc.restaurant}).then((print_format) => {
 					debugger;
-					window.open("/printview?doctype=Restaurant%20Order&name=" + me.frm.doc.restaurant_order + "&trigger_print=1&format=" + (print_format.replace(" ", "%20") ? print_format!="":"Estandar") + "&no_letterhead=0&_lang=es");
+					window.open("/printview?doctype=Restaurant%20Order&name=" + me.frm.doc.restaurant_order + "&trigger_print=1&format=" + (print_format!="" ? print_format.replace(" ", "%20") : "Estandar") + "&no_letterhead=0&_lang=es");
 				})
 		});
 
