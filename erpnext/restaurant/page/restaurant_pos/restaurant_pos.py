@@ -79,6 +79,7 @@ def update_order_items(order, items, total_qty):
                 served_qty = current_item.served_qty
         item_dicts.append({
             'item': item['item_code'],
+            'item_name': item['item_name'],
             'qty': item['qty'],
             'served_qty': served_qty,
             'rate': item['rate'],

@@ -1,7 +1,7 @@
 <div class="col-md-8">
 <!-- title -->
 <h1 itemprop="name">
-	{{ item_name }}
+	{% if doc.commercial_item_name %}{{ doc.commercial_item_name }}{% else %}{{ item_name }}{% endif %}
 </h1>
 <p class="text-muted">
 	<span>{{ _("Item Code") }}:</span>

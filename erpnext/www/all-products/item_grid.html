@@ -9,15 +9,15 @@
             </a>
         </figure>
         <a href="/{{ item.route }}">
-            <h3>{{ item.item_name }}</h3>
+            <h3>{% if item.commercial_item_name %}{{ item.commercial_item_name }}{% else %}{{ item.item_name }}{% endif %}</h3>
         </a>
         <div class="price_box">
         {% if item.discount > 0 %}
-            <span class="new_price">{{ item.new_price.formatted_price }}</span>
-            <span class="old_price">{{ item.old_price.formatted_price }}</span>
+            <span class="new_price">{{ item.price.formatted_price }}</span>
+            <span class="old_price">{{ item.referencial_price.formatted_price }}</span>
         {% else %}
-            {% if item.old_price %}
-            <span class="new_price">{{ item.old_price.formatted_price }}</span>
+            {% if item.price %}
+            <span class="new_price">{{ item.price.formatted_price }}</span>
             {% else %}
             <span class="new_price"></span>
             {% endif %}
@@ -25,7 +25,6 @@
         </div>
         <ul>
             <li><a href="#0" class="tooltip-1" data-toggle="tooltip" data-placement="left" title="Add to favorites"><i class="ti-heart"></i><span>Add to favorites</span></a></li>
-            <li><a href="#0" class="tooltip-1" data-toggle="tooltip" data-placement="left" title="Add to compare"><i class="ti-control-shuffle"></i><span>Add to compare</span></a></li>
             <li><a href="#0" class="tooltip-1" data-toggle="tooltip" data-placement="left" title="Add to cart"><i class="ti-shopping-cart"></i><span>Add to cart</span></a></li>
         </ul>
     </div>

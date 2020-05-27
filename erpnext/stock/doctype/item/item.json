@@ -1,5 +1,4 @@
 {
- "actions": [],
  "allow_guest_to_view": 1,
  "allow_import": 1,
  "allow_rename": 1,
@@ -16,6 +15,7 @@
   "item_code",
   "variant_of",
   "item_name",
+  "commercial_item_name",
   "item_group",
   "is_item_from_hub",
   "stock_uom",
@@ -124,6 +124,7 @@
   "slideshow",
   "website_image",
   "thumbnail",
+  "item_rate",
   "cb72",
   "website_warehouse",
   "website_item_groups",
@@ -134,6 +135,7 @@
   "web_long_description",
   "website_content",
   "total_projected_qty",
+  "item_votes",
   "hub_publishing_sb",
   "publish_in_hub",
   "hub_category_to_publish",
@@ -345,8 +347,7 @@
   {
    "fieldname": "shelf_life_in_days",
    "fieldtype": "Int",
-   "label": "Shelf Life In Days",
-   "mandatory_depends_on": "eval:doc.has_batch_no && doc.has_expiry_date"
+   "label": "Shelf Life In Days"
   },
   {
    "default": "2099-12-31",
@@ -1052,15 +1053,30 @@
    "fieldtype": "Data",
    "label": "Default Manufacturer Part No",
    "read_only": 1
+  },
+  {
+   "fieldname": "item_rate",
+   "fieldtype": "Select",
+   "label": "Item Rate",
+   "options": "1\n2\n3\n4\n5"
+  },
+  {
+   "fieldname": "item_votes",
+   "fieldtype": "Int",
+   "label": "Item Votes"
+  },
+  {
+   "fieldname": "commercial_item_name",
+   "fieldtype": "Data",
+   "label": "Commercial Item Name"
   }
  ],
  "has_web_view": 1,
  "icon": "fa fa-tag",
  "idx": 2,
  "image_field": "image",
- "links": [],
  "max_attachments": 1,
- "modified": "2020-04-07 15:56:06.195722",
+ "modified": "2020-05-25 09:35:20.802375",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Item",

@@ -1,5 +1,4 @@
 {
- "actions": [],
  "allow_import": 1,
  "allow_rename": 1,
  "autoname": "field:item_group_name",
@@ -21,6 +20,7 @@
   "taxes",
   "sb9",
   "show_in_website",
+  "website_group_name",
   "route",
   "weightage",
   "slideshow",
@@ -180,15 +180,19 @@
    "options": "Item Group",
    "print_hide": 1,
    "report_hide": 1
+  },
+  {
+   "fieldname": "website_group_name",
+   "fieldtype": "Data",
+   "label": "Website Group Name"
   }
  ],
  "icon": "fa fa-sitemap",
  "idx": 1,
  "image_field": "image",
  "is_tree": 1,
- "links": [],
  "max_attachments": 3,
- "modified": "2020-03-18 18:25:59.979083",
+ "modified": "2020-05-19 19:52:12.613938",
  "modified_by": "Administrator",
  "module": "Setup",
  "name": "Item Group",

@@ -20,16 +20,25 @@ def get_product_info_for_website(item_code):
 	cart_quotation = _get_cart_quotation()
 
 	price = get_price(
+			item_code,
+			cart_settings.price_list,
+			cart_settings.default_customer_group,
+			cart_settings.company
+		)
+	referencial_price = get_price(
 		item_code,
-		cart_quotation.selling_price_list,
+		cart_settings.referencial_price_list,
 		cart_settings.default_customer_group,
 		cart_settings.company
 	)
+	discount = round((referencial_price.price_list_rate - price.price_list_rate)/referencial_price.price_list_rate * 100) if referencial_price is not None else 0
 
 	stock_status = get_qty_in_stock(item_code, "website_warehouse")
 
 	product_info = {
 		"price": price,
+		"referencial_price": referencial_price or None,
+		"discount": discount,
 		"stock_qty": stock_status.stock_qty,
 		"in_stock": stock_status.in_stock if stock_status.is_stock_item else get_non_stock_item_status(item_code, "website_warehouse"),
 		"qty": 0,
@@ -39,10 +48,9 @@ def get_product_info_for_website(item_code):
 	}
 
 	if product_info["price"]:
-		if frappe.session.user != "Guest":
-			item = cart_quotation.get({"item_code": item_code})
-			if item:
-				product_info["qty"] = item[0].qty
+		item = cart_quotation.get({"item_code": item_code})
+		if item:
+			product_info["qty"] = item[0].qty
 
 	return frappe._dict({
 		"product_info": product_info,

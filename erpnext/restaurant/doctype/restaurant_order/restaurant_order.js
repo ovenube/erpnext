@@ -8,7 +8,7 @@ frappe.ui.form.on('Restaurant Order', {
 	},
 
 	setup: function(frm) {
-		frm.add_fetch("item_code", "item_name", "item_name");
+		frm.add_fetch("item", "item_name", "item_name");
 	}
 });
 

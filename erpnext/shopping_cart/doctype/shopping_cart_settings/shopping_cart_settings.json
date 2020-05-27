@@ -19,7 +19,7 @@
   "section_break_2",
   "company",
   "price_list",
-  "promotional_price_list",
+  "referencial_price_list",
   "column_break_4",
   "default_customer_group",
   "quotation_series",
@@ -163,22 +163,22 @@
    "options": "Payment Gateway Account"
   },
   {
-   "fieldname": "promotional_price_list",
-   "fieldtype": "Link",
-   "label": "Promotional Price List",
-   "options": "Price List"
-  },
-  {
    "default": "0",
    "fieldname": "allow_guest_orders",
    "fieldtype": "Check",
    "label": "Allow guest orders"
+  },
+  {
+   "fieldname": "referencial_price_list",
+   "fieldtype": "Link",
+   "label": "Referencial Price List",
+   "options": "Price List"
   }
  ],
  "icon": "fa fa-shopping-cart",
  "idx": 1,
  "issingle": 1,
- "modified": "2020-05-05 19:06:29.800725",
+ "modified": "2020-05-25 20:57:49.943031",
  "modified_by": "Administrator",
  "module": "Shopping Cart",
  "name": "Shopping Cart Settings",

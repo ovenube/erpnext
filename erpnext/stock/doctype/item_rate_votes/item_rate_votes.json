@@ -1,0 +1,47 @@
+{
+ "creation": "2020-05-21 22:05:57.068743",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "user",
+  "rate"
+ ],
+ "fields": [
+  {
+   "fieldname": "user",
+   "fieldtype": "Link",
+   "label": "User",
+   "options": "User"
+  },
+  {
+   "fieldname": "rate",
+   "fieldtype": "Select",
+   "label": "Rate",
+   "options": "1\n2\n3\n4\n5"
+  }
+ ],
+ "modified": "2020-05-26 13:34:16.336880",
+ "modified_by": "Administrator",
+ "module": "Stock",
+ "name": "Item Rate Votes",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}

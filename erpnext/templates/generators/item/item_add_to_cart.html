@@ -6,14 +6,20 @@
 <div class="item-cart row mt-2" data-variant-item-code="{{ item_code }}">
 	<div class="col-md-12">
 		{% if cart_settings.show_price and product_info.price %}
-		<h2 class="price marginbottom15">{{ product_info.price.formatted_price_sales_uom }}</h2>
+		<div class="price_main">
+			<span class="new_price">{{ product_info.price.formatted_price_sales_uom }}</span>
+			{% if product_info.referencial_price %}
+			<span class="percentage">-{{ product_info.discount }}%</span>
+			<span class="old_price">{{ product_info.referencial_price.formatted_price_sales_uom }}</span>
+			{% endif %}
+		</div>
 		{% endif %}
 		{% if cart_settings.show_stock_availability %}
 		<div>
 			<div class="row">
 				<label class="col-xl-5 col-lg-5  col-md-6 col-6"><strong>Cantidad</strong></label>
 				<div class="col-xl-4 col-lg-5 col-md-6 col-6">
-					<input type="number" value="0" min="0" max="{% if product_info.in_stock == 0 %}0{% elif product_info.in_stock == 1 %}{{ product_info.stock_qty[0][0] }}{% endif %}" step="1" id="qty"/>
+					<input type="number" value="1" min="1" max="{% if product_info.in_stock == 0 %}0{% elif product_info.in_stock == 1 %}{{ product_info.stock_qty[0][0] }}{% endif %}" step="1" id="qty"/>
 				</div>
 			</div>
 		</div>
@@ -21,7 +27,7 @@
 		<div class="row">
 			<div class="cart-buttons">
 				<a class="uppercase border-radius btn-dark btn-add-to-cart {% if not (product_info.price and (cart_settings.allow_items_not_in_stock or product_info.in_stock)) %}disable{% endif %}" href="/cart" data-item-code="{{item_code}}"><i class="fa fa-shopping-basket"></i> &nbsp; Agregar a Carrito</a>
-				<a class="icons" href="#.">
+				<a class="icons wishlist" href="#." data-item-code="{{item_code}}">
 				  <i class="fa fa-heart-o"></i>
 				</a>
 			</div>
@@ -43,6 +49,27 @@
 					
 				}
 			});
+		});
+		$('.page_content').on('click', '.wishlist', (e) => {
+			const $btn = $(e.currentTarget);
+			const item_code = $btn.data('item-code');
+			if (frappe.session.user !='Guest'){
+				frappe.call({
+					method: "erpnext.stock.doctype.wishlist.wishlist.set_wishlist",
+					args: {
+						"customer": frappe.session.user,
+						"item": item_code
+					},
+					callback: function(r) {
+						debugger;
+						if (r.message) {
+							$btn.style.backgroundColor = "red";
+						} else {
+							$btn.style.backgroundColor = "white";
+						}
+					}
+				})
+			}
 		});
 	});
 </script>

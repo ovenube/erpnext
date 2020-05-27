@@ -106,14 +106,14 @@ def request_for_quotation():
 def update_cart(item_code, qty, additional_notes=None, with_items=False):
 	quotation = _get_cart_quotation()
 
-	empty_card = False
+	empty_cart = False
 	qty = flt(qty)
 	if qty == 0:
 		quotation_items = quotation.get("items", {"item_code": ["!=", item_code]})
 		if quotation_items:
 			quotation.set("items", quotation_items)
 		else:
-			empty_card = True
+			empty_cart = True
 
 	else:
 		quotation_items = quotation.get("items", {"item_code": item_code})
@@ -132,7 +132,7 @@ def update_cart(item_code, qty, additional_notes=None, with_items=False):
 
 	quotation.flags.ignore_permissions = True
 	quotation.payment_schedule = []
-	if not empty_card:
+	if not empty_cart:
 		quotation.save()
 	else:
 		quotation.delete()
@@ -253,9 +253,11 @@ def _get_cart_quotation(party=None):
 
 	if party.name == "Guest":
 		guest_token = frappe.cache().hget('guest_token', party.name)
+		filters = {"party_name": party.name, "order_type": "Shopping Cart", "docstatus": 0, "guest_token": guest_token}
+	else:
+		filters = {"party_name": party.name, "order_type": "Shopping Cart", "docstatus": 0}
 
-	quotation = frappe.get_all("Quotation", fields=["name"], filters=
-		{"party_name": party.name, "order_type": "Shopping Cart", "docstatus": 0, "guest_token": guest_token},
+	quotation = frappe.get_all("Quotation", fields=["name"], filters=filters,
 		order_by="modified desc", limit_page_length=1)
 
 	if quotation:

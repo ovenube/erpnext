@@ -1,11 +1,11 @@
 <ul class="review_list marginbottom15">
     <li>
         <div class="rating">
-            <input type="radio" name="rating-star" class="rating__control" id="rc1">
-            <input type="radio" name="rating-star" class="rating__control" id="rc2">
-            <input type="radio" name="rating-star" class="rating__control" id="rc3">
-            <input type="radio" name="rating-star" class="rating__control" id="rc4">
-            <input type="radio" name="rating-star" class="rating__control" id="rc5">
+            <input type="radio" name="rating-star" class="rating__control" id="rc1" {% if frappe.session.user == 'Guest'%}disabled{% endif %} {% if doc.item_rate == 1 %}checked{% endif %}>
+            <input type="radio" name="rating-star" class="rating__control" id="rc2" {% if frappe.session.user == 'Guest'%}disabled{% endif %} {% if doc.item_rate == 2 %}checked{% endif %}>
+            <input type="radio" name="rating-star" class="rating__control" id="rc3" {% if frappe.session.user == 'Guest'%}disabled{% endif %} {% if doc.item_rate == 3 %}checked{% endif %}>
+            <input type="radio" name="rating-star" class="rating__control" id="rc4" {% if frappe.session.user == 'Guest'%}disabled{% endif %} {% if doc.item_rate == 4 %}checked{% endif %}>
+            <input type="radio" name="rating-star" class="rating__control" id="rc5" {% if frappe.session.user == 'Guest'%}disabled{% endif %} {% if doc.item_rate == 5 %}checked{% endif %}>
             <label for="rc1" class="rating__item">
               <svg class="rating__star">
                 <use xlink:href="#star"></use>
@@ -39,7 +39,7 @@
         </div>
     </li>
     <li>
-       10 review(s)
+      {{ doc.item_votes }} review(s)
     </li>
 </ul>
 <svg xmlns="http://www.w3.org/2000/svg" style="display: none">

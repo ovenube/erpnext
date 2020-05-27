@@ -19,13 +19,20 @@ def get_field_filter_data():
 		# apply enable/disable filter
 		meta = frappe.get_meta(doctype)
 		filters = {}
+		fields = []
 		if meta.has_field('enabled'):
 			filters['enabled'] = 1
 		if meta.has_field('disabled'):
 			filters['disabled'] = 0
-
-		values = [d.name for d in frappe.get_all(doctype, filters)]
-		filter_data.append([f, values])
+		if meta.name == "Item Group":
+			filters = {
+				"show_in_website": 1,
+				"is_group": 0
+			}
+			fields = ["name", "website_group_name"]
+			names = [d.website_group_name for d in frappe.get_all(doctype, filters, fields)]
+		values = [d.name for d in frappe.get_all(doctype, filters, fields)]
+		filter_data.append([f, values, names or None])
 
 	return filter_data
 
@@ -62,7 +69,7 @@ def get_products_for_website(field_filters=None, attribute_filters=None, search=
 		items_by_attributes = get_items([['name', 'in', item_codes]])
 
 	if field_filters:
-		items_by_fields = get_items_by_fields(field_filters)
+		items_by_fields = get_items_by_fields(field_filters, False)
 
 	if attribute_filters and not field_filters:
 		return items_by_attributes
@@ -88,11 +95,15 @@ def get_products_for_website(field_filters=None, attribute_filters=None, search=
 
 @frappe.whitelist(allow_guest=True)
 def get_products_html_for_website(field_filters=None, attribute_filters=None):
+	product_view = frappe.db.get_single_value('Products Settings', 'product_view')
 	field_filters = frappe.parse_json(field_filters)
 	attribute_filters = frappe.parse_json(attribute_filters)
 
 	items = get_products_for_website(field_filters, attribute_filters)
 	html = ''.join(get_html_for_items(items))
+
+	if product_view == "Grid":
+		html = """<div class="row small-gutters">""" + html + "</div>"
 
 	if not items:
 		html = frappe.render_template('erpnext/www/all-products/not_found.html', {})
@@ -127,7 +138,7 @@ def get_item_codes_by_attributes(attribute_filters, template_item_code=None):
 
 		query = '''
 			SELECT
-				t1.parent
+				t1.variant_of
 			FROM
 				`tabItem Variant Attribute` t1
 			WHERE
@@ -290,7 +301,7 @@ def get_items_with_selected_attributes(item_code, selected_attributes):
 	return set.intersection(*items)
 
 
-def get_items_by_fields(field_filters):
+def get_items_by_fields(field_filters, limit=True):
 	meta = frappe.get_meta('Item')
 	filters = []
 	for fieldname, values in field_filters.items():
@@ -313,14 +324,14 @@ def get_items_by_fields(field_filters):
 		else:
 			filters.append([_doctype, _fieldname, 'in', values])
 
-	return get_items(filters)
+	return get_items(filters, limit=limit)
 
 
-def get_items(filters=None, search=None):
+def get_items(filters=None, search=None, limit=True):
 	start = frappe.form_dict.start or 0
 	products_settings = get_product_settings()
 	cart_settings = get_shopping_cart_settings()
-	page_length = products_settings.products_per_page
+	page_length = products_settings.products_per_page if limit else 1000
 
 	filters = filters or []
 	# convert to list of filters
@@ -341,7 +352,7 @@ def get_items(filters=None, search=None):
 	search_condition = ''
 	if search:
 		# Default fields to search from
-		default_fields = {'name', 'item_name', 'description', 'item_group'}
+		default_fields = {'name', 'item_name', 'description', 'item_group', 'commercial_item_name'}
 
 		# Get meta search fields
 		meta = frappe.get_meta("Item")
@@ -378,6 +389,7 @@ def get_items(filters=None, search=None):
 	results = frappe.db.sql('''
 		SELECT
 			`tabItem`.`name`, `tabItem`.`item_name`,
+			`tabItem`.`commercial_item_name`,
 			`tabItem`.`website_image`, `tabItem`.`image`,
 			`tabItem`.`web_long_description`, `tabItem`.`description`,
 			`tabItem`.`route`
@@ -405,19 +417,19 @@ def get_items(filters=None, search=None):
 	for r in results:
 		r.description = r.web_long_description or r.description
 		r.image = r.website_image or r.image
-		r['new_price'] = get_price(
-			r.name,
-			cart_settings.promotional_price_list,
-			cart_settings.default_customer_group,
-			cart_settings.company
-		)
-		r['old_price'] = get_price(
+		r['price'] = get_price(
 			r.name,
 			cart_settings.price_list,
 			cart_settings.default_customer_group,
 			cart_settings.company
 		)
-		r['discount'] = round((r['old_price'].price_list_rate - r['new_price'].price_list_rate)/r['old_price'].price_list_rate * 100) if r['new_price'] is not None else 0
+		r['referencial_price'] = get_price(
+			r.name,
+			cart_settings.referencial_price_list,
+			cart_settings.default_customer_group,
+			cart_settings.company
+		)
+		r['discount'] = round((r['referencial_price'].price_list_rate - r['price'].price_list_rate)/r['referencial_price'].price_list_rate * 100) if r['referencial_price'] is not None else 0
 
 	return results
 
@@ -456,8 +468,9 @@ def get_item_attributes(item_code):
 
 def get_html_for_items(items):
 	html = []
+	product_view = frappe.db.get_single_value('Products Settings', 'product_view')
 	for item in items:
-		html.append(frappe.render_template('erpnext/www/all-products/item_row.html', {
+		html.append(frappe.render_template('erpnext/www/all-products/' + ('item_grid.html' if product_view == "Grid" else 'item_row.html'), {
 			'item': item
 		}))
 	return html
