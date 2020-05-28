@@ -13,8 +13,11 @@ class Wishlist(Document):
 @frappe.whitelist()
 def get_wishlist(customer):
 	if customer:
+		customer = get_party(customer)
 		if frappe.get_all("Wishlist", filters={"customer": customer.name}):
 			return [item.item for item in frappe.get_doc("Wishlist", customer.name).items]
+		else:
+			return []
 
 @frappe.whitelist()
 def set_wishlist(customer, item):

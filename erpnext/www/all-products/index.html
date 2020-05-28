@@ -165,6 +165,26 @@
 			let path = window.location.pathname + '?' + frappe.utils.get_url_from_dict(query_params);
 			window.location.href = path;
 		});
+		$('.page_content').on('click', '.wishlist', (e) => {
+			var $btn = $(e.currentTarget);
+			const item_code = $btn.data('item-code');
+			if (frappe.session.user !='Guest'){
+				frappe.call({
+					method: "erpnext.stock.doctype.wishlist.wishlist.set_wishlist",
+					args: {
+						"customer": frappe.session.user,
+						"item": item_code
+					},
+					callback: function(r) {
+						if (r.message) {
+							$btn[0].style.backgroundColor = "blue";
+						} else {
+							$btn[0].style.backgroundColor = "transparent";
+						}
+					}
+				})
+			}
+		});
 	});
 </script>
 

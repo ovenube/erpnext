@@ -4,6 +4,7 @@ from erpnext.shopping_cart.doctype.shopping_cart_settings.shopping_cart_settings
 	import get_shopping_cart_settings
 from erpnext.utilities.product import get_price
 from erpnext.portal.product_configurator.item_variants_cache import ItemVariantsCacheManager
+from erpnext.stock.doctype.wishlist.wishlist import get_wishlist
 
 def get_field_filter_data():
 	product_settings = get_product_settings()
@@ -331,7 +332,7 @@ def get_items(filters=None, search=None, limit=True):
 	start = frappe.form_dict.start or 0
 	products_settings = get_product_settings()
 	cart_settings = get_shopping_cart_settings()
-	page_length = products_settings.products_per_page if limit else 1000
+	page_length = products_settings.products_per_page if limit else 10000
 
 	filters = filters or []
 	# convert to list of filters
@@ -417,6 +418,7 @@ def get_items(filters=None, search=None, limit=True):
 	for r in results:
 		r.description = r.web_long_description or r.description
 		r.image = r.website_image or r.image
+		r['in_wishlist'] = r.name in get_wishlist(frappe.session.user)
 		r['price'] = get_price(
 			r.name,
 			cart_settings.price_list,

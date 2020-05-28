@@ -2,6 +2,7 @@
 
 {% set cart_settings = shopping_cart.cart_settings %}
 {% set product_info = shopping_cart.product_info %}
+{% set stock_status = shopping_cart.stock_status %}
 
 <div class="item-cart row mt-2" data-variant-item-code="{{ item_code }}">
 	<div class="col-md-12">
@@ -19,7 +20,7 @@
 			<div class="row">
 				<label class="col-xl-5 col-lg-5  col-md-6 col-6"><strong>Cantidad</strong></label>
 				<div class="col-xl-4 col-lg-5 col-md-6 col-6">
-					<input type="number" value="1" min="1" max="{% if product_info.in_stock == 0 %}0{% elif product_info.in_stock == 1 %}{{ product_info.stock_qty[0][0] }}{% endif %}" step="1" id="qty"/>
+					<input type="number" value="1" min="1" {% if stock_status.is_stock_item == 1 %}max="{% if product_info.in_stock == 0 %}0{% elif product_info.in_stock == 1 %}{{ product_info.stock_qty[0][0] }}{% endif %}"{% endif %} step="1" id="qty"/>
 				</div>
 			</div>
 		</div>
@@ -27,7 +28,7 @@
 		<div class="row">
 			<div class="cart-buttons">
 				<a class="uppercase border-radius btn-dark btn-add-to-cart {% if not (product_info.price and (cart_settings.allow_items_not_in_stock or product_info.in_stock)) %}disable{% endif %}" href="/cart" data-item-code="{{item_code}}"><i class="fa fa-shopping-basket"></i> &nbsp; Agregar a Carrito</a>
-				<a class="icons wishlist" href="#." data-item-code="{{item_code}}">
+				<a class="icons wishlist" href="#." data-item-code="{{item_code}}" {% if product_info.in_wishlist %}style="background-color: blue;"{% endif %}>
 				  <i class="fa fa-heart-o"></i>
 				</a>
 			</div>
@@ -51,7 +52,7 @@
 			});
 		});
 		$('.page_content').on('click', '.wishlist', (e) => {
-			const $btn = $(e.currentTarget);
+			var $btn = $(e.currentTarget);
 			const item_code = $btn.data('item-code');
 			if (frappe.session.user !='Guest'){
 				frappe.call({
@@ -61,11 +62,10 @@
 						"item": item_code
 					},
 					callback: function(r) {
-						debugger;
 						if (r.message) {
-							$btn.style.backgroundColor = "red";
+							$btn[0].style.backgroundColor = "blue";
 						} else {
-							$btn.style.backgroundColor = "white";
+							$btn[0].style.backgroundColor = "transparent";
 						}
 					}
 				})

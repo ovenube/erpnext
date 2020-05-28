@@ -8,6 +8,7 @@ from erpnext.shopping_cart.cart import _get_cart_quotation
 from erpnext.shopping_cart.doctype.shopping_cart_settings.shopping_cart_settings \
 	import get_shopping_cart_settings, show_quantity_in_website
 from erpnext.utilities.product import get_price, get_qty_in_stock, get_non_stock_item_status
+from erpnext.stock.doctype.wishlist.wishlist import get_wishlist
 
 @frappe.whitelist(allow_guest=True)
 def get_product_info_for_website(item_code):
@@ -44,7 +45,8 @@ def get_product_info_for_website(item_code):
 		"qty": 0,
 		"uom": frappe.db.get_value("Item", item_code, "stock_uom"),
 		"show_stock_qty": show_quantity_in_website(),
-		"sales_uom": frappe.db.get_value("Item", item_code, "sales_uom")
+		"sales_uom": frappe.db.get_value("Item", item_code, "sales_uom"),
+		"in_wishlist": item_code in get_wishlist(frappe.session.user)
 	}
 
 	if product_info["price"]:

@@ -11,17 +11,19 @@
   {
    "fieldname": "user",
    "fieldtype": "Link",
+   "in_list_view": 1,
    "label": "User",
    "options": "User"
   },
   {
    "fieldname": "rate",
    "fieldtype": "Select",
+   "in_list_view": 1,
    "label": "Rate",
    "options": "1\n2\n3\n4\n5"
   }
  ],
- "modified": "2020-05-26 13:34:16.336880",
+ "modified": "2020-05-27 15:20:52.361375",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Item Rate Votes",
