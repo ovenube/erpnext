@@ -79,12 +79,12 @@
 					{% if values %}
 						{% for i in range(values|length) %}
 							<li>
-								<label class="container_check">{% if item_field.label == "Item Group" %}{{ names[i] }}{% else %}{{ values[i] }}{% endif %}
+								<label class="container_check">{% if item_field.label == "Item Group" and names[i] %}{{ names[i] }}{% else %}{{ values[i] }}{% endif %}
 									<input type="checkbox"
 										class="product-filter field-filter custom-control-input"
-										id="{{value}}"
+										id="{{values[i]}}"
 										data-filter-name="{{ item_field.fieldname }}"
-										data-filter-value="{{ value }}"
+										data-filter-value="{{ values[i] }}"
 									>
 									<span class="checkmark"></span>
 								</label>
