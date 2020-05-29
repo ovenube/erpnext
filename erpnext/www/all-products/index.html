@@ -77,9 +77,9 @@
 					<div class="collapse show" id="filter_field_{{ item_field.label.lower() | replace(' ', '_') }}">
 						<ul>
 					{% if values %}
-						{% for value in values %}
+						{% for i in range(values|length) %}
 							<li>
-								<label class="container_check">{% if item_field.label == "Item Group" %}{{ names }}{% else %}{{ value }}{% endif %}
+								<label class="container_check">{% if item_field.label == "Item Group" %}{{ names[i] }}{% else %}{{ values[i] }}{% endif %}
 									<input type="checkbox"
 										class="product-filter field-filter custom-control-input"
 										id="{{value}}"
