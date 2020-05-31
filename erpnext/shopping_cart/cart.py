@@ -243,11 +243,36 @@ def decorate_quotation_doc(doc):
 
 	return doc
 
+def update_guest_quotation(party=None):
+	if not party:
+		party = get_party()
+
+	if party.name != "Guest":
+		guest_token = frappe.cache().hget('guest_token', "Guest")
+		filters = {"party_name": "Guest", "order_type": "Shopping Cart", "docstatus": 0, "guest_token": guest_token}
+		quotation = frappe.get_all("Quotation", fields=["name"], filters=filters,
+			order_by="modified desc", limit_page_length=1)
+		
+		if quotation:
+			qdoc = frappe.get_doc("Quotation", quotation[0].name)
+			qdoc.guest_token = ""
+			qdoc.party_name = party.name
+			qdoc.owner = party.name
+			qdoc.title = party.name
+			qdoc.contact_person = frappe.db.get_value("Contact", {"email_id": frappe.session.user})
+			qdoc.contact_email = frappe.session.user
+
+			qdoc.flags.ignore_permissions = True
+			qdoc.run_method("set_missing_values")
+			apply_cart_settings(party, qdoc)
+			qdoc.save()
 
 def _get_cart_quotation(party=None):
 	'''Return the open Quotation of type "Shopping Cart" or make a new one'''
 	if not party:
 		party = get_party()
+
+	update_guest_quotation(party)
 
 	guest_token = None
 

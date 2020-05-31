@@ -87,12 +87,15 @@
 		</div>
 	{% endif %}
 
+	{% if frappe.session.user != "Guest" %}
 	<div class="cart-addresses mt-5">
 	{% include "templates/includes/cart/cart_address.html" %}
 	</div>
 	{% endif %}
+	{% endif %}
 </div>
 
+{% if frappe.session.user != "Guest" %}
 <div class="row mt-5">
 	<div class="col-12">
 		{% if cart_settings.enable_checkout %}
@@ -106,6 +109,7 @@
 		{% endif %}
 	</div>
 </div>
+{% endif %}
 
 {% endblock %}
 

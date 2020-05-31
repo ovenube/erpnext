@@ -2,7 +2,6 @@
 
 {% set cart_settings = shopping_cart.cart_settings %}
 {% set product_info = shopping_cart.product_info %}
-{% set stock_status = shopping_cart.stock_status %}
 
 <div class="item-cart row mt-2" data-variant-item-code="{{ item_code }}">
 	<div class="col-md-12">
@@ -20,7 +19,7 @@
 			<div class="row">
 				<label class="col-xl-5 col-lg-5  col-md-6 col-6"><strong>Cantidad</strong></label>
 				<div class="col-xl-4 col-lg-5 col-md-6 col-6">
-					<input type="number" value="1" min="1" {% if stock_status.is_stock_item == 1 %}max="{% if product_info.in_stock == 0 %}0{% elif product_info.in_stock == 1 %}{{ product_info.stock_qty[0][0] }}{% endif %}"{% endif %} step="1" id="qty"/>
+					<input type="number" value="1" min="1" {% if is_stock_item == 1 %}max="{% if product_info.in_stock == 0 %}0{% else %}{{ product_info.stock_qty[0][0] }}{% endif %}"{% endif %} step="1" id="qty"/>
 				</div>
 			</div>
 		</div>
