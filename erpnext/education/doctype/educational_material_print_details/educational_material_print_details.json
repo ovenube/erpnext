@@ -1,0 +1,41 @@
+{
+ "creation": "2020-06-07 13:51:44.169660",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "image_name",
+  "image",
+  "print"
+ ],
+ "fields": [
+  {
+   "fieldname": "image_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Image Name"
+  },
+  {
+   "fieldname": "image",
+   "fieldtype": "Image",
+   "label": "Image"
+  },
+  {
+   "default": "0",
+   "fieldname": "print",
+   "fieldtype": "Check",
+   "label": "Print"
+  }
+ ],
+ "istable": 1,
+ "modified": "2020-06-07 13:51:44.169660",
+ "modified_by": "Administrator",
+ "module": "Education",
+ "name": "Educational Material Print Details",
+ "owner": "Administrator",
+ "permissions": [],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}
