@@ -1,0 +1,124 @@
+{% extends "templates/web.html" %}
+
+{% block breadcrumbs %}
+    {% include "templates/includes/breadcrumbs.html" %}
+{% endblock %}
+
+{% block header %}
+<h1>{{ cicle }}</h1>
+{% endblock %}
+
+{% block page_content %}
+
+<div class="table">
+    <table class="table table-bordered table-hover">
+      <thead>
+        <tr class="active">
+            <th style="width: 150px">Tipo</th>
+            <th style="width: 150px">Recurso</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr>
+                <td>Libro</td>
+                <td>
+                    <table>
+                        {%- if material_book_unit_1 -%}
+                        <tr>
+                            <td><input class="btn btn-primary" type="button" style="width: 150px" value="Unidad 1"></td>
+                        </tr>
+                        {% endif %}
+                        {%- if material_book_unit_2 -%}
+                        <tr>
+                            <td><input class="btn btn-primary" type="button" style="width: 150px" value="Unidad 2"></td>
+                        </tr>
+                        {% endif %}
+                        {%- if material_book_unit_3 -%}
+                        <tr>
+                            <td><input class="btn btn-primary" type="button" style="width: 150px" value="Unidad 3"></td>
+                        </tr>
+                        {% endif %}
+                        {%- if material_book_unit_4 -%}
+                        <tr>
+                            <td><input class="btn btn-primary" type="button" style="width: 150px" value="Unidad 4"></td>
+                        </tr>
+                        {% endif %}
+                        {%- if material_book_unit_5 -%}
+                        <tr>
+                            <td><input class="btn btn-primary" type="button" style="width: 150px" value="Unidad 5"></td>
+                        </tr>
+                        {% endif %}
+                        {%- if material_book_unit_6 -%}
+                        <tr>
+                            <td><input class="btn btn-primary" type="button" style="width: 150px" value="Unidad 6"></td>
+                        </tr>
+                        {% endif %}
+                        {%- if material_book_unit_7 -%}
+                        <tr>
+                            <td><input class="btn btn-primary" type="button" style="width: 150px" value="Unidad 7"></td>
+                        </tr>
+                        {% endif %}
+                        {%- if material_book_unit_8 -%}
+                        <tr>
+                            <td><input class="btn btn-primary" type="button" style="width: 150px" value="Unidad 8"></td>
+                        </tr>
+                        {% endif %}
+                        {%- if material_book_unit_9 -%}
+                        <tr>
+                            <td><input class="btn btn-primary" type="button" style="width: 150px" value="Unidad 9"></td>
+                        </tr>
+                        {% endif %}
+                        {%- if material_book_unit_10 -%}
+                        <tr>
+                            <td><input class="btn btn-primary" type="button" style="width: 150px"value="Unidad 10" ></td>
+                        </tr>
+                        {% endif %}
+                  </table>
+              </td>
+          </tr>
+          <tr>
+                <td>Multimedia</td>
+                <td>
+                    <table>
+                        {%- if material_audio -%}
+                        <tr>
+                            <td><input class="btn btn-primary" type="button" style="width: 150px" value="Audio"></td>
+                        </tr>
+                        {% endif %}
+                        {%- if material_hipnopedia -%}
+                        <tr>
+                            <td><input class="btn btn-primary" type="button" style="width: 150px" value="Hipnopedia"></td>
+                        </tr>
+                        {% endif %}
+                        {%- if material_karaoke -%}
+                        <tr>
+                            <td><input class="btn btn-primary" type="button" style="width: 150px" value="Karaoke"></td>
+                        </tr>
+                        {% endif %}
+                        {%- if material_reader -%}
+                        <tr>
+                            <td><input class="btn btn-primary" type="button" style="width: 150px" value="Reader"></td>
+                        </tr>
+                        {% endif %}
+                        {%- if material_otros -%}
+                        <tr>
+                            <td><input class="btn btn-primary" type="button" style="width: 150px" value="Otros"></td>
+                        </tr>
+                        {% endif %}
+                    </table>
+                </td>
+            </tr>
+      </tbody>
+    </table>
+</div>
+
+{% endblock %}
+
+{% block script %}
+    <script> {% include "templates/generators/educational_material_print.js" %} </script>
+    <script>
+		window.doc_info = {
+			cicle: '{{ cicle }}'
+		}
+	</script>
+{% endblock %}

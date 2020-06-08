@@ -274,6 +274,10 @@ def get_data():
 				{
 					"type": "doctype",
 					"name": "Educational Material"
+				},
+				{
+					"type": "doctype",
+					"name": "Educational Material Print"
 				}
 			]
 		},

@@ -17,6 +17,8 @@
   "instructor_created_by",
   "section_break_10",
   "student_profile",
+  "secure_url",
+  "educational_material_print_url",
   "web_academy_settings_section",
   "enable_lms",
   "portal_title",
@@ -111,6 +113,16 @@
    "options": "Role Profile"
   },
   {
+    "fieldname": "secure_url",
+    "fieldtype": "Data",
+    "label": "Educational Material Secure URL"
+  },
+  {
+   "fieldname": "educational_material_print_url",
+   "fieldtype": "Data",
+   "label": "Educational Material Print URL"
+  },
+  {
    "default": "0",
    "description": "By default, a new User is created for every new Student. If enabled, no new User will be created when a new Student is created.",
    "fieldname": "user_creation_skip",
@@ -120,7 +132,7 @@
  ],
  "issingle": 1,
  "links": [],
- "modified": "2020-05-07 19:50:22.430576",
+ "modified": "2020-06-08 07:20:22.430576",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Education Settings",
