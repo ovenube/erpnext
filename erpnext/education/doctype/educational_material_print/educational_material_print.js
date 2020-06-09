@@ -20,9 +20,7 @@ frappe.ui.form.on('Educational Material Print', {
 						d.images.forEach(image => {
 							var c = frm.add_child("material_book_unit_1_thumbnails");
 							c.image_name = image;
-							c.image = '<img src="' + frm.doc.material_book_unit_1.replace("pdf", "static/thumbnails").replace(d.nombre_archivo, image) + '">';
-							debugger;
-							var img = c.image;
+							c.image = frm.doc.material_book_unit_2.replace("pdf", "static/thumbnails").replace(d.nombre_archivo, image);
 						}); 
 						frm.refresh_fields();
 					}
@@ -40,6 +38,8 @@ frappe.ui.form.on('Educational Material Print', {
 				},
 				callback: function(r) {
 					if (r.message) {
+						cur_frm.clear_table("material_book_unit_2_thumbnails");
+						frm.refresh_fields();
 						var d = r.message;
 						d.images.forEach(image => {
 							var c = frm.add_child("material_book_unit_2_thumbnails");
@@ -62,6 +62,8 @@ frappe.ui.form.on('Educational Material Print', {
 				},
 				callback: function(r) {
 					if (r.message) {
+						cur_frm.clear_table("material_book_unit_3_thumbnails");
+						frm.refresh_fields();
 						var d = r.message;
 						d.images.forEach(image => {
 							var c = frm.add_child("material_book_unit_3_thumbnails");
@@ -84,6 +86,8 @@ frappe.ui.form.on('Educational Material Print', {
 				},
 				callback: function(r) {
 					if (r.message) {
+						cur_frm.clear_table("material_book_unit_4_thumbnails");
+						frm.refresh_fields();
 						var d = r.message;
 						d.images.forEach(image => {
 							var c = frm.add_child("material_book_unit_4_thumbnails");
@@ -106,6 +110,8 @@ frappe.ui.form.on('Educational Material Print', {
 				},
 				callback: function(r) {
 					if (r.message) {
+						cur_frm.clear_table("material_book_unit_5_thumbnails");
+						frm.refresh_fields();
 						var d = r.message;
 						d.images.forEach(image => {
 							var c = frm.add_child("material_book_unit_5_thumbnails");
@@ -128,6 +134,8 @@ frappe.ui.form.on('Educational Material Print', {
 				},
 				callback: function(r) {
 					if (r.message) {
+						cur_frm.clear_table("material_book_unit_6_thumbnails");
+						frm.refresh_fields();
 						var d = r.message;
 						d.images.forEach(image => {
 							var c = frm.add_child("material_book_unit_6_thumbnails");
@@ -150,6 +158,8 @@ frappe.ui.form.on('Educational Material Print', {
 				},
 				callback: function(r) {
 					if (r.message) {
+						cur_frm.clear_table("material_book_unit_7_thumbnails");
+						frm.refresh_fields();
 						var d = r.message;
 						d.images.forEach(image => {
 							var c = frm.add_child("material_book_unit_7_thumbnails");
@@ -172,6 +182,8 @@ frappe.ui.form.on('Educational Material Print', {
 				},
 				callback: function(r) {
 					if (r.message) {
+						cur_frm.clear_table("material_book_unit_8_thumbnails");
+						frm.refresh_fields();
 						var d = r.message;
 						d.images.forEach(image => {
 							var c = frm.add_child("material_book_unit_8_thumbnails");
@@ -194,6 +206,8 @@ frappe.ui.form.on('Educational Material Print', {
 				},
 				callback: function(r) {
 					if (r.message) {
+						cur_frm.clear_table("material_book_unit_9_thumbnails");
+						frm.refresh_fields();
 						var d = r.message;
 						d.images.forEach(image => {
 							var c = frm.add_child("material_book_unit_9_thumbnails");
@@ -216,6 +230,8 @@ frappe.ui.form.on('Educational Material Print', {
 				},
 				callback: function(r) {
 					if (r.message) {
+						cur_frm.clear_table("material_book_unit_10_thumbnails");
+						frm.refresh_fields();
 						var d = r.message;
 						d.images.forEach(image => {
 							var c = frm.add_child("material_book_unit_10_thumbnails");
@@ -238,6 +254,8 @@ frappe.ui.form.on('Educational Material Print', {
 				},
 				callback: function(r) {
 					if (r.message) {
+						cur_frm.clear_table("material_reader_thumbnails");
+						frm.refresh_fields();
 						var d = r.message;
 						d.images.forEach(image => {
 							var c = frm.add_child("material_reader_thumbnails");
