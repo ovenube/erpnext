@@ -203,12 +203,6 @@ erpnext.restaurant_pos.PointOfSale = class PointOfSale {
 							frappe.db.get_doc(doctype, this.frm.doc.restaurant_order).then((order) => {
 								frappe.xcall('erpnext.restaurant.page.restaurant_pos.restaurant_pos.update_order_customer', 
 									{"order": this.frm.doc.restaurant_order, "customer": this.frm.doc.customer}).then((r) => {
-									order.items.forEach(order_item => {
-										var item = this.frm.add_child('items', { item_code: order_item.item });
-										item['qty'] = 1;
-										item['observations'] = order_item['observations'];
-										this.get_items_from_order(item, order_item);
-									})
 								})
 							})
 						} else {
