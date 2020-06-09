@@ -13,6 +13,7 @@ from frappe.website.doctype.website_slideshow.website_slideshow import get_slide
 from erpnext.shopping_cart.product_info import set_product_info_for_website
 from erpnext.utilities.product import get_qty_in_stock
 from six.moves.urllib.parse import quote
+from erpnext.portal.product_configurator.utils import get_product_settings
 
 class ItemGroup(NestedSet, WebsiteGenerator):
 	nsm_parent_field = 'parent_item_group'
@@ -69,6 +70,7 @@ class ItemGroup(NestedSet, WebsiteGenerator):
 		context.show_search=True
 		context.page_length = cint(frappe.db.get_single_value('Products Settings', 'products_per_page')) or 6
 		context.search_link = '/product_search'
+		context.product_settings = get_product_settings()
 
 		start = int(frappe.form_dict.start or 0)
 		if start < 0:

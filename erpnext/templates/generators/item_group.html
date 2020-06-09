@@ -2,6 +2,18 @@
 
 {% block header %}<h1>{{ name }}</h1>{% endblock %}
 
+{%- block head_include %}
+	<!-- GOOGLE WEB FONT -->
+    <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,900&display=swap" rel="stylesheet">
+
+    <!-- BASE CSS -->
+    <link href="/assets/erpnext/css/bootstrap.custom.min.css" rel="stylesheet">
+    <link href="/assets/erpnext/css/style.css" rel="stylesheet">
+
+	<!-- SPECIFIC CSS -->
+    <link href="/assets/erpnext/css/listing.css" rel="stylesheet">
+{% endblock -%}
+
 {% block page_content %}
 <div class="item-group-content" itemscope itemtype="http://schema.org/Product">
 	<div>
@@ -19,7 +31,11 @@
 				{% for i in range(0, page_length) %}
 					{% if items[i] %}
 						{%- set item = items[i] %}
-						{% include "erpnext/www/all-products/item_row.html" %}
+						{% if product_settings.product_view == "Grid" %}
+							{% include "erpnext/www/all-products/item_grid.html" %}
+						{% else %}
+							{% include "erpnext/www/all-products/item_row.html" %}
+						{% endif %}
 					{% endif %}
 				{% endfor %}
 			</div>
@@ -37,4 +53,38 @@
 		</div>
 	</div>
 </div>
+
+<script>
+	frappe.ready(() => {
+		$('.btn-prev, .btn-next').click((e) => {
+			const $btn = $(e.target);
+			$btn.prop('disabled', true);
+			const start = $btn.data('start');
+			let query_params = frappe.utils.get_query_params();
+			query_params.start = start;
+			let path = window.location.pathname + '?' + frappe.utils.get_url_from_dict(query_params);
+			window.location.href = path;
+		});
+		$('.page_content').on('click', '.wishlist', (e) => {
+			var $btn = $(e.currentTarget);
+			const item_code = $btn.data('item-code');
+			if (frappe.session.user !='Guest'){
+				frappe.call({
+					method: "erpnext.stock.doctype.wishlist.wishlist.set_wishlist",
+					args: {
+						"customer": frappe.session.user,
+						"item": item_code
+					},
+					callback: function(r) {
+						if (r.message) {
+							$btn[0].style.backgroundColor = "blue";
+						} else {
+							$btn[0].style.backgroundColor = "transparent";
+						}
+					}
+				})
+			}
+		});
+	});
+</script>
 {% endblock %}

@@ -68,12 +68,15 @@ def set_product_info_for_website(item):
 	product_info = get_product_info_for_website(item.item_code, skip_quotation_creation=True)
 
 	if product_info:
-		item.update(product_info)
-		item["stock_uom"] = product_info.get("uom")
-		item["sales_uom"] = product_info.get("sales_uom")
-		if product_info.get("price"):
-			item["price_stock_uom"] = product_info.get("price").get("formatted_price")
-			item["price_sales_uom"] = product_info.get("price").get("formatted_price_sales_uom")
+		item.update(product_info.product_info)
+		item["stock_uom"] = product_info.product_info.get("uom")
+		item["sales_uom"] = product_info.product_info.get("sales_uom")
+		if product_info.product_info.get("price"):
+			item["price_stock_uom"] = product_info.product_info.get("price").get("formatted_price")
+			item["price_sales_uom"] = product_info.product_info.get("price").get("formatted_price_sales_uom")
+			item['price'] = product_info.product_info.get("price")
+			item['referencial_price'] = product_info.product_info.get("referencial_price")
+			item['discount'] = product_info.product_info.get("discount")
 		else:
 			item["price_stock_uom"] = ""
 			item["price_sales_uom"] = ""
