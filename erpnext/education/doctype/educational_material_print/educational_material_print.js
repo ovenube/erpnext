@@ -20,7 +20,7 @@ frappe.ui.form.on('Educational Material Print', {
 						d.images.forEach(image => {
 							var c = frm.add_child("material_book_unit_1_thumbnails");
 							c.image_name = image;
-							c.image = frm.doc.material_book_unit_2.replace("pdf", "static/thumbnails").replace(d.nombre_archivo, image);
+							c.image = frm.doc.material_book_unit_1.replace("pdf", "static/thumbnails").replace(d.nombre_archivo, image);
 						}); 
 						frm.refresh_fields();
 					}
