@@ -27,18 +27,25 @@
 	<div class="row">
 		<div class="col-md-8">
 			{% if items %}
-			<div id="search-list">
+			{% if product_settings.product_view == "Grid" %}
+			<div class="row small-gutters">
 				{% for i in range(0, page_length) %}
 					{% if items[i] %}
 						{%- set item = items[i] %}
-						{% if product_settings.product_view == "Grid" %}
-							{% include "erpnext/www/all-products/item_grid.html" %}
-						{% else %}
-							{% include "erpnext/www/all-products/item_row.html" %}
-						{% endif %}
+						{% include "erpnext/www/all-products/item_grid.html" %}
 					{% endif %}
 				{% endfor %}
 			</div>
+			{% else %}
+			<div id="search-list">				
+				{% for i in range(0, page_length) %}
+					{% if items[i] %}
+						{%- set item = items[i] %}
+						{% include "erpnext/www/all-products/item_row.html" %}
+					{% endif %}
+				{% endfor %}
+			</div>
+			{% endif %}
 			<div class="item-group-nav-buttons">
 				{% if frappe.form_dict.start|int > 0 %}
 				<a class="btn btn-outline-secondary" href="/{{ pathname }}?start={{ frappe.form_dict.start|int - page_length }}">{{ _("Prev") }}</a>
