@@ -305,14 +305,43 @@ function set_continue_configuration() {
 }
 
 frappe.ready(() => {
-	const $btn_configure = $('.btn-configure');
-	if (!$btn_configure.length) return;
-	const { itemCode, itemName } = $btn_configure.data();
+	// const $btn_configure = $('.btn-configure');
+	// if (!$btn_configure.length) return;
+	// const { itemCode, itemName } = $btn_configure.data();
 
-	set_continue_configuration();
+	// set_continue_configuration();
 
-	$btn_configure.on('click', () => {
-		$btn_configure.prop('disabled', true);
-		new ItemConfigure(itemCode, itemName);
+	// $btn_configure.on('click', () => {
+	// 	$btn_configure.prop('disabled', true);
+	// 	new ItemConfigure(itemCode, itemName);
+	// });
+	const $attribs_select = $('.attribute');
+	$attribs_select.on('change', function() {
+		var picked = true;
+		var attrib_dict = {}
+		var item_code = ""
+		for (var i = 0; i < $attribs_select.length; i++){
+			if (!$attribs_select[i].value){
+				picked = false;
+			}
+			else {
+				attrib_dict[$attribs_select[i].id] = $attribs_select[i].value;
+				item_code = $attribs_select[i].name;
+			}
+		}
+		if (picked){
+			frappe.call({
+				method: "erpnext.stock.doctype.item.item.get_item_by_attributes",
+				args: {
+					"item_code": item_code,
+					"attributes": attrib_dict
+				},
+				callback: function(r){
+					if (r.message){
+						window.location.href = r.message;
+					}
+				}
+			})
+		}
 	});
 });

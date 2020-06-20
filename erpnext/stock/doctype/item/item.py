@@ -22,6 +22,8 @@ from frappe.website.render import clear_cache
 from frappe.website.website_generator import WebsiteGenerator
 
 from six import iteritems
+import numpy as np
+from functools import reduce
 
 
 class DuplicateReorderRows(frappe.ValidationError):
@@ -201,7 +203,7 @@ class Item(WebsiteGenerator):
 	def make_route(self):
 		if not self.route:
 			return cstr(frappe.db.get_value('Item Group', self.item_group,
-					'route')) + '/' + self.scrub((self.item_name if self.item_name else self.item_code) + '-' + random_string(5))
+				'route')) + '/' + self.scrub((self.item_name if self.item_name else self.item_code) + '-' + random_string(5))
 
 	def validate_website_image(self):
 		if frappe.flags.in_import:
@@ -326,19 +328,24 @@ class Item(WebsiteGenerator):
 		return context
 
 	def set_variant_context(self, context):
+		# load variants
+		# also used in set_attribute_context
+		parent_name = ""
 		if self.has_variants:
 			context.no_cache = True
-
-			# load variants
-			# also used in set_attribute_context
+			parent_name = self.name
+		elif self.variant_of:
+			parent_name = self.variant_of
+				
+		if parent_name:
 			context.variants = frappe.get_all("Item",
-				 filters={"variant_of": self.name, "show_variant_in_website": 1},
-				 order_by="name asc")
+				fields=["route", "name"],
+				filters={"variant_of": parent_name, "show_variant_in_website": 1},
+				order_by="name asc")
 
 			variant = frappe.form_dict.variant
 			if not variant and context.variants:
-				# the case when the item is opened for the first time from its list
-				variant = context.variants[0]
+				variant = self.name
 
 			if variant:
 				context.variant = frappe.get_doc("Item", variant)
@@ -352,14 +359,14 @@ class Item(WebsiteGenerator):
 
 						context[fieldname] = value
 
-		if self.slideshow:
-			if context.variant and context.variant.slideshow:
-				context.update(get_slideshow(context.variant))
-			else:
-				context.update(get_slideshow(self))
+			if self.slideshow:
+				if context.variant and context.variant.slideshow:
+					context.update(get_slideshow(context.variant))
+				else:
+					context.update(get_slideshow(self))
 
 	def set_attribute_context(self, context):
-		if self.has_variants:
+		if self.has_variants or self.variant_of:
 			attribute_values_available = {}
 			context.attribute_values = {}
 			context.selected_attributes = {}
@@ -379,8 +386,9 @@ class Item(WebsiteGenerator):
 					if attr.attribute_value not in values:
 						values.append(attr.attribute_value)
 
-					if v.name == context.variant.name:
-						context.selected_attributes[attr.attribute] = attr.attribute_value
+					if context.get('variant'):
+						if v.name == context.variant.name:
+							context.selected_attributes[attr.attribute] = attr.attribute_value
 
 			# filter attributes, order based on attribute table
 			for attr in self.attributes:
@@ -715,10 +723,10 @@ class Item(WebsiteGenerator):
 		if self.variant_of:
 			if self.show_in_website:
 				self.show_variant_in_website = 1
-				self.show_in_website = 0
 
 			if self.show_variant_in_website:
 				# show template
+				self.show_in_website = 1
 				template_item = frappe.get_doc("Item", self.variant_of)
 
 				if not template_item.show_in_website:
@@ -1136,3 +1144,16 @@ def update_variants(variants, template, publish_progress=True):
 def on_doctype_update():
 	# since route is a Text column, it needs a length for indexing
 	frappe.db.add_index("Item", ["route(500)"])
+
+@frappe.whitelist(allow_guest=True)
+def get_item_by_attributes(item_code, attributes):
+	items = []
+	if frappe.get_value("Item", item_code, "has_variants"):
+		parent = item_code
+	else:
+		parent = frappe.get_value("Item", item_code, "variant_of")	
+	for key, value in json.loads(attributes).items():
+		items.append([item['parent'] for item in frappe.get_all("Item Variant Attribute", fields = ["parent"],
+			filters = {'variant_of': parent, 'attribute': key, 'attribute_value': value})])
+	variant_array = reduce(np.intersect1d, items)
+	return "/" + frappe.get_value("Item", variant_array[0], 'route')

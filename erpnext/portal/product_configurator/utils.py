@@ -343,7 +343,10 @@ def get_items(filters=None, search=None, limit=True):
 
 	show_in_website_condition = ''
 	if products_settings.hide_variants:
-		show_in_website_condition = get_conditions({'show_in_website': 1 }, 'and')
+		show_in_website_condition = get_conditions([
+			['show_in_website', '=', 1],
+			["ifnull(variant_of, '')", '=', '']
+		], 'and')
 	else:
 		show_in_website_condition = get_conditions([
 			['show_in_website', '=', 1],

@@ -2,28 +2,24 @@
 {% set cart_settings = shopping_cart.cart_settings %}
 <div class="prod_options">
 	<form class="cart-form">
+		{% for attribute, values in attribute_values.items() %}
 		<div class="form-group">
-		  <label for="size">
-			Talla
-		  </label>
-		  <label class="select form-control">
-			<select name="size" id="size">
-			</select>
-		  </label>
+			<label for="{{ attribute }}">
+				{{ attribute }}
+			</label>
+			<label class="select form-control">
+				<select name="{{ doc.name }}" id="{{ attribute }}" class="attribute">
+					<option disabled selected value> -- select an option -- </option>
+					{% for value in values %}
+						<option value="{{ value }}" {% if selected_attributes[attribute] == value %}selected{% endif %}>{{ value }}</option>
+					{% endfor %}
+				</select>
+			</label>
 		</div>
-		<div class="form-group">
-		  <label for="color">
-			Color
-		  </label>
-		  <label class="select form-control">
-			<select name="color" id="color">
-			</select>
-		  </label>
-		</div>
+		{% endfor %}
 	</form>
 </div>
 <script>
 {% include "templates/generators/item/item_configure.js" %}
-{% include "templates/generators/item/item_inquiry.js" %}
 </script>
 {% endif %}

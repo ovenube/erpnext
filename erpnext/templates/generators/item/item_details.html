@@ -19,7 +19,7 @@
 {% endif  %}
 </div>
 
-{% if has_variants %}
+{% if has_variants or variant_of %}
 	<!-- configure template -->
 	{% include "templates/generators/item/item_configure.html" %}
 {% endif %}
