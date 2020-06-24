@@ -13,9 +13,9 @@ class Wishlist(Document):
 @frappe.whitelist()
 def get_wishlist(customer):
 	if customer:
-		customer = get_party(customer)
-		if frappe.get_all("Wishlist", filters={"customer": customer.name}):
-			return [item.item for item in frappe.get_doc("Wishlist", customer.name).items]
+		doc_customer = get_party(customer)
+		if frappe.get_all("Wishlist", filters={"customer": doc_customer.name}):
+			return [item.item for item in frappe.get_doc("Wishlist", doc_customer.name).items]
 		else:
 			return []
 
@@ -23,9 +23,9 @@ def get_wishlist(customer):
 def set_wishlist(customer, item):
 	saved = False
 	if customer and item:
-		customer = get_party(customer)
-		if frappe.get_all("Wishlist", filters={"customer": customer.name}):
-			wishlist = frappe.get_doc("Wishlist", customer.name)
+		doc_customer = get_party(customer)
+		if frappe.get_all("Wishlist", filters={"customer": doc_customer.name}):
+			wishlist = frappe.get_doc("Wishlist", doc_customer.name)
 			if wishlist.get('items'):
 				if not item in get_wishlist(customer):
 					wishlist.append("items", {
@@ -43,7 +43,7 @@ def set_wishlist(customer, item):
 		else:
 			wishlist = frappe.get_doc({
 				"doctype": "Wishlist", 
-				"customer": customer.name,
+				"customer": doc_customer.name,
 				"items": [
 					{"item": item}
 				]

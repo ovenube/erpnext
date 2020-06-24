@@ -5,6 +5,7 @@ from erpnext.shopping_cart.doctype.shopping_cart_settings.shopping_cart_settings
 from erpnext.utilities.product import get_price
 from erpnext.portal.product_configurator.item_variants_cache import ItemVariantsCacheManager
 from erpnext.stock.doctype.wishlist.wishlist import get_wishlist
+from erpnext.utilities.product import get_qty_in_stock
 
 def get_field_filter_data():
 	product_settings = get_product_settings()
@@ -435,6 +436,7 @@ def get_items(filters=None, search=None, limit=True):
 			cart_settings.company
 		)
 		r['discount'] = round((r['referencial_price'].price_list_rate - r['price'].price_list_rate)/r['referencial_price'].price_list_rate * 100) if r['referencial_price'] is not None else 0
+		r['stock_info'] = get_qty_in_stock(r.name, "website_warehouse")
 
 	return results
 

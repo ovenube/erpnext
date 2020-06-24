@@ -26,7 +26,7 @@
 		{% endif %}
 		<div class="row">
 			<div class="cart-buttons">
-				<a class="uppercase border-radius btn-dark btn-add-to-cart {% if not (product_info.price and (cart_settings.allow_items_not_in_stock or product_info.in_stock)) %}disable{% endif %}" href="/cart" data-item-code="{{item_code}}"><i class="fa fa-shopping-basket"></i> &nbsp; Agregar a Carrito</a>
+				<a class="uppercase border-radius btn-dark btn-add-to-cart {% if not (product_info.price and (cart_settings.allow_items_not_in_stock or product_info.in_stock)) or product_info.is_stock_item == 1 %}disable{% endif %}" href="/cart" data-item-code="{{item_code}}"><i class="fa fa-shopping-basket"></i> &nbsp; Agregar a Carrito</a>
 				<a class="icons wishlist" href="#." data-item-code="{{item_code}}" {% if product_info.in_wishlist %}style="background-color: blue;"{% endif %}>
 				  <i class="fa fa-heart-o"></i>
 				</a>
