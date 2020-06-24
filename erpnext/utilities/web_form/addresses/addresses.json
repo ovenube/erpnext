@@ -8,6 +8,7 @@
  "allow_print": 0,
  "amount": 0.0,
  "amount_based_on_field": 0,
+ "client_script": "frappe.web_form.on('country', (field, value) => {\n\tset_reqd_fields(value);\n\tif (value == \"Peru\") {\n\t\tfrappe.call({\n\t\t\tmethod: \"frappe.contacts.doctype.address.address.get_departments\",\n\t\t\targs: {\n\t\t\t\tcountry: value\n\t\t\t},\n\t\t\tcallback: function(r, rt){\n\t\t\t\tif(r.message){\n\t\t\t\t\tfrappe.web_form.set_df_property('departamento', 'options', r.message.reverse());\n\t\t\t\t\tfrappe.web_form.set_df_property('provincia', 'options', []);\n\t\t\t\t\tfrappe.web_form.set_df_property('distrito', 'options', []);\n\t\t\t\t\tfrappe.web_form.set_value(\"ubigeo\", \"\");\n\t\t\t\t}\n\t\t\t}\n\t\t});\n\t}\n});\nfrappe.web_form.on('departamento', (field, value) => {\n\tvar country = frappe.web_form.get_value(['country']);\n\tif (country == \"Peru\") {\n\t\tfrappe.call({\n\t\t\tmethod: \"frappe.contacts.doctype.address.address.get_provinces\",\n\t\t\targs: {\n\t\t\t\tcountry: country,\n\t\t\t\tdepartment: value\n\t\t\t},\n\t\t\tcallback: function(r, rt){\n\t\t\t\tif(r.message){\n\t\t\t\t\tfrappe.web_form.set_df_property('provincia', 'options', r.message.reverse());\n\t\t\t\t\tfrappe.web_form.set_df_property('distrito', 'options', []);\n\t\t\t\t\tfrappe.web_form.set_value(\"ubigeo\", \"\");\n\t\t\t\t\tfrappe.web_form.events.trigger('provincia')\n\t\t\t\t}\n\t\t\t}\n\t\t});\n\t}\n});\nfrappe.web_form.on('provincia', (field, value) => {\n\tvar country = frappe.web_form.get_value(['country']);\n\tvar department = frappe.web_form.get_value(['departamento']) || frappe.web_form.doc.departamento;\n\tif (country == \"Peru\" && department != null) {\n\t\tfrappe.call({\n\t\t\tmethod: \"frappe.contacts.doctype.address.address.get_districts\",\n\t\t\targs: {\n\t\t\t\tcountry: country,\n\t\t\t\tdepartment: department,\n\t\t\t\tprovince: value\n\t\t\t},\n\t\t\tcallback: function(r, rt){\n\t\t\t\tif(r.message){\n\t\t\t\t\tfrappe.web_form.set_df_property('distrito', 'options', r.message.reverse());\n\t\t\t\t\tfrappe.web_form.set_value(\"ubigeo\", \"\");\n\t\t\t\t}\n\t\t\t}\n\t\t});\n\t}\n});\nfrappe.web_form.on('distrito', (field, value) => {\n\tvar country = frappe.web_form.get_value(['country']);\n\tvar department = frappe.web_form.get_value(['departamento']) || frappe.web_form.doc.departamento;\n\tvar province = frappe.web_form.get_value(['provincia']) || frappe.web_form.doc.provincia;\n\tif (country == \"Peru\" && department != null  && province != null) {\n\t\tfrappe.call({\n\t\t\tmethod: \"frappe.contacts.doctype.address.address.get_ubigeo\",\n\t\t\targs: {\n\t\t\t\tcountry: country,\n\t\t\t\tdepartment: department,\n\t\t\t\tprovince: province,\n\t\t\t\tdistrict: value\n\t\t\t},\n\t\t\tcallback: function(r, rt){\n\t\t\t\tif(r.message){\n\t\t\t\t\tfrappe.web_form.set_value(\"ubigeo\", r.message);\n\t\t\t\t}\n\t\t\t}\n\t\t});\n\t}\n});\nfunction set_reqd_fields(country){\n\tfrappe.web_form.set_df_property('city', 'reqd', (country==\"Peru\") ? 0 : 1);\n\tfrappe.web_form.set_df_property('state', 'reqd', (country==\"Peru\") ? 0 : 1);\n\tfrappe.web_form.set_df_property('departamento', 'reqd', (country==\"Peru\") ? 1 : 0);\n\tfrappe.web_form.set_df_property('provincia', 'reqd', (country==\"Peru\") ? 1 : 0);\n\tfrappe.web_form.set_df_property('distrito', 'reqd', (country==\"Peru\") ? 1 : 0);\n\tfrappe.web_form.set_df_property('ubigeo', 'reqd', (country==\"Peru\") ? 1 : 0);\n};",
  "creation": "2016-06-24 15:50:33.196990",
  "doc_type": "Address",
  "docstatus": 0,
@@ -16,7 +17,7 @@
  "is_standard": 1,
  "login_required": 1,
  "max_attachment_size": 0,
- "modified": "2019-10-15 06:55:30.405119",
+ "modified": "2020-06-24 06:55:55.935377",
  "modified_by": "Administrator",
  "module": "Utilities",
  "name": "addresses",
@@ -83,6 +84,7 @@
   },
   {
    "allow_read_on_all_link_options": 0,
+   "depends_on": "eval: doc.country != \"Peru\"",
    "fieldname": "city",
    "fieldtype": "Data",
    "hidden": 0,
@@ -95,6 +97,7 @@
   },
   {
    "allow_read_on_all_link_options": 0,
+   "depends_on": "eval: doc.country != \"Peru\"",
    "fieldname": "state",
    "fieldtype": "Data",
    "hidden": 0,
@@ -102,7 +105,7 @@
    "max_length": 0,
    "max_value": 0,
    "read_only": 0,
-   "reqd": 0,
+   "reqd": 1,
    "show_in_filter": 0
   },
   {
@@ -128,6 +131,58 @@
    "options": "Country",
    "read_only": 0,
    "reqd": 1,
+   "show_in_filter": 0
+  },
+  {
+   "allow_read_on_all_link_options": 0,
+   "depends_on": "eval: doc.country == \"Peru\"",
+   "fieldname": "departamento",
+   "fieldtype": "Select",
+   "hidden": 0,
+   "label": "Departamento",
+   "max_length": 0,
+   "max_value": 0,
+   "read_only": 0,
+   "reqd": 0,
+   "show_in_filter": 0
+  },
+  {
+   "allow_read_on_all_link_options": 0,
+   "depends_on": "eval: doc.country == \"Peru\"",
+   "fieldname": "provincia",
+   "fieldtype": "Select",
+   "hidden": 0,
+   "label": "Provincia",
+   "max_length": 0,
+   "max_value": 0,
+   "read_only": 0,
+   "reqd": 0,
+   "show_in_filter": 0
+  },
+  {
+   "allow_read_on_all_link_options": 0,
+   "depends_on": "eval: doc.country == \"Peru\"",
+   "fieldname": "distrito",
+   "fieldtype": "Select",
+   "hidden": 0,
+   "label": "Distrito",
+   "max_length": 0,
+   "max_value": 0,
+   "read_only": 0,
+   "reqd": 0,
+   "show_in_filter": 0
+  },
+  {
+   "allow_read_on_all_link_options": 0,
+   "depends_on": "eval: doc.country == \"Peru\"",
+   "fieldname": "ubigeo",
+   "fieldtype": "Data",
+   "hidden": 0,
+   "label": "Ubigeo",
+   "max_length": 0,
+   "max_value": 0,
+   "read_only": 0,
+   "reqd": 0,
    "show_in_filter": 0
   },
   {
