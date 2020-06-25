@@ -426,7 +426,7 @@ erpnext.restaurant_pos.PointOfSale = class PointOfSale {
 							() => this.post_qty_change(item),
 							() => {
 								frappe.xcall('erpnext.restaurant.page.restaurant_pos.restaurant_pos.update_order_items', 
-									{"order": this.frm.doc.restaurant_order, "items": this.frm.doc.items, "total_qty": this.frm.doc.total_qty}).then((r) => {})
+									{"order": this.frm.doc.restaurant_order, "items": this.frm.doc.items, "total_qty": this.frm.doc.pos_total_qty}).then((r) => {})
 							}
 						]);
 					});
@@ -479,7 +479,7 @@ erpnext.restaurant_pos.PointOfSale = class PointOfSale {
 			},
 			() => {
 				frappe.xcall('erpnext.restaurant.page.restaurant_pos.restaurant_pos.update_order_items', 
-					{"order": this.frm.doc.restaurant_order, "items": this.frm.doc.items, "total_qty": this.frm.doc.total_qty}).then((r) => {})
+					{"order": this.frm.doc.restaurant_order, "items": this.frm.doc.items, "total_qty": this.frm.doc.pos_total_qty}).then((r) => {})
 			}
 		]);
 	}
@@ -1349,7 +1349,7 @@ class POSCart {
 			const item = me.frm.doc.items.find(i => i['item_code'] === item_code);
 			item["observations"] = $input.val();
 			frappe.xcall('erpnext.restaurant.page.restaurant_pos.restaurant_pos.update_order_items', 
-				{"order": me.frm.doc.restaurant_order, "items": me.frm.doc.items, "total_qty": me.frm.doc.total_qty}).then((r) => {})
+				{"order": me.frm.doc.restaurant_order, "items": me.frm.doc.items, "total_qty": me.frm.doc.pos_total_qty}).then((r) => {})
 		});
 
 		// current item
