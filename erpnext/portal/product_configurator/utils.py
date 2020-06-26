@@ -3,6 +3,7 @@ import numpy as np
 from erpnext.shopping_cart.doctype.shopping_cart_settings.shopping_cart_settings \
 	import get_shopping_cart_settings
 from erpnext.utilities.product import get_price
+from frappe.utils import cint
 from erpnext.portal.product_configurator.item_variants_cache import ItemVariantsCacheManager
 from erpnext.stock.doctype.wishlist.wishlist import get_wishlist
 from erpnext.utilities.product import get_qty_in_stock
@@ -280,6 +281,8 @@ def get_next_attribute_and_values(item_code, selected_attributes):
 			product_info = None
 	else:
 		product_info = None
+
+	product_info["allow_items_not_in_stock"] = cint(data.cart_settings.allow_items_not_in_stock)
 
 	return {
 		'next_attribute': next_attribute,
