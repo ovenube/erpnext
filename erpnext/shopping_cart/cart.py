@@ -124,7 +124,7 @@ def update_cart(item_code, qty, additional_notes=None, with_items=False, added_q
 			quotation.append("items", {
 				"doctype": "Quotation Item",
 				"item_code": item_code,
-				"qty": qty,
+				"qty": qty if qty != 0 else added_qty,
 				"additional_notes": additional_notes
 			})
 		else:
