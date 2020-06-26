@@ -190,7 +190,8 @@
 			const item_code = $btn.data('item-code');
 			erpnext.shopping_cart.update_cart({
 				item_code,
-				qty: 1,
+				qty: 0,
+				added_qty: 1,
 				callback(r) {
 					console.log(r);
 				}

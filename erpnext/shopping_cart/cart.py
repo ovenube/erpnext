@@ -21,7 +21,7 @@ def set_cart_count(quotation=None):
 	if cint(frappe.db.get_singles_value("Shopping Cart Settings", "enabled")):
 		if not quotation:
 			quotation = _get_cart_quotation()
-		cart_count = cstr(round(quotation.get("total_qty")))
+		cart_count = cstr(round(quotation.get("total_qty") or 0))
 
 		if hasattr(frappe.local, "cookie_manager"):
 			frappe.local.cookie_manager.set_cookie("cart_count", cart_count)
@@ -103,12 +103,13 @@ def request_for_quotation():
 	return quotation.name
 
 @frappe.whitelist(allow_guest=True)
-def update_cart(item_code, qty, additional_notes=None, with_items=False):
+def update_cart(item_code, qty, additional_notes=None, with_items=False, added_qty=0):
 	quotation = _get_cart_quotation()
 
 	empty_cart = False
 	qty = flt(qty)
-	if qty == 0:
+	added_qty = flt(added_qty)
+	if qty == 0 and added_qty == 0:
 		quotation_items = quotation.get("items", {"item_code": ["!=", item_code]})
 		if quotation_items:
 			quotation.set("items", quotation_items)
@@ -125,7 +126,10 @@ def update_cart(item_code, qty, additional_notes=None, with_items=False):
 				"additional_notes": additional_notes
 			})
 		else:
-			quotation_items[0].qty += qty
+			if added_qty == 0:
+				quotation_items[0].qty = qty
+			else:
+				quotation_items[0].qty += added_qty
 			quotation_items[0].additional_notes = additional_notes
 
 	apply_cart_settings(quotation=quotation)

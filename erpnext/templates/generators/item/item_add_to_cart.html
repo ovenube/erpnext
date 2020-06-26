@@ -44,7 +44,8 @@
 			const qty = $("#qty").val();
 			erpnext.shopping_cart.update_cart({
 				item_code,
-				qty: qty,
+				qty: 0,
+				added_qty: qty,
 				callback(r) {
 					
 				}
