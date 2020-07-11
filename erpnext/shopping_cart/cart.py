@@ -419,6 +419,7 @@ def get_party(user=None):
 		user = frappe.session.user
 
 	contact_name = get_contact_name(user)
+	profile_user = frappe.get_doc("User", user)
 	party = None
 
 	if contact_name:
@@ -435,7 +436,10 @@ def get_party(user=None):
 		debtors_account = get_debtors_account(cart_settings)
 
 	if party:
-		return frappe.get_doc(party_doctype, party)
+		customer = frappe.get_doc(party_doctype, party)
+		customer.update_by_profile(profile_user)
+		customer.save(ignore_permissions=True)
+		return customer
 
 	else:
 		if not cart_settings.enabled:
@@ -460,6 +464,7 @@ def get_party(user=None):
 
 		customer.flags.ignore_mandatory = True
 		customer.insert(ignore_permissions=True)
+		customer.update_by_profile(profile_user)
 
 		contact = frappe.new_doc("Contact")
 		contact.update({

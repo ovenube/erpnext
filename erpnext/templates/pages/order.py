@@ -22,7 +22,14 @@ def get_context(context):
 	context.payment_ref = frappe.db.get_value("Payment Request",
 		{"reference_name": frappe.form_dict.name}, "name")
 
+	if frappe.form_dict.doctype == "Sales Order":
+		sales_invoice = frappe.db.sql(
+        	"""SELECT parent FROM`tabSales Invoice Item` WHERE sales_order='{0}'""".format(frappe.form_dict.name))
+		if sales_invoice:
+			context.related_invoice = sales_invoice[0][0]
+
 	context.enabled_checkout = frappe.get_doc("Shopping Cart Settings").enable_checkout
+	context.payment_gateway_account = frappe.get_doc("Shopping Cart Settings").payment_gateway_account
 
 	default_print_format = frappe.db.get_value('Property Setter', dict(property='default_print_format', doc_type=frappe.form_dict.doctype), "value")
 	if default_print_format:

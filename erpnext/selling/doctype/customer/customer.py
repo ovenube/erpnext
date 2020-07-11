@@ -116,6 +116,14 @@ class Customer(TransactionBase):
 		if self.lead_name:
 			frappe.db.set_value('Lead', self.lead_name, 'status', 'Converted', update_modified=False)
 
+	def update_by_profile(self, profile_user):
+		self.db_set('tipo_documento_identidad', profile_user.get('tipo_documento_identidad'))
+		self.db_set('tax_id', profile_user.get('tax_id'))
+		if profile_user.get('business_name'):
+			self.db_set('customer_name', profile_user.get('business_name'))
+		if self.tipo_documento_identidad and not self.codigo_tipo_documento:
+			self.db_set('codigo_tipo_documento', frappe.get_value("Tipos de Documento de Identidad", self.tipo_documento_identidad, 'codigo_tipo_documento'))
+
 	def create_lead_address_contact(self):
 		if self.lead_name:
 			# assign lead address to customer (if already not set)
