@@ -196,7 +196,6 @@ erpnext.restaurant_pos.PointOfSale = class PointOfSale {
 			wrapper: this.wrapper.find('.cart-container'),
 			events: {
 				on_customer_change: (customer) => {
-					debugger;
 					this.frm.set_value('customer', customer);
 					if (this.frm.doc.codigo_tipo_documento != "" && this.frm.doc.customer != ""){
 						var doctype = "Restaurant Order";
