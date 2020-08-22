@@ -177,6 +177,23 @@
      "label": "Over Billing Allowance (%)"
     },
     {
+     "fieldname": "exchange_difference_sb", 
+     "fieldtype": "Section Break",
+     "label": "Exchange Difference"
+    }, 
+    {
+     "fieldname": "exchange_difference_cost_center", 
+     "fieldtype": "Link", 
+     "label": "Exchange Difference Cost Center", 
+     "options": "Cost Center"
+    }, 
+    {
+     "fieldname": "exchange_difference_accounts", 
+     "fieldtype": "Table", 
+     "label": "Exchange Difference Accounts", 
+     "options": "Accounts Settings Exchange Difference"
+    },
+    {
      "fieldname": "plastic_bags_tax_settings",
      "fieldtype": "Section Break",
      "label": "Plastic Bags Tax"
