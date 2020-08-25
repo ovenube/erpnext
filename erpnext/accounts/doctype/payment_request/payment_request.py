@@ -291,6 +291,7 @@ class PaymentRequest(Document):
 
 		return controller.get_payment_settings(**{
 			"amount": flt(self.grand_total, self.precision("grand_total")),
+			"company": self.company,
 			"title": frappe.as_unicode(data.company),
 			"description": frappe.as_unicode(self.subject),
 			"reference_doctype": "Payment Request",
