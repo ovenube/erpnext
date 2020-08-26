@@ -27,7 +27,7 @@
   "enable_checkout",
   "payment_success_url",
   "column_break_11",
-  "payment_gateway_account"
+  "payment_gateway_accounts"
  ],
  "fields": [
   {
@@ -157,12 +157,6 @@
    "fieldtype": "Column Break"
   },
   {
-   "fieldname": "payment_gateway_account",
-   "fieldtype": "Link",
-   "label": "Payment Gateway Account",
-   "options": "Payment Gateway Account"
-  },
-  {
    "default": "0",
    "fieldname": "allow_guest_orders",
    "fieldtype": "Check",
@@ -173,12 +167,18 @@
    "fieldtype": "Link",
    "label": "Referencial Price List",
    "options": "Price List"
+  },
+  {
+   "fieldname": "payment_gateway_accounts",
+   "fieldtype": "Table",
+   "label": "Payment Gateway Accounts",
+   "options": "Shopping Cart Settings Gateway"
   }
  ],
  "icon": "fa fa-shopping-cart",
  "idx": 1,
  "issingle": 1,
- "modified": "2020-05-25 20:57:49.943031",
+ "modified": "2020-08-25 18:14:41.223383",
  "modified_by": "Administrator",
  "module": "Shopping Cart",
  "name": "Shopping Cart Settings",

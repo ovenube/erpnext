@@ -55,7 +55,7 @@
 </div>
 
 <p class="small my-3">
-	{%- set party_name = doc.supplier_name if doc.doctype in ['Supplier Quotation', 'Purchase Invoice', 'Purchase Order'] else doc.customer_name %}
+	{%- set party_name = doc.supplier_name if doc.doctype in ['Supplier Quotation', 'Purchase Invoice', 'Purchase Order'] else (doc.student_name if doc.doctype == 'Fees' else doc.customer_name) %}
 	<b>{{ party_name }}</b>
 
 	{% if doc.contact_display and doc.contact_display != party_name %}
@@ -72,34 +72,61 @@
 
 	<!-- items -->
 	<div class="order-item-table">
-		<div class="row order-items order-item-header text-muted">
-			<div class="col-sm-6 col-6 h6 text-uppercase">
-				{{ _("Item") }}
+		{% if doc.doctype == "Fees" %}
+			<div class="row order-items order-item-header text-muted">
+				<div class="col-sm-6 col-6 h6 text-uppercase">
+					{{ _("Component") }}
+				</div>
+				<div class="col-sm-3 col-xs-3 text-right h6 text-uppercase">
+					{{ _("Description") }}
+				</div>
+				<div class="col-sm-3 col-xs-3 text-right h6 text-uppercase">
+					{{ _("Amount") }}
+				</div>
 			</div>
-			<div class="col-sm-3 col-xs-3 text-right h6 text-uppercase">
-				{{ _("Quantity") }}
+			{% for d in doc.components %}
+			<div class="row order-items">
+				<div class="col-sm-6 col-6">
+					{{ d.fees_category }}
+				</div>
+				<div class="col-sm-3 col-xs-3 text-right">
+					{{ d.description or "" }}
+				</div>
+				<div class="col-sm-3 col-xs-3 text-right">
+					{{ d.get_formatted("amount")	 }}
+				</div>
 			</div>
-			<div class="col-sm-3 col-xs-3 text-right h6 text-uppercase">
-				{{ _("Amount") }}
+			{% endfor %}
+		{% else %}
+			<div class="row order-items order-item-header text-muted">
+				<div class="col-sm-6 col-6 h6 text-uppercase">
+					{{ _("Item") }}
+				</div>
+				<div class="col-sm-3 col-xs-3 text-right h6 text-uppercase">
+					{{ _("Quantity") }}
+				</div>
+				<div class="col-sm-3 col-xs-3 text-right h6 text-uppercase">
+					{{ _("Amount") }}
+				</div>
 			</div>
-		</div>
-		{% for d in doc.items %}
-		<div class="row order-items">
-			<div class="col-sm-6 col-6">
-				{{ item_name_and_description(d) }}
+			{% for d in doc.items %}
+			<div class="row order-items">
+				<div class="col-sm-6 col-6">
+					{{ item_name_and_description(d) }}
+				</div>
+				<div class="col-sm-3 col-xs-3 text-right">
+					{{ d.qty }}
+					{% if d.delivered_qty is defined and d.delivered_qty != None %}
+					<p class="text-muted small">{{ _("Delivered") }}&nbsp;{{ d.delivered_qty }}</p>
+					{% endif %}
+				</div>
+				<div class="col-sm-3 col-xs-3 text-right">
+					{{ d.get_formatted("amount")	 }}
+					<p class="text-muted small">{{ _("Rate:") }}&nbsp;{{ d.get_formatted("rate") }}</p>
+				</div>
 			</div>
-			<div class="col-sm-3 col-xs-3 text-right">
-				{{ d.qty }}
-				{% if d.delivered_qty is defined and d.delivered_qty != None %}
-				<p class="text-muted small">{{ _("Delivered") }}&nbsp;{{ d.delivered_qty }}</p>
-				{% endif %}
-			</div>
-			<div class="col-sm-3 col-xs-3 text-right">
-				{{ d.get_formatted("amount")	 }}
-				<p class="text-muted small">{{ _("Rate:") }}&nbsp;{{ d.get_formatted("rate") }}</p>
-			</div>
-		</div>
-		{% endfor %}
+			{% endfor %}
+		{% endif %}
 	</div>
 
 	<!-- taxes -->
@@ -111,9 +138,10 @@
 </div>
 
 {% if enabled_checkout and ((doc.doctype=="Sales Order" and doc.per_billed <= 0)
-	or (doc.doctype=="Sales Invoice" and doc.outstanding_amount > 0)) %}
+	or (doc.doctype=="Sales Invoice" and doc.outstanding_amount > 0)
+	or (doc.doctype=="Fees" and doc.outstanding_amount > 0)) %}
 
-{% if payment_gateway_account == "Culqi - PEN" %}<script src="https://checkout.culqi.com/js/v3"></script>{% endif %}
+{% if "Culqi" in payment_gateway_account %}<script src="https://checkout.culqi.com/js/v3"></script>{% endif %}
 
 <div class="panel panel-default">
 	<div class="panel-heading">
@@ -144,7 +172,7 @@
 					<div id="loyalty-points-status" style="text-align: right"></div>
 					<div class="page-header-actions-block" data-html-block="header-actions">
 						<p>
-							<a {% if payment_gateway_account == "Culqi - PEN" %}data-document-name="{{ doc.name }}" data-document-type="{{ doc.doctype }}" href="#"{% else %}href="/api/method/erpnext.accounts.doctype.payment_request.payment_request.make_payment_request?dn={{ doc.name }}&dt={{ doc.doctype }}&submit_doc=1&order_type=Shopping Cart"{% endif %}
+							<a {% if "Culqi" in payment_gateway_account %}data-document-name="{{ doc.name }}" data-document-type="{{ doc.doctype }}" href="#"{% else %}href="/api/method/erpnext.accounts.doctype.payment_request.payment_request.make_payment_request?dn={{ doc.name }}&dt={{ doc.doctype }}&submit_doc=1&order_type=Shopping Cart"{% endif %}
 								class="btn btn-primary btn-sm btn-pay-order" id="pay-for-order">{{ _("Pay") }} {{ doc.get_formatted("grand_total") }} </a>
 						</p>
 					</div>
@@ -247,10 +275,12 @@
 {% endblock %}
 
 {% block script %}
-	<script> {% include "templates/pages/order.js" %} </script>
+	<script> 
+		{% include "templates/pages/order.js" %} 
+	</script>
 	<script>
 		window.doc_info = {
-			customer: '{{doc.customer}}',
+			customer: '{{ doc.get("customer") or doc.get("student") }}',
 			doctype: '{{ doc.doctype }}',
 			doctype_name: '{{ doc.name }}',
 			grand_total: '{{ doc.grand_total }}',

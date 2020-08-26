@@ -92,6 +92,13 @@ website_route_rules = [
 			"parents": [{"label": _("Orders"), "route": "orders"}]
 		}
 	},
+	{"from_route": "/fees", "to_route": "Fees"},
+	{"from_route": "/fees/<path:name>", "to_route": "order",
+		"defaults": {
+			"doctype": "Fees",
+			"parents": [{"label": _("Fees"), "route": "fees"}]
+		}
+	},
 	{"from_route": "/invoices", "to_route": "Sales Invoice"},
 	{"from_route": "/invoices/<path:name>", "to_route": "order",
 		"defaults": {
@@ -211,7 +218,8 @@ has_website_permission = {
 	"Lab Test": "erpnext.healthcare.web_form.lab_test.lab_test.has_website_permission",
 	"Patient Encounter": "erpnext.healthcare.web_form.prescription.prescription.has_website_permission",
 	"Patient Appointment": "erpnext.healthcare.web_form.patient_appointments.patient_appointments.has_website_permission",
-	"Patient": "erpnext.healthcare.web_form.personal_details.personal_details.has_website_permission"
+	"Patient": "erpnext.healthcare.web_form.personal_details.personal_details.has_website_permission",
+	"Fees": "erpnext.education.doctype.fees.fees.has_website_permission"
 }
 
 dump_report_map = "erpnext.startup.report_data_map.data_map"

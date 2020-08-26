@@ -29,7 +29,10 @@ def get_context(context):
 			context.related_invoice = sales_invoice[0][0]
 
 	context.enabled_checkout = frappe.get_doc("Shopping Cart Settings").enable_checkout
-	context.payment_gateway_account = frappe.get_doc("Shopping Cart Settings").payment_gateway_account
+	payment_gateway_accounts = frappe.get_doc("Shopping Cart Settings").payment_gateway_accounts
+	for gateway in payment_gateway_accounts:
+		if gateway.company == context.doc.company:
+			context.payment_gateway_account = gateway.payment_gateway_account
 
 	default_print_format = frappe.db.get_value('Property Setter', dict(property='default_print_format', doc_type=frappe.form_dict.doctype), "value")
 	if default_print_format:

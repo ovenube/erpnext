@@ -1,17 +1,31 @@
-<div class="web-list-item">
+<div class="web-list-item transaction-list-item">
 	<a href = "/fees/{{doc.name}}/">
 		<div class="row">
 			<div class="col-xs-6">
-				{{ doc.program }}
+				<span class="indicator small {{ doc.indicator_color or ("blue" if doc.docstatus==1 else "darkgrey") }}">
+				{{ doc.name }}</span>
+				<div class="small text-muted transaction-time"
+					title="{{ frappe.utils.format_datetime(doc.modified, "medium") }}">
+					{{ frappe.utils.global_date_format(doc.modified) }}
+				</div>
 			</div>
 			<div class="col-xs-2">
 				{{ frappe.utils.fmt_money(doc.grand_total, currency=doc.currency) }}
+				<div class="small text-muted">
+					Total
+				</div>
 			</div>
 			<div class="col-xs-2">
 				{{ frappe.utils.fmt_money(doc.paid_amount, currency=doc.currency) }}
+				<div class="small text-muted">
+					Pagado
+				</div>
 			</div>
 			<div class="col-xs-2">
 				{{ frappe.utils.fmt_money(doc.outstanding_amount, currency=doc.currency) }}
+				<div class="small text-muted">
+					Pendiente
+				</div>
 			</div>
 		</div>
 	</a>

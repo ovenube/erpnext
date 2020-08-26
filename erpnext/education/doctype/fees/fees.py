@@ -115,7 +115,7 @@ def get_fee_list(doctype, txt, filters, limit_start, limit_page_length=20, order
 	user = frappe.session.user
 	student = frappe.db.sql("select name from `tabStudent` where student_email_id= %s", user)
 	if student:
-		return frappe. db.sql('''
+		return frappe.db.sql('''
 			select name, program, due_date, grand_total - outstanding_amount as paid_amount,
 			outstanding_amount, grand_total, currency
 			from `tabFees`
@@ -132,3 +132,12 @@ def get_list_context(context=None):
 		"get_list": get_fee_list,
 		"row_template": "templates/includes/fee/fee_row.html"
 	}
+
+def get_student():
+	return frappe.get_value("Student",{"student_email_id": frappe.session.user}, "name")
+
+def has_website_permission(doc, ptype, user, verbose=False):
+	if doc.student == get_student():
+		return True
+	else:
+		return False

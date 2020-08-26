@@ -280,8 +280,7 @@ class PaymentRequest(Document):
 		if self.reference_doctype != "Fees":
 			data = frappe.db.get_value(self.reference_doctype, self.reference_name, ["company", "customer_name"], as_dict=1)
 		else:
-			data = frappe.db.get_value(self.reference_doctype, self.reference_name, ["student_name"], as_dict=1)
-			data.update({"company": frappe.defaults.get_defaults().company})
+			data = frappe.db.get_value(self.reference_doctype, self.reference_name, ["company", "student_name"], as_dict=1)
 
 		controller = get_payment_gateway_controller(self.payment_gateway)
 		controller.validate_transaction_currency(self.currency)
@@ -291,7 +290,7 @@ class PaymentRequest(Document):
 
 		return controller.get_payment_settings(**{
 			"amount": flt(self.grand_total, self.precision("grand_total")),
-			"company": self.company,
+			"company": data.company,
 			"title": frappe.as_unicode(data.company),
 			"description": frappe.as_unicode(self.subject),
 			"reference_doctype": "Payment Request",
@@ -299,7 +298,7 @@ class PaymentRequest(Document):
 			"payer_email": self.email_to or frappe.session.user,
 			"payer_name": frappe.as_unicode(data.customer_name),
 			"order_id": self.name,
-			"currency": self.currency
+			"currency": "PEN" if self.currency == "SOL" else self.currency
 		})
 
 @frappe.whitelist(allow_guest=True)
@@ -309,6 +308,7 @@ def make_payment_request(**args):
 	args = frappe._dict(args)
 
 	ref_doc = frappe.get_doc(args.dt, args.dn)
+	args['company'] = ref_doc.company
 	grand_total = get_amount(ref_doc)
 	if args.loyalty_points and args.dt == "Sales Order":
 		from erpnext.accounts.doctype.loyalty_program.loyalty_program import validate_loyalty_points
@@ -417,8 +417,10 @@ def get_gateway_details(args):
 		return get_payment_gateway_account(args.get("payment_gateway"))
 
 	if args.order_type == "Shopping Cart":
-		payment_gateway_account = frappe.get_doc("Shopping Cart Settings").payment_gateway_account
-		return get_payment_gateway_account(payment_gateway_account)
+		payment_gateway_accounts = frappe.get_doc("Shopping Cart Settings").payment_gateway_accounts
+		for gateway in payment_gateway_accounts:
+			if gateway.company == args.get('company'):
+				return get_payment_gateway_account(gateway.payment_gateway_account)
 
 	gateway_account = get_payment_gateway_account({"is_default": 1})
 

@@ -478,8 +478,11 @@ def get_party(user=None):
 		return customer
 
 def get_debtors_account(cart_settings):
-	payment_gateway_account_currency = \
-		frappe.get_doc("Payment Gateway Account", cart_settings.payment_gateway_account).currency
+	payment_gateway_accounts = cart_settings.payment_gateway_accounts
+	for gateway in payment_gateway_accounts:
+		if gateway.company == context.doc.company:
+			payment_gateway_account_currency = \
+				frappe.get_doc("Payment Gateway Account", gateway).currency
 
 	account_name = _("Debtors ({0})".format(payment_gateway_account_currency))
 
