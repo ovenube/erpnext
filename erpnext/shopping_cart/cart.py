@@ -480,7 +480,7 @@ def get_party(user=None):
 def get_debtors_account(cart_settings):
 	payment_gateway_accounts = cart_settings.payment_gateway_accounts
 	for gateway in payment_gateway_accounts:
-		if gateway.company == context.doc.company:
+		if gateway.company == cart_settings.company:
 			payment_gateway_account_currency = \
 				frappe.get_doc("Payment Gateway Account", gateway).currency
 
