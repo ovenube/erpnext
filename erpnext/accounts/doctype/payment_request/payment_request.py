@@ -158,6 +158,11 @@ class PaymentRequest(Document):
 			party_account = ref_doc.debit_to
 		elif self.reference_doctype == "Purchase Invoice":
 			party_account = ref_doc.credit_to
+		elif self.reference_doctype == "Fees":
+			party_account = ref_doc.receivable_account
+			payment_entry.update({
+				"fees": ref_doc.name
+			})
 		else:
 			party_account = get_party_account("Customer", ref_doc.get("customer"), ref_doc.company)
 

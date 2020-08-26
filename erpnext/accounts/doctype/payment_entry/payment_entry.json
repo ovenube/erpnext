@@ -73,7 +73,8 @@
   "subscription_section",
   "auto_repeat",
   "amended_from",
-  "title"
+  "title",
+  "fees"
  ],
  "fields": [
   {
@@ -572,7 +573,14 @@
    "label": "Status",
    "options": "\nDraft\nSubmitted\nCancelled",
    "read_only": 1
-  }
+  },
+  {
+    "fieldname": "fees",
+    "fieldtype": "Link",
+    "hidden": 1,
+    "label": "Fees",
+    "options": "Fees"
+   }
  ],
  "is_submittable": 1,
  "modified": "2019-11-06 12:59:43.151721",
