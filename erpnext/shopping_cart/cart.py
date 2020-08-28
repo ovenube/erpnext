@@ -482,7 +482,7 @@ def get_debtors_account(cart_settings):
 	for gateway in payment_gateway_accounts:
 		if gateway.company == cart_settings.company:
 			payment_gateway_account_currency = \
-				frappe.get_doc("Payment Gateway Account", gateway).currency
+				frappe.get_doc("Payment Gateway Account", gateway.payment_gateway_account).currency
 
 	account_name = _("Debtors ({0})".format(payment_gateway_account_currency))
 

@@ -144,7 +144,8 @@ class PaymentRequest(Document):
 			frappe.set_user("Administrator")
 
 		payment_entry = self.create_payment_entry()
-		self.make_invoice()
+		if not payment_entry.fees:
+			self.make_invoice()
 
 		return payment_entry
 
@@ -160,9 +161,6 @@ class PaymentRequest(Document):
 			party_account = ref_doc.credit_to
 		elif self.reference_doctype == "Fees":
 			party_account = ref_doc.receivable_account
-			payment_entry.update({
-				"fees": ref_doc.name
-			})
 		else:
 			party_account = get_party_account("Customer", ref_doc.get("customer"), ref_doc.company)
 
@@ -178,6 +176,7 @@ class PaymentRequest(Document):
 			party_amount=party_amount, bank_account=self.payment_account, bank_amount=bank_amount)
 
 		payment_entry.update({
+			"fees": ref_doc.name if ref_doc.doctype == "Fees" else "",
 			"reference_no": self.name,
 			"reference_date": nowdate(),
 			"remarks": "Payment Entry against {0} {1} via Payment Request {2}".format(self.reference_doctype,
