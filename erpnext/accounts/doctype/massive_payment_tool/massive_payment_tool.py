@@ -128,6 +128,7 @@ class MassivePaymentTool(Document):
 						"received_amount": reference.exchange_amount,
 						"base_paid_amount": reference.allocated_amount,
 						"source_exchange_rate": reference.conversion_rate,
+						"target_exchange_rate": reference.exchange_rate
 					}
 					document['references'] = {
 						"reference_doctype": reference.reference_doctype,
@@ -203,6 +204,7 @@ class MassivePaymentTool(Document):
 				payment_entry = frappe.get_doc({
 					"doctype": "Payment Entry",
 					"posting_date": self.posting_date,
+					"company": self.company,
 					"payment_type": "Pay",
 					"mode_of_payment": self.mode_of_payment,
 					"party_type": document['party_type'],
@@ -212,6 +214,7 @@ class MassivePaymentTool(Document):
 					"paid_amount": document['paid_amount'],
 					"received_amount": document['received_amount'] if document.get('received_amount') else document['paid_amount'],
 					"source_exchange_rate": document.get('source_exchange_rate'),
+					"target_exchange_rate": document.get('target_exchange_rate'),
 					"reference_no": self.reference_no,
 					"reference_date": self.reference_date,
 					"references": [
@@ -238,6 +241,7 @@ class MassivePaymentTool(Document):
 				payment_entry = frappe.get_doc({
 					"doctype": "Payment Entry",
 					"posting_date": self.posting_date,
+					"company": self.company,
 					"payment_type": "Pay",
 					"mode_of_payment": self.mode_of_payment,
 					"party_type": document['party_type'],
@@ -245,6 +249,7 @@ class MassivePaymentTool(Document):
 					"paid_from": document['paid_from'],
 					"paid_to": document['paid_to'],
 					"source_exchange_rate": document.get('source_exchange_rate'),
+					"target_exchange_rate": document.get('target_exchange_rate'),
 					"paid_amount": document['paid_amount'],
 					"received_amount": document['paid_amount'],
 					"reference_no": self.reference_no,
@@ -264,6 +269,7 @@ class MassivePaymentTool(Document):
 			payment_entry = frappe.get_doc({
 				"doctype": "Payment Entry",
 				"posting_date": self.posting_date,
+				"company": self.company,
 				"payment_type": "Pay",
 				"mode_of_payment": self.mode_of_payment,
 				"party_type": document['party_type'],
@@ -271,6 +277,7 @@ class MassivePaymentTool(Document):
 				"paid_from": document['paid_from'],
 				"paid_to": document['paid_to'],
 				"source_exchange_rate": document.get('source_exchange_rate'),
+				"target_exchange_rate": document.get('target_exchange_rate'),
 				"paid_amount": document['paid_amount'],
 				"received_amount": document['paid_amount'],
 				"reference_no": self.reference_no,
