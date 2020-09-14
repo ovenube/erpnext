@@ -74,7 +74,7 @@
   "auto_repeat",
   "amended_from",
   "title",
-  "fees"
+  "fee"
  ],
  "fields": [
   {
@@ -575,15 +575,15 @@
    "read_only": 1
   },
   {
-    "fieldname": "fees",
-    "fieldtype": "Link",
-    "hidden": 1,
-    "label": "Fees",
-    "options": "Fees"
-   }
+   "fieldname": "fee",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "label": "Fee",
+   "read_only": 1
+  }
  ],
  "is_submittable": 1,
- "modified": "2019-11-06 12:59:43.151721",
+ "modified": "2020-09-13 19:59:27.345177",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Payment Entry",

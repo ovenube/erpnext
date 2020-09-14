@@ -144,7 +144,7 @@ class PaymentRequest(Document):
 			frappe.set_user("Administrator")
 
 		payment_entry = self.create_payment_entry()
-		if not payment_entry.fees:
+		if not payment_entry.fee:
 			self.make_invoice()
 
 		return payment_entry
@@ -176,7 +176,7 @@ class PaymentRequest(Document):
 			party_amount=party_amount, bank_account=self.payment_account, bank_amount=bank_amount)
 
 		payment_entry.update({
-			"fees": ref_doc.name if ref_doc.doctype == "Fees" else "",
+			"fee": ref_doc.name if ref_doc.doctype == "Fees" else "",
 			"reference_no": self.name,
 			"reference_date": nowdate(),
 			"remarks": "Payment Entry against {0} {1} via Payment Request {2}".format(self.reference_doctype,
@@ -272,7 +272,10 @@ class PaymentRequest(Document):
 						"My Account": "/me"
 					}).get(success_url, "/me")
 				else:
-					redirect_to = get_url("/orders/{0}".format(self.reference_name))
+					if self.reference_doctype == "Fees":
+						redirect_to = get_url("/fees/{0}".format(self.reference_name))
+					else:
+						redirect_to = get_url("/orders/{0}".format(self.reference_name))
 
 			return redirect_to
 

@@ -141,110 +141,110 @@
 	or (doc.doctype=="Sales Invoice" and doc.outstanding_amount > 0)
 	or (doc.doctype=="Fees" and doc.outstanding_amount > 0)) %}
 
-{% if "Culqi" in payment_gateway_account %}<script src="https://checkout.culqi.com/js/v3"></script>{% endif %}
+	{% if "Culqi" in payment_gateway_account %}<script src="https://checkout.culqi.com/js/v3"></script>{% endif %}
 
-<div class="panel panel-default">
-	<div class="panel-heading">
-		<div class="row">
-			<div class="form-column col-sm-6 address-title">
-				<strong>Payment</strong>
+	<div class="panel panel-default">
+		<div class="panel-heading">
+			<div class="row">
+				<div class="form-column col-sm-6 address-title">
+					<strong>Payment</strong>
+				</div>
 			</div>
 		</div>
-	</div>
-	<div class="panel-collapse">
-		<div class="panel-body text-muted small">
-			<div class="row">
-				<div class="form-column col-sm-6">
-					{% if available_loyalty_points %}
-					<div class="form-group">
-						<div class="h6">Enter Loyalty Points</div>
-						<div class="control-input-wrapper">
-							<div class="control-input">
-								<input class="form-control" type="number" min="0" max="{{ available_loyalty_points }}" id="loyalty-point-to-redeem">
+		<div class="panel-collapse">
+			<div class="panel-body text-muted small">
+				<div class="row">
+					<div class="form-column col-sm-6">
+						{% if available_loyalty_points %}
+						<div class="form-group">
+							<div class="h6">Enter Loyalty Points</div>
+							<div class="control-input-wrapper">
+								<div class="control-input">
+									<input class="form-control" type="number" min="0" max="{{ available_loyalty_points }}" id="loyalty-point-to-redeem">
+								</div>
+								<p class="help-box small text-muted d-none d-sm-block"> Available Points: {{ available_loyalty_points }} </p>
 							</div>
-							<p class="help-box small text-muted d-none d-sm-block"> Available Points: {{ available_loyalty_points }} </p>
+						</div>
+						{% endif %}
+					</div>
+
+					<div class="form-column col-sm-6">
+						<div id="loyalty-points-status" style="text-align: right"></div>
+						<div class="page-header-actions-block" data-html-block="header-actions">
+							<p>
+								<a {% if "Culqi" in payment_gateway_account %}data-document-name="{{ doc.name }}" data-document-type="{{ doc.doctype }}" href="#"{% else %}href="/api/method/erpnext.accounts.doctype.payment_request.payment_request.make_payment_request?dn={{ doc.name }}&dt={{ doc.doctype }}&submit_doc=1&order_type=Shopping Cart"{% endif %}
+									class="btn btn-primary btn-sm btn-pay-order" id="pay-for-order">{{ _("Pay") }} {{ doc.get_formatted("grand_total") }} </a>
+							</p>
 						</div>
 					</div>
-					{% endif %}
-				</div>
 
-				<div class="form-column col-sm-6">
-					<div id="loyalty-points-status" style="text-align: right"></div>
-					<div class="page-header-actions-block" data-html-block="header-actions">
-						<p>
-							<a {% if "Culqi" in payment_gateway_account %}data-document-name="{{ doc.name }}" data-document-type="{{ doc.doctype }}" href="#"{% else %}href="/api/method/erpnext.accounts.doctype.payment_request.payment_request.make_payment_request?dn={{ doc.name }}&dt={{ doc.doctype }}&submit_doc=1&order_type=Shopping Cart"{% endif %}
-								class="btn btn-primary btn-sm btn-pay-order" id="pay-for-order">{{ _("Pay") }} {{ doc.get_formatted("grand_total") }} </a>
-						</p>
-					</div>
 				</div>
 
 			</div>
-
 		</div>
 	</div>
-</div>
-<script>
-	function culqi() {
-		if (Culqi.token) {
-			var token = Culqi.token.id;
-			var culqi_settings = Culqi.getSettings;
-			frappe.call({
-				method: "frappe.integrations.doctype.culqi_settings.culqi_settings.get_express_checkout_details",
-				args: {
-					"amount": culqi_settings.amount,
-					"currency_code": culqi_settings.currency,
-					"email": Culqi.token.email,
-					"source_id": token
-				},
-				callback: function(r) {
-					if (r.message){						
-						window.location.href = r.message;
-					}
-				}
-			})
-		} else { // ¡Hubo algún problema!
-			// Mostramos JSON de objeto error en consola
-			console.log(Culqi.error);
-			alert(Culqi.error.user_message);
-		}
-	};
-	frappe.ready(() => {
-		$('.page_content').on('click', '.btn-pay-order', (e) => {
-			const $btn = $(e.currentTarget);
-			const document_name = $btn.data('document-name');
-			const document_type = $btn.data('document-type');
-			
-			if (frappe.session.user !='Guest' && document_name != undefined && document_type != undefined){
+	<script>
+		function culqi() {
+			if (Culqi.token) {
+				var token = Culqi.token.id;
+				var culqi_settings = Culqi.getSettings;
 				frappe.call({
-					method: "erpnext.accounts.doctype.payment_request.payment_request.make_payment_request",
+					method: "frappe.integrations.doctype.culqi_settings.culqi_settings.get_express_checkout_details",
 					args: {
-						"dn": document_name,
-						"dt": document_type,
-						"submit_doc": 1,
-						"order_type": "Shopping Cart",
-						"payment_method": "culqi"
+						"amount": culqi_settings.amount,
+						"currency_code": culqi_settings.currency,
+						"email": Culqi.token.email,
+						"source_id": token
 					},
-					callback: function(r) {						
-						if (r.message) {
-							if ("culqi_info" in r.message){
-								order = r.message;
-								Culqi.publicKey = order.culqi_info.public_key;			
-								Culqi.settings({
-									title: order.culqi_info.store_name, //store name
-									currency: order.culqi_info.currency,
-									description: order.culqi_info.store_description, //store description
-									amount: Math.round(order.grand_total * 100)
-								});
-								Culqi.open();
-								e.preventDefault();
-							}
+					callback: function(r) {
+						if (r.message){						
+							window.location.href = r.message;
 						}
 					}
 				})
+			} else { // ¡Hubo algún problema!
+				// Mostramos JSON de objeto error en consola
+				console.log(Culqi.error);
+				alert(Culqi.error.user_message);
 			}
+		};
+		frappe.ready(() => {
+			$('.page_content').on('click', '.btn-pay-order', (e) => {
+				const $btn = $(e.currentTarget);
+				const document_name = $btn.data('document-name');
+				const document_type = $btn.data('document-type');
+				
+				if (frappe.session.user !='Guest' && document_name != undefined && document_type != undefined){
+					frappe.call({
+						method: "erpnext.accounts.doctype.payment_request.payment_request.make_payment_request",
+						args: {
+							"dn": document_name,
+							"dt": document_type,
+							"submit_doc": 1,
+							"order_type": "Shopping Cart",
+							"payment_method": "culqi"
+						},
+						callback: function(r) {						
+							if (r.message) {
+								if ("culqi_info" in r.message){
+									order = r.message;
+									Culqi.publicKey = order.culqi_info.public_key;			
+									Culqi.settings({
+										title: order.culqi_info.store_name, //store name
+										currency: order.culqi_info.currency,
+										description: order.culqi_info.store_description, //store description
+										amount: Math.round(order.grand_total * 100)
+									});
+									Culqi.open();
+									e.preventDefault();
+								}
+							}
+						}
+					})
+				}
+			});
 		});
-	});
-</script>
+	</script>
 {% endif %}
 
 
