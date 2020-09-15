@@ -269,7 +269,8 @@ class PaymentRequest(Document):
 					redirect_to = ({
 						"Orders": "/orders",
 						"Invoices": "/invoices",
-						"My Account": "/me"
+						"Fees": "/fees",
+						"My Account": "/me",
 					}).get(success_url, "/me")
 				else:
 					if self.reference_doctype == "Fees":

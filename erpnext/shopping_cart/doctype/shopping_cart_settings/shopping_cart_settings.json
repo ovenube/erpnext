@@ -150,7 +150,7 @@
    "fieldname": "payment_success_url",
    "fieldtype": "Select",
    "label": "Payment Success Url",
-   "options": "\nOrders\nInvoices\nMy Account"
+   "options": "\nOrders\nInvoices\nFees\nMy Account"
   },
   {
    "fieldname": "column_break_11",
@@ -178,7 +178,7 @@
  "icon": "fa fa-shopping-cart",
  "idx": 1,
  "issingle": 1,
- "modified": "2020-08-25 18:14:41.223383",
+ "modified": "2020-09-14 23:29:56.061796",
  "modified_by": "Administrator",
  "module": "Shopping Cart",
  "name": "Shopping Cart Settings",
