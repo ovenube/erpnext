@@ -64,6 +64,14 @@ def get_data():
 				{
 					"type": "report",
 					"is_query_report": True,
+					"name": "Stock Balance Variants",
+					"doctype": "Stock Ledger Entry",
+					"onboard": 1,
+					"dependencies": ["Item"],
+				},
+				{
+					"type": "report",
+					"is_query_report": True,
 					"name": "Stock Projected Qty",
 					"doctype": "Item",
 					"onboard": 1,
