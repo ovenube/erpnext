@@ -202,6 +202,9 @@ def get_item_warehouse_map(filters, sle):
 				qty_diff = flt(d.qty_after_transaction) - flt(qty_dict.bal_qty)
 		else:
 			qty_diff = flt(d.actual_qty)
+			if d.variant_of:
+				if attribute_value:
+						qty_dict[attribute_value] += qty_diff
 
 		value_diff = flt(d.stock_value_difference)
 
