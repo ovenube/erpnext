@@ -23,6 +23,7 @@
   "program",
   "student_batch",
   "student_email",
+  "student_group",
   "column_break_16",
   "student_category",
   "academic_term",
@@ -333,10 +334,16 @@
   {
    "fieldname": "dimension_col_break",
    "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "student_group",
+   "fieldtype": "Link",
+   "label": "Student Group",
+   "options": "Student Group"
   }
  ],
  "is_submittable": 1,
- "modified": "2020-09-13 21:56:59.159696",
+ "modified": "2020-09-26 11:15:06.108950",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Fees",
