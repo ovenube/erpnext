@@ -22,6 +22,7 @@ def execute(filters=None):
 
 	include_uom = filters.get("include_uom")
 	columns = get_columns(filters)
+	row_items = get_row_items(filters)
 	items = get_items(filters)
 	sle = get_stock_ledger_entries(filters, items)
 
@@ -34,7 +35,7 @@ def execute(filters=None):
 		return columns, []
 
 	iwb_map = get_item_warehouse_map(filters, sle)
-	item_map = get_item_details(items, sle, filters)
+	item_map = get_item_details(row_items, sle, filters)
 	item_reorder_detail_map = get_item_reorder_details(item_map.keys())
 
 	data = []
@@ -96,17 +97,7 @@ def get_columns(filters):
 		{"label": _("Item Group"), "fieldname": "item_group", "fieldtype": "Link", "options": "Item Group", "width": 100},
 		{"label": _("Warehouse"), "fieldname": "warehouse", "fieldtype": "Link", "options": "Warehouse", "width": 100},
 		{"label": _("Stock UOM"), "fieldname": "stock_uom", "fieldtype": "Link", "options": "UOM", "width": 90},
-		{"label": _("Balance Qty"), "fieldname": "bal_qty", "fieldtype": "Float", "width": 100, "convertible": "qty"},
-		{"label": _("Balance Value"), "fieldname": "bal_val", "fieldtype": "Currency", "width": 100},
-		{"label": _("Opening Qty"), "fieldname": "opening_qty", "fieldtype": "Float", "width": 100, "convertible": "qty"},
-		{"label": _("Opening Value"), "fieldname": "opening_val", "fieldtype": "Float", "width": 110},
-		{"label": _("In Qty"), "fieldname": "in_qty", "fieldtype": "Float", "width": 80, "convertible": "qty"},
-		{"label": _("In Value"), "fieldname": "in_val", "fieldtype": "Float", "width": 80},
-		{"label": _("Out Qty"), "fieldname": "out_qty", "fieldtype": "Float", "width": 80, "convertible": "qty"},
-		{"label": _("Out Value"), "fieldname": "out_val", "fieldtype": "Float", "width": 80},
-		{"label": _("Valuation Rate"), "fieldname": "val_rate", "fieldtype": "Currency", "width": 90, "convertible": "rate"},
-		{"label": _("Reorder Level"), "fieldname": "reorder_level", "fieldtype": "Float", "width": 80, "convertible": "qty"},
-		{"label": _("Reorder Qty"), "fieldname": "reorder_qty", "fieldtype": "Float", "width": 80, "convertible": "qty"},
+		{"label": _("Total"), "fieldname": "total", "fieldtype": "Float", "width": 100, "convertible": "qty"},
 		{"label": _("Company"), "fieldname": "company", "fieldtype": "Link", "options": "Company", "width": 100}
 	]
 
@@ -148,6 +139,9 @@ def get_conditions(filters):
 
 def get_stock_ledger_entries(filters, items):
 	item_conditions_sql = ''
+	if items:
+		item_conditions_sql = ' and sle.item_code in ({})'\
+			.format(', '.join([frappe.db.escape(i, percent=False) for i in items]))
 
 	conditions = get_conditions(filters)
 
@@ -157,14 +151,15 @@ def get_stock_ledger_entries(filters, items):
 			sle.company, sle.voucher_type, sle.qty_after_transaction, sle.stock_value_difference,
 			sle.item_code as name, sle.voucher_no, item.variant_of as variant_of, item.name as item_name
 		from
-			`tabStock Ledger Entry` sle force index (posting_sort_index), `tabItem` as item
+			`tabStock Ledger Entry` sle force index (posting_sort_index) left join `tabItem` as item
+		on sle.item_code = item.item_code
 		where sle.docstatus < 2 %s %s
-		and sle.item_code = item.item_code
 		order by sle.posting_date, sle.posting_time, sle.creation, sle.actual_qty""" % #nosec
 		(item_conditions_sql, conditions), as_dict=1)
 
 def get_item_warehouse_map(filters, sle):
 	iwb_map = {}
+	variant_qty_diff = None
 	talla_attributes = get_talla_attribute()
 	from_date = getdate(filters.get("from_date"))
 	to_date = getdate(filters.get("to_date"))
@@ -179,11 +174,7 @@ def get_item_warehouse_map(filters, sle):
 			key = (d.company, d.item_code, d.warehouse)
 		if key not in iwb_map:
 			iwb_map[key] = frappe._dict({
-				"opening_qty": 0.0, "opening_val": 0.0,
-				"in_qty": 0.0, "in_val": 0.0,
-				"out_qty": 0.0, "out_val": 0.0,
-				"bal_qty": 0.0, "bal_val": 0.0,
-				"val_rate": 0.0
+				"total": 0.0
 			})
 			for talla in talla_attributes:
 				iwb_map[key][talla] = 0.0
@@ -195,34 +186,22 @@ def get_item_warehouse_map(filters, sle):
 
 		if d.voucher_type == "Stock Reconciliation":
 			if d.variant_of:
-				qty_diff = flt(d.qty_after_transaction)
 				if attribute_value:
-					qty_dict[attribute_value] += qty_diff
+					variant_qty_diff = flt(d.qty_after_transaction) - qty_dict[attribute_value]
 			else:
-				qty_diff = flt(d.qty_after_transaction) - flt(qty_dict.bal_qty)
+				qty_diff = flt(d.qty_after_transaction) - flt(qty_dict.total)
 		else:
-			qty_diff = flt(d.actual_qty)
 			if d.variant_of:
-				if attribute_value:
-						qty_dict[attribute_value] += qty_diff
-
-		value_diff = flt(d.stock_value_difference)
-
-		if d.posting_date < from_date:
-			qty_dict.opening_qty += qty_diff
-			qty_dict.opening_val += value_diff
-
-		elif d.posting_date >= from_date and d.posting_date <= to_date:
-			if flt(qty_diff, float_precision) >= 0:
-				qty_dict.in_qty += qty_diff
-				qty_dict.in_val += value_diff
+				variant_qty_diff = flt(d.actual_qty)
 			else:
-				qty_dict.out_qty += abs(qty_diff)
-				qty_dict.out_val += abs(value_diff)
+				qty_diff = flt(d.actual_qty)
 
-		qty_dict.val_rate = d.valuation_rate
-		qty_dict.bal_qty += qty_diff
-		qty_dict.bal_val += value_diff
+		if d.variant_of:
+			if attribute_value:
+				qty_dict[attribute_value] += variant_qty_diff
+				qty_dict.total += qty_dict[attribute_value]
+		else:
+			qty_dict.total += qty_diff
 
 	iwb_map = filter_items_with_no_transactions(iwb_map, float_precision)
 
@@ -244,9 +223,25 @@ def filter_items_with_no_transactions(iwb_map, float_precision):
 
 	return iwb_map
 
-def get_items(filters):
+def get_row_items(filters):
 	conditions = []
 	conditions.append("item.variant_of IS NULL")
+
+	if filters.get("item_code"):
+		conditions.append("item.name=%(item_code)s")
+	else:
+		if filters.get("item_group"):
+			conditions.append(get_item_group_condition(filters.get("item_group")))
+
+	items = []
+	if conditions:
+		items = frappe.db.sql_list("""select name from `tabItem` item where {}"""
+			.format(" and ".join(conditions)), filters)
+	
+	return items
+
+def get_items(filters):
+	conditions = []
 	if filters.get("item_code"):
 		conditions.append("item.name=%(item_code)s")
 	else:
@@ -287,9 +282,6 @@ def get_item_details(items, sle, filters):
 	for item in res:
 		item_details.setdefault(item.name, item)
 
-	if filters.get('show_variant_attributes', 0) == 1:
-		variant_values = get_variant_values_for(list(item_details))
-		item_details = {k: v.update(variant_values.get(k, {})) for k, v in iteritems(item_details)}
 	return item_details
 
 def get_item_reorder_details(items):
@@ -314,17 +306,6 @@ def get_talla_attribute():
 	'''Return all item variant attributes.'''
 	attributes = frappe.get_doc('Item Attribute', "TALLA")
 	return [i.attribute_value for i in attributes.item_attribute_values]
-
-def get_variant_values_for(items):
-	'''Returns variant values for items.'''
-	attribute_map = {}
-	for attr in frappe.db.sql('''select parent, attribute, attribute_value
-		from `tabItem Variant Attribute` where parent in (%s)
-		''' % ", ".join(["%s"] * len(items)), tuple(items), as_dict=1):
-			attribute_map.setdefault(attr['parent'], {})
-			attribute_map[attr['parent']].update({attr['attribute']: attr['attribute_value']})
-
-	return attribute_map
 
 def get_item_attribute_value(item_name):
 	attributes = frappe.get_doc("Item", item_name).attributes
