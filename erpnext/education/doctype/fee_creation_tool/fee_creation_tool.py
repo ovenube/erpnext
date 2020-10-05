@@ -19,7 +19,6 @@ class FeeCreationTool(Document):
 
 	def create_fees(self):
 		error = False
-		created_records = 0
 		doc = frappe.get_doc("Fee Structure", self.fee_structure)
 		for student in self.students:
 			fees = frappe.get_list("Fees", filters={'student': student.student, 'student_group': self.student_group})
@@ -39,7 +38,6 @@ class FeeCreationTool(Document):
 					set_fees_fields(fees_doc)
 					fees_doc.submit()
 					update_student_group(student.student, self.student_group, created=1)
-					created_records += 1
 				except Exception as e:
 					error = True
 					print(e)
@@ -47,7 +45,7 @@ class FeeCreationTool(Document):
 			frappe.db.rollback()
 			frappe.throw("Error while submitting")
 
-def update_student_group(self, student, student_group, created=0):
+def update_student_group(student, student_group, created=0):
 	frappe.db.sql("""UPDATE `tabStudent Group Student`
 						SET fee_created=%s
 						WHERE parent=%s
