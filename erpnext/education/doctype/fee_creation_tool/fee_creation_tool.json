@@ -6,19 +6,28 @@
  "engine": "InnoDB",
  "field_order": [
   "student_group",
+  "due_date",
   "column_break_01",
   "fee_structure",
   "section_break_01",
   "components",
   "section_break_02",
-  "students"
+  "students",
+  "account",
+  "receivable_account",
+  "income_account",
+  "cost_center",
+  "column_break_02",
+  "company",
+  "amended_from"
  ],
  "fields": [
   {
    "fieldname": "student_group",
    "fieldtype": "Link",
    "label": "Student Group",
-   "options": "Student Group"
+   "options": "Student Group",
+   "reqd": 1
   },
   {
    "fieldname": "column_break_01",
@@ -28,7 +37,8 @@
    "fieldname": "fee_structure",
    "fieldtype": "Link",
    "label": "Fee Structure",
-   "options": "Fee Structure"
+   "options": "Fee Structure",
+   "reqd": 1
   },
   {
    "fieldname": "section_break_01",
@@ -51,9 +61,68 @@
    "fieldtype": "Table",
    "label": "Student Group Student",
    "options": "Student Group Student"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Fee Creation Tool",
+   "print_hide": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Fee Creation Tool",
+   "print_hide": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "account",
+   "fieldtype": "Section Break",
+   "label": "Accounting"
+  },
+  {
+   "fieldname": "receivable_account",
+   "fieldtype": "Link",
+   "label": "Receivable Account",
+   "options": "Account"
+  },
+  {
+   "fieldname": "income_account",
+   "fieldtype": "Link",
+   "label": "Income Account",
+   "options": "Account"
+  },
+  {
+   "fieldname": "column_break_02",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Institution",
+   "options": "Company"
+  },
+  {
+   "fieldname": "cost_center",
+   "fieldtype": "Link",
+   "label": "Cost Center",
+   "options": "Cost Center"
+  },
+  {
+   "fieldname": "due_date",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "Due Date",
+   "reqd": 1
   }
  ],
- "modified": "2020-09-26 11:27:37.929663",
+ "is_submittable": 1,
+ "modified": "2020-10-05 07:39:00.843603",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Fee Creation Tool",

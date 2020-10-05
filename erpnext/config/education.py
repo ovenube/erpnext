@@ -94,6 +94,10 @@ def get_data():
 				{
 					"type": "doctype",
 					"name": "Course Scheduling Tool"
+				},
+				{
+					"type": "doctype",
+					"name": "Fee Creation Tool"
 				}
 			]
 		},
@@ -164,10 +168,6 @@ def get_data():
 				{
 					"type": "doctype",
 					"name": "Fee Category"
-				},
-				{
-					"type": "doctype",
-					"name": "Fee Creation Tool"
 				}
 			]
 		},

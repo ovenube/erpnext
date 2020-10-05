@@ -3,8 +3,52 @@
 # For license information, please see license.txt
 
 from __future__ import unicode_literals
-# import frappe
+import frappe
 from frappe.model.document import Document
+from frappe.model.mapper import get_mapped_doc
+from nubefact_integration.nubefact_integration.facturacion_electronica import set_fees_fields
 
 class FeeCreationTool(Document):
-	pass
+	def validate(self):
+		for student in self.students:
+			if student.fee_created == 1:
+				frappe.throw("Student {0} already has a Fee created").format(studen.student_name)
+
+	def before_submit(self):
+		self.create_fees()
+
+	def create_fees(self):
+		error = False
+		created_records = 0
+		doc = frappe.get_doc("Fee Structure", self.fee_structure)
+		for student in self.students:
+			fees = frappe.get_list("Fees", filters={'student': student.student, 'student_group': self.student_group})
+			if student.fee_created == 0 and not fees:
+				try:
+					fees_doc = get_mapped_doc("Fee Creation Tool", self.name, {
+						"Fee Creation Tool": {
+							"doctype": "Fees",
+							"field_map": {
+								"name": "Fee Creation Tool"
+							}
+						}
+					})
+					fees_doc.student = student.student
+					fees_doc.student_name = student.student_name
+					fees_doc.save()
+					set_fees_fields(fees_doc)
+					fees_doc.submit()
+					update_student_group(student.student, self.student_group, created=1)
+					created_records += 1
+				except Exception as e:
+					error = True
+					print(e)
+		if error:
+			frappe.db.rollback()
+			frappe.throw("Error while submitting")
+
+def update_student_group(self, student, student_group, created=0):
+	frappe.db.sql("""UPDATE `tabStudent Group Student`
+						SET fee_created=%s
+						WHERE parent=%s
+						AND student=%s""", (created, student_group, student))

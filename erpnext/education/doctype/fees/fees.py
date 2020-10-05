@@ -11,6 +11,7 @@ from erpnext.accounts.doctype.payment_request.payment_request import make_paymen
 from frappe.utils.csvutils import getlink
 from erpnext.controllers.accounts_controller import AccountsController
 from erpnext.accounts.general_ledger import delete_gl_entries
+from erpnext.education.doctype.fee_creation_tool.fee_creation_tool import update_student_group
 
 
 class Fees(AccountsController):
@@ -83,6 +84,8 @@ class Fees(AccountsController):
 	def on_cancel(self):
 		delete_gl_entries(voucher_type=self.doctype, voucher_no=self.name)
 		# frappe.db.set(self, 'status', 'Cancelled')
+		if self.student_group and self.fee_creation_tool:
+			update_student_group(self.student, self.student_group, created=0)
 
 
 	def make_gl_entries(self):

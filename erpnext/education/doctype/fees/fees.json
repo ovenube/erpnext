@@ -10,6 +10,7 @@
   "student",
   "student_name",
   "fee_schedule",
+  "fee_creation_tool",
   "include_payment",
   "send_payment_request",
   "column_break_4",
@@ -340,10 +341,16 @@
    "fieldtype": "Link",
    "label": "Student Group",
    "options": "Student Group"
+  },
+  {
+   "fieldname": "fee_creation_tool",
+   "fieldtype": "Link",
+   "label": "Fee Creation Tool",
+   "options": "Fee Creation Tool"
   }
  ],
  "is_submittable": 1,
- "modified": "2020-09-26 11:15:06.108950",
+ "modified": "2020-09-28 10:50:17.777154",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Fees",

@@ -58,7 +58,7 @@ class FeeSchedule(Document):
 			{"progress": "0", "reload": 1}, user=frappe.session.user)
 
 		total_records = sum([int(d.total_students) for d in self.student_groups])
-		if total_records > 10:
+		if total_records > 15:
 			frappe.msgprint(_('''Fee records will be created in the background.
 				In case of any error the error message will be updated in the Schedule.'''))
 			enqueue(generate_fee, queue='default', timeout=6000, event='generate_fee',
