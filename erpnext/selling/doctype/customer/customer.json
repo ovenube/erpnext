@@ -1,5 +1,4 @@
 {
- "actions": [],
  "allow_events_in_timeline": 1,
  "allow_import": 1,
  "allow_rename": 1,
@@ -17,12 +16,14 @@
   "gender",
   "customer_type",
   "default_bank_account",
+  "tipo_documento_identidad",
   "lead_name",
   "image",
   "column_break0",
   "account_manager",
   "customer_group",
   "territory",
+  "codigo_tipo_documento",
   "tax_id",
   "tax_category",
   "so_required",
@@ -480,13 +481,24 @@
    "fieldname": "dn_required",
    "fieldtype": "Check",
    "label": "Allow Sales Invoice Creation Without Delivery Note"
+  },
+  {
+   "fieldname": "tipo_documento_identidad",
+   "fieldtype": "Link",
+   "label": "Tipo de Documento de Identidad",
+   "options": "Tipos de Documento de Identidad"
+  },
+  {
+   "fieldname": "codigo_tipo_documento",
+   "fieldtype": "Data",
+   "label": "C\u00f3digo Tipo de Documento",
+   "read_only": 1
   }
  ],
  "icon": "fa fa-user",
  "idx": 363,
  "image_field": "image",
- "links": [],
- "modified": "2020-03-17 11:03:42.706907",
+ "modified": "2020-10-09 14:54:47.794023",
  "modified_by": "Administrator",
  "module": "Selling",
  "name": "Customer",
