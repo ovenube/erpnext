@@ -94,10 +94,10 @@ def get_columns(filters):
 	columns = [
 		{"label": _("Item"), "fieldname": "item_code", "fieldtype": "Link", "options": "Item", "width": 100},
 		{"label": _("Item Name"), "fieldname": "item_name", "width": 150},
+		{"label": _("Image"), "fieldname": "website_image", "width": 150},
 		{"label": _("Item Group"), "fieldname": "item_group", "fieldtype": "Link", "options": "Item Group", "width": 100},
 		{"label": _("Warehouse"), "fieldname": "warehouse", "fieldtype": "Link", "options": "Warehouse", "width": 100},
 		{"label": _("Stock UOM"), "fieldname": "stock_uom", "fieldtype": "Link", "options": "UOM", "width": 90},
-		{"label": _("Total"), "fieldname": "total", "fieldtype": "Float", "width": 100, "convertible": "qty"},
 		{"label": _("Company"), "fieldname": "company", "fieldtype": "Link", "options": "Company", "width": 100}
 	]
 
@@ -269,15 +269,17 @@ def get_item_details(items, sle, filters):
 		cf_join = "left join `tabUOM Conversion Detail` ucd on ucd.parent=item.name and ucd.uom=%s" \
 			% frappe.db.escape(filters.get("include_uom"))
 
+	site_name = cstr(frappe.local.site)
+
 	res = frappe.db.sql("""
 		select
-			item.name, item.item_name, item.description, item.item_group, item.brand, item.stock_uom %s
+			item.name, concat(%s, item.website_image), item.item_name, item.description, item.item_group, item.brand, item.stock_uom %s
 		from
 			`tabItem` item
 			%s
 		where
 			item.name in (%s)
-	""" % (cf_field, cf_join, ','.join(['%s'] *len(items))), items, as_dict=1)
+	""" % (site_name, cf_field, cf_join, ','.join(['%s'] *len(items))), items, as_dict=1)
 
 	for item in res:
 		item_details.setdefault(item.name, item)
