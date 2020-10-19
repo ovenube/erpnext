@@ -62,3 +62,13 @@ frappe.ui.form.on('Fee Creation Tool', {
 		}
 	}
 });
+
+frappe.ui.form.on('Fee Component', {
+	fees_category: function(frm, cdt, cdn) {
+		var row = locals[cdt][cdn];
+		frappe.db.get_value("Fee Category", row.fees_category, "is_course", (r) => {
+			frappe.model.set_value(cdt, cdn, "is_course", r.is_course);
+			frm.refresh_fields();
+		})
+	}
+})

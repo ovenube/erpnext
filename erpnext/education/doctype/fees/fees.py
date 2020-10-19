@@ -113,6 +113,16 @@ class Fees(AccountsController):
 		from erpnext.accounts.general_ledger import make_gl_entries
 		make_gl_entries([student_gl_entries, fee_gl_entry], cancel=(self.docstatus == 2),
 			update_outstanding="Yes", merge_entries=False)
+	
+	def add_course(self):
+		for component in self.components:
+			if component.is_course == 1:
+				program_list = frappe.get_list("Program Enrollment", filters={'student': self.student, 'company': self.company}, fields=['name'])
+				program_enrollement = frappe.get_doc("Program Enrollement", program_list[0].name)
+				row = program_enrollement.append('courses', {})
+				row.course = component.fees_category
+				row.course_name = frappe.get_value("Course", component.fees_category, course_name)
+				program_enrollement.save(ignore_permissions=True)
 
 def get_fee_list(doctype, txt, filters, limit_start, limit_page_length=20, order_by="modified"):
 	user = frappe.session.user
