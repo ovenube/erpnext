@@ -4,7 +4,7 @@
 from __future__ import unicode_literals
 import frappe
 from frappe import _
-from frappe.utils import flt, cint, getdate, now, date_diff
+from frappe.utils import flt, cint, getdate, now, date_diff, cstr
 from erpnext.stock.utils import add_additional_uom_columns
 from erpnext.stock.report.stock_ledger.stock_ledger import get_item_group_condition
 
@@ -273,7 +273,7 @@ def get_item_details(items, sle, filters):
 
 	res = frappe.db.sql("""
 		select
-			item.name, concat(%s, item.website_image), item.item_name, item.description, item.item_group, item.brand, item.stock_uom %s
+			item.name, concat(%s, item.website_image) as image, item.item_name, item.description, item.item_group, item.brand, item.stock_uom %s
 		from
 			`tabItem` item
 			%s
