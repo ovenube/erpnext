@@ -273,7 +273,7 @@ def get_item_details(items, sle, filters):
 
 	res = frappe.db.sql("""
 		select
-			item.name, concat(%s, item.website_image) as image, item.item_name, item.description, item.item_group, item.brand, item.stock_uom %s
+			item.name, concat('%s', item.website_image) as image, item.item_name, item.description, item.item_group, item.brand, item.stock_uom %s
 		from
 			`tabItem` item
 			%s
