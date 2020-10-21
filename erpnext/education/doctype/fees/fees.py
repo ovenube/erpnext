@@ -118,11 +118,11 @@ class Fees(AccountsController):
 		for component in self.components:
 			if component.is_course == 1:
 				program_list = frappe.get_list("Program Enrollment", filters={'student': self.student, 'company': self.company}, fields=['name'])
-				program_enrollement = frappe.get_doc("Program Enrollement", program_list[0].name)
-				row = program_enrollement.append('courses', {})
+				program_enrollment = frappe.get_doc("Program Enrollment", program_list[0].name)
+				row = program_enrollment.append('courses', {})
 				row.course = component.fees_category
 				row.course_name = frappe.get_value("Course", component.fees_category, course_name)
-				program_enrollement.save(ignore_permissions=True)
+				program_enrollment.save(ignore_permissions=True)
 
 def get_fee_list(doctype, txt, filters, limit_start, limit_page_length=20, order_by="modified"):
 	user = frappe.session.user
