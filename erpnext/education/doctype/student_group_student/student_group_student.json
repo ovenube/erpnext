@@ -9,6 +9,7 @@
   "column_break_2",
   "group_roll_number",
   "active",
+  "company",
   "fee_created"
  ],
  "fields": [
@@ -49,10 +50,17 @@
    "fieldname": "fee_created",
    "fieldtype": "Check",
    "label": "Fee Created"
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Company",
+   "options": "Company"
   }
  ],
  "istable": 1,
- "modified": "2020-09-26 11:16:13.331952",
+ "modified": "2020-10-27 05:49:58.137399",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Student Group Student",

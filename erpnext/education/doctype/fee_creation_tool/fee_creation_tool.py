@@ -7,8 +7,9 @@ import frappe
 from frappe.model.document import Document
 from frappe.model.mapper import get_mapped_doc
 from nubefact_integration.nubefact_integration.facturacion_electronica import set_fees_fields
+from erpnext.setup.doctype.naming_series.naming_series import NamingSeries
 
-class FeeCreationTool(Document):
+class FeeCreationTool(NamingSeries):
 	def validate(self):
 		for student in self.students:
 			if student.fee_created == 1:
@@ -32,6 +33,7 @@ class FeeCreationTool(Document):
 							}
 						}
 					})
+					fees_doc.naming_series = self.fee_naming_series
 					fees_doc.student = student.student
 					fees_doc.student_name = student.student_name
 					fees_doc.save()
@@ -44,6 +46,12 @@ class FeeCreationTool(Document):
 		if error:
 			frappe.db.rollback()
 			frappe.throw("Error while submitting")
+	
+	def get_fee_series(self):
+		fee_series = self.get_options("Fees")
+		fee_series.replace("\n\n", "\n")
+		fee_series.split("\n")
+		return fee_series
 
 def update_student_group(student, student_group, created=0):
 	frappe.db.sql("""UPDATE `tabStudent Group Student`

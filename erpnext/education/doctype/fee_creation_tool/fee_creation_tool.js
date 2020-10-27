@@ -26,6 +26,16 @@ frappe.ui.form.on('Fee Creation Tool', {
 				}
 			};
 		});
+		frappe.call({
+			method: "get_fee_series",
+			doc: frm.doc,
+			callback: function(r) {
+				if (r){
+					frm.set_df_property("fee_naming_series", "options", r.message);
+					frm.refresh_fields();
+				}
+			}
+		})
 	},
 
 	student_group: function(frm) {

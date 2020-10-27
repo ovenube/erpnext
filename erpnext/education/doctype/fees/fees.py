@@ -117,7 +117,7 @@ class Fees(AccountsController):
 	def add_course(self):
 		for component in self.components:
 			if component.is_course == 1:
-				program_list = frappe.get_list("Program Enrollment", filters={'student': self.student, 'company': self.company}, fields=['name'])
+				program_list = frappe.get_list("Program Enrollment", filters={'student': self.student, 'docstatus': '1'}, fields=['name'])
 				program_enrollment = frappe.get_doc("Program Enrollment", program_list[0].name)
 				row = program_enrollment.append('courses', {})
 				row.course = component.fees_category
