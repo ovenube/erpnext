@@ -20,7 +20,6 @@ class AccountsSettings(Document):
 
 		self.validate_stale_days()
 		self.enable_payment_schedule_in_print()
-		self.enable_fields_for_cost_center_settings()
 
 	def validate_stale_days(self):
 		if not self.allow_stale and cint(self.stale_days) <= 0:
