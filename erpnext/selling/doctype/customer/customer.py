@@ -499,6 +499,7 @@ def get_customer_primary_contact(doctype, txt, searchfield, start, page_len, fil
 			'txt': '%%%s%%' % txt
 		})
 
+@frappe.whitelist()
 def get_customer_address(doctype, txt, searchfield, start, page_len, filters):
 	customer = filters.get('customer')
 	return frappe.db.sql("""

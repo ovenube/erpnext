@@ -39,7 +39,7 @@ def generate_electronic_invoice(company, invoice, doctype):
 
 @frappe.whitelist()
 def pay_restaurant_order(order):
-    order_doc = frappe.get_doc("Restaurant Order", restaurant_order)
+    order_doc = frappe.get_doc("Restaurant Order", order)
     order_doc.order_status = "Paid"
     if order_doc != "":
         update_table(order_doc.restaurant_table, 0)
