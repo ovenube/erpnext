@@ -96,6 +96,7 @@
   "taxes_and_charges_added",
   "taxes_and_charges_deducted",
   "total_taxes_and_charges",
+  "total_amount_ibp",
   "total_amount_free",
   "inafected_taxes_and_charges",
   "section_break_44",
@@ -1322,10 +1323,10 @@
    "options": "currency"
   },
   {
-    "fieldname": "project",
-    "fieldtype": "Link",
-    "label": "Project",
-    "options": "Project"
+   "fieldname": "project",
+   "fieldtype": "Link",
+   "label": "Project",
+   "options": "Project"
   },
   {
    "fieldname": "tax_withholding_category",
@@ -1334,12 +1335,18 @@
    "label": "Tax Withholding Category",
    "options": "Tax Withholding Category",
    "print_hide": 1
+  },
+  {
+   "fieldname": "total_amount_ibp",
+   "fieldtype": "Currency",
+   "label": "Total Amount IBP",
+   "options": "currency"
   }
  ],
  "icon": "fa fa-file-text",
  "idx": 204,
  "is_submittable": 1,
- "modified": "2020-09-21 12:22:09.164068",
+ "modified": "2021-01-20 19:59:50.924171",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Purchase Invoice",
